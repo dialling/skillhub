@@ -5,37 +5,6 @@ import { useStore } from '../store'
 import { CATEGORY_LABELS, FN_LABELS, REPO_KIND_LABELS, type FnCategory } from '@shared/types'
 import { fnColor } from './Sidebar'
 
-export function RepoArt({
-  repo,
-  height
-}: {
-  repo: RepoMeta
-  height?: number
-}): React.JSX.Element {
-  const [c1, c2] = gradientFor(repo.fullName)
-  return (
-    <div
-      className="card-art"
-      style={{
-        height,
-        background: `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`
-      }}
-    >
-      {repo.avatarUrl ? (
-        <img className="owner" src={repo.avatarUrl} alt="" loading="lazy" />
-      ) : (
-        <div className="owner" style={{ background: 'rgba(0,0,0,.35)', display: 'grid', placeItems: 'center' }}>
-          <Layers size={18} />
-        </div>
-      )}
-      <div className="art-label">
-        <div className="art-owner">{repo.owner}</div>
-        <div className="art-name">{repo.name}</div>
-      </div>
-    </div>
-  )
-}
-
 export function RepoCard({
   repo,
   dense,
@@ -52,6 +21,8 @@ export function RepoCard({
   const library = useStore((s) => s.library)
   const installMap = useStore((s) => s.installMap)
   const job = useStore((s) => s.job)
+
+  const [c1, c2] = gradientFor(repo.fullName)
 
   const item = library.find((i) => i.fullName === repo.fullName)
   const inLibrary = !!item && item.status === 'ready'
@@ -71,7 +42,29 @@ export function RepoCard({
 
   return (
     <div className="card" style={style} onClick={() => void openDetail(repo.fullName)} role="button" tabIndex={0}>
-      <RepoArt repo={repo} height={dense ? 72 : 84} />
+      {/* A hairline of the repository's colour for identity. It used to be an
+          84px band holding an avatar and the name — decoration that took a third
+          of the card and left the actual description cramped underneath. */}
+      <span className="card-band" style={{ background: `linear-gradient(90deg, ${c1}, ${c2})` }} />
+
+      <div className={`card-head${dense ? ' dense' : ''}`}>
+        {repo.avatarUrl ? (
+          <img className="owner" src={repo.avatarUrl} alt="" loading="lazy" />
+        ) : (
+          <span className="owner fallback">
+            <Layers size={14} />
+          </span>
+        )}
+        <div className="card-id">
+          <div className="card-name">{repo.name}</div>
+          <div className="card-owner mono">{repo.owner}</div>
+        </div>
+        <span className="card-stars mono" title={`${repo.stars} stars`}>
+          <Star size={11} />
+          {fmtStars(repo.stars)}
+        </span>
+      </div>
+
       <div className="card-body">
         <div className={`card-desc card-tagline ${lang === 'zh' ? 'zh' : ''}`}>
           {tagline || t('common.unknown')}
@@ -103,10 +96,6 @@ export function RepoCard({
         </div>
 
         <div className="card-foot">
-          <span className="stat strong" title={`${repo.stars} stars`}>
-            <Star size={11} />
-            {fmtStars(repo.stars)}
-          </span>
           {freshness && (
             <span className="stat" title={repo.pushedAt}>
               {freshness}
