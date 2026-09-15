@@ -50,6 +50,12 @@
   --shadow-1: 0 1px 2px rgba(var(--shadow-rgb), 0.4);
   --shadow-2: 0 8px 24px -6px rgba(var(--shadow-rgb), 0.6);
   --shadow-3: 0 24px 64px -12px rgba(var(--shadow-rgb), 0.75);
+  --bg0-rgb: 6, 8, 13;
+  --bg2-rgb: 14, 19, 32;
+  --ok-deep: #238636;
+  --rank-1: #ffd666;
+  --rank-2: #d6dce5;
+  --rank-3: #e0a370;
 
   --h-title: 46px;
   --h-status: 26px;
@@ -710,8 +716,8 @@ a:hover {
   background: linear-gradient(180deg, var(--accent-hi) 0%, var(--accent) 100%);
 }
 .btn.ok {
-  background: linear-gradient(180deg, #2ea043, #238636);
-  border-color: rgba(120, 220, 150, 0.35);
+  background: linear-gradient(180deg, var(--ok), var(--ok-deep));
+  border-color: rgba(var(--second-rgb), 0.35);
   color: #fff;
 }
 .btn.ghost {
@@ -807,7 +813,7 @@ a:hover {
   background: rgba(var(--second-rgb), 0.09);
 }
 .chip.violet {
-  color: #b79dff;
+  color: var(--violet);
   border-color: rgba(var(--third-rgb), 0.32);
   background: rgba(var(--third-rgb), 0.1);
 }
@@ -1368,7 +1374,7 @@ a:hover {
 .panel {
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
-  background: linear-gradient(180deg, var(--bg-2), rgba(14, 19, 32, 0.6));
+  background: linear-gradient(180deg, var(--bg-2), rgba(var(--bg0-rgb), 0.6));
   overflow: hidden;
 }
 .panel-head {
@@ -1608,13 +1614,13 @@ a:hover {
   text-align: center;
 }
 .board-rank.top1 {
-  color: #ffd666;
+  color: var(--rank-1);
 }
 .board-rank.top2 {
-  color: #d6dce5;
+  color: var(--rank-2);
 }
 .board-rank.top3 {
-  color: #e0a370;
+  color: var(--rank-3);
 }
 .board-tile {
   width: 28px;
@@ -1818,7 +1824,7 @@ a:hover {
   padding: 13px 15px;
   border-radius: var(--r-md);
   border: 1px solid var(--border);
-  background: linear-gradient(180deg, var(--bg-3), rgba(14, 19, 32, 0.5));
+  background: linear-gradient(180deg, var(--bg-3), rgba(var(--bg0-rgb), 0.5));
 }
 .stat-tile .k {
   font-size: 10.5px;

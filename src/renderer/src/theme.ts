@@ -66,12 +66,20 @@ function surfaceVars(s: SurfaceSpec): Record<string, string> {
     '--tint-rgb': s.tintRgb,
     '--shadow-rgb': s.shadowRgb,
     '--glass-rgb': s.glass,
+    // Derived from the surface ramp so panels can fade toward "darker surface"
+    // without hardcoding a dark colour that breaks light schemes.
+    '--bg0-rgb': hexToRgb(s.bg[0]),
+    '--bg2-rgb': hexToRgb(s.bg[2]),
     '--field-rgb': s.field,
     '--art-fade-rgb': s.artFade,
     '--scrim-rgb': s.scrim,
     '--shadow-1': `0 1px 2px rgba(${s.shadowRgb}, 0.4)`,
     '--shadow-2': `0 8px 24px -6px rgba(${s.shadowRgb}, 0.6)`,
-    '--shadow-3': `0 24px 64px -12px rgba(${s.shadowRgb}, 0.75)`
+    '--shadow-3': `0 24px 64px -12px rgba(${s.shadowRgb}, 0.75)`,
+    '--ok-deep': '#238636',
+    '--rank-1': '#ffd666',
+    '--rank-2': '#d6dce5',
+    '--rank-3': '#e0a370'
   }
 }
 
@@ -337,7 +345,11 @@ export const THEMES: Record<ThemeId, Theme> = {
       '--glass-rgb': '255, 255, 255',
       '--ok': '#1a7f37',
       '--err': '#cf222e',
-      '--warn': '#9a6700'
+      '--warn': '#9a6700',
+      '--ok-deep': '#116329',
+      '--rank-1': '#b45309',
+      '--rank-2': '#64748b',
+      '--rank-3': '#a16207'
     }
   },
 
@@ -377,7 +389,11 @@ export const THEMES: Record<ThemeId, Theme> = {
       '--shadow-3': '0 24px 64px -16px rgba(72, 58, 38, 0.28)',
       '--ok': '#15803d',
       '--err': '#b91c1c',
-      '--warn': '#a16207'
+      '--warn': '#a16207',
+      '--ok-deep': '#14532d',
+      '--rank-1': '#92400e',
+      '--rank-2': '#57534e',
+      '--rank-3': '#a16207'
     }
   }
 }
