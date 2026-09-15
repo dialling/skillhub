@@ -265,8 +265,19 @@ async function main(): Promise<number> {
   check('copy carries marker file', existsSync(join(copied, '.skillhub-install.json')))
 
   section('Uninstall + cleanup')
+  /*
+    Remove only what this run created.
+
+    This loop used to walk every install record and uninstall all of them, so
+    running the suite with a populated library uninstalled the user's real
+    skills — 201 of them, from three agents. The state is isolated now, but the
+    loop still names its own records: a cleanup step should never be able to
+    delete something it did not create.
+  */
   let removed = 0
+  const ownRecords = new Set([...outcome.ok, ...outcome2.ok].map((r) => `${r.skillId}@${r.agentId}`))
   for (const rec of installedSkills()) {
+    if (!ownRecords.has(`${rec.skillId}@${rec.agentId}`)) continue
     if (uninstall(rec.skillId, rec.agentId)) removed++
   }
   check('uninstalls completed', removed > 0, `${removed} removed`)

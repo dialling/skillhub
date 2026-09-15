@@ -112,6 +112,14 @@ const M: Record<string, [zh: string, en: string]> = {
   'cli.usage.install': ['用法：install <skillId> | --all', 'Usage: install <skillId> | --all'],
   'cli.usage.uninstall': ['用法：uninstall <skillId>', 'Usage: uninstall <skillId>'],
   'cli.usage.stars': ['用法：stars <owner/repo>', 'Usage: stars <owner/repo>'],
+  /* startup */
+  'boot.nodeModeDetail': [
+    'Electron 以纯 Node 模式启动。\n\n启动它的环境里设置了 ELECTRON_RUN_AS_NODE，这会关闭 Electron 运行时，\n所有 app.* 调用都会是 undefined。\n\n请从访达或程序坞启动，或先清掉这个变量：\n  env -u ELECTRON_RUN_AS_NODE open -a SkillHub',
+    'Electron started in Node mode.\n\nELECTRON_RUN_AS_NODE is set in the environment that launched this app, which\ndisables the Electron runtime and leaves every app.* call undefined.\n\nLaunch it from the Finder or the Dock, or clear the variable first:\n  env -u ELECTRON_RUN_AS_NODE open -a SkillHub'
+  ],
+  'boot.nodeModeTitle': ['SkillHub 无法启动', 'SkillHub could not start'],
+  'boot.ok': ['好', 'OK'],
+
   /* submissions */
   'submit.readFailed': ['无法读取技能目录：{msg}', 'Could not read the skill folder: {msg}'],
   'submit.empty': ['这个目录是空的', 'That folder is empty'],

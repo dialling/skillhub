@@ -19,8 +19,19 @@ export function appPath(name: 'userData' | 'appPath'): string | null {
 }
 
 /** Root of the SkillHub-owned data plane: ~/.skillhub */
+/**
+ * Where SkillHub keeps everything.
+ *
+ * `SKILLHUB_HOME` overrides it, and the self-test depends on that: without an
+ * override the test suite read and wrote the real library, the real install
+ * records and the real agent directories — and its cleanup step uninstalled
+ * every recorded skill, which is not a hypothetical: it removed 201 real
+ * installations from Cursor, Copilot and DeepSeek Harness the first time it was
+ * run after those existed.
+ */
 export function skillhubRoot(): string {
-  const dir = join(homedir(), '.skillhub')
+  const override = process.env.SKILLHUB_HOME
+  const dir = override ? override : join(homedir(), '.skillhub')
   ensureDir(dir)
   return dir
 }

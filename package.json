@@ -13,11 +13,11 @@
     "build": "electron-vite build",
     "start": "node scripts/run.mjs electron-vite preview",
     "app": "node scripts/run.mjs --electron .",
-    "selftest": "npm run build && node out/main/selftest.js",
+    "selftest": "node scripts/selftest.mjs",
     "cli": "node out/main/cli.js",
     "typecheck": "tsc --noEmit",
     "i18n": "node scripts/i18n-audit.mjs",
-    "verify": "npm run typecheck && npm run i18n && npm run xplat && npm run catalog && npm run build && node out/main/selftest.js",
+    "verify": "npm run typecheck && npm run i18n && npm run xplat && npm run catalog && npm run build && npm run selftest",
     "xplat": "node scripts/crossplatform-audit.mjs",
     "dist": "npm run build && electron-builder",
     "dist:mac": "npm run build && electron-builder --mac",
@@ -86,7 +86,10 @@
       "category": "public.app-category.developer-tools",
       "darkModeSupport": true,
       "hardenedRuntime": false,
-      "gatekeeperAssess": false
+      "gatekeeperAssess": false,
+      "identity": "-",
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
     },
     "dmg": {
       "title": "SkillHub ${version}"
@@ -137,7 +140,6 @@
     },
     "portable": {
       "artifactName": "${productName}-${version}-${arch}-portable.${ext}"
-    },
-    "afterPack": "scripts/sign-adhoc.mjs"
+    }
   }
 }

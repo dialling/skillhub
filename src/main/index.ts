@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain, Menu, nativeImage, shell } from 'electron'
 import { join } from 'node:path'
+import { execFileSync } from 'node:child_process'
 import { registerIpc } from './ipc'
 import { flushAll, settings, snapshotStars } from './core/db'
 import { libraryItems } from './core/library'
@@ -15,12 +16,32 @@ import { probeRawHost } from './core/github'
 // every `app.*` call is undefined. Fail with an actionable message instead of a
 // cryptic TypeError from deep inside a module initialiser.
 if (!app || typeof app.getPath !== 'function') {
-  console.error(
-    '\n[SkillHub] Electron started in Node mode.\n' +
-      '  ELECTRON_RUN_AS_NODE is set in this shell, which disables the Electron runtime.\n' +
-      '  Launch with:  env -u ELECTRON_RUN_AS_NODE npm run app\n' +
-      '  (the npm scripts already do this for you)\n'
-  )
+  const detail = m('boot.nodeModeDetail')
+  const title = m('boot.nodeModeTitle')
+  const button = m('boot.ok')
+  /*
+    Say it out loud, because stderr goes nowhere when a GUI app is launched.
+
+    On this machine ELECTRON_RUN_AS_NODE is exported globally, and `open` passes
+    the launching shell's environment to the app — so an app started from such a
+    shell died here and left nothing behind: no window, no message, no crash
+    report, and a stderr line nobody was reading. Diagnosing that took far longer
+    than it should have. A dialog cannot be missed.
+
+    AppleScript rather than Electron's dialog: in Node mode `require('electron')`
+    yields the path of the Electron binary rather than the module, so the one API
+    that could report this is the one that is missing.
+  */
+  try {
+    execFileSync(
+      'osascript',
+      ['-e', `display dialog ${JSON.stringify(detail)} with title ${JSON.stringify(title)} buttons {${JSON.stringify(button)}} default button 1 with icon caution`],
+      { stdio: 'ignore', timeout: 120000 }
+    )
+  } catch {
+    /* the dialog is best-effort */
+  }
+  console.error(`\n[SkillHub] ${detail}\n`)
   process.exit(1)
 }
 

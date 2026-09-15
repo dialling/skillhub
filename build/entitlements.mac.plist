@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!--
+    Ad-hoc signing needs these two, and Electron will not start without them.
+
+    Electron's prebuilt frameworks carry Apple's Team ID while an ad-hoc
+    signature has none, so macOS refuses to map them into the process unless
+    library validation is disabled; and the V8 JIT needs allow-jit or the
+    framework crashes on launch.
+
+    Without them the app still runs when executed directly from a terminal —
+    which is exactly why this went unnoticed — but LaunchServices kills it
+    immediately, so double-clicking or `open` did nothing.
+  -->
+  <key>com.apple.security.cs.allow-jit</key>
+  <true/>
+  <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+  <true/>
+  <key>com.apple.security.cs.disable-library-validation</key>
+  <true/>
+</dict>
+</plist>
