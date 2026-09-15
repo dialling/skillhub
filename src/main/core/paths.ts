@@ -78,18 +78,6 @@ export function curatedCatalogPath(): string {
   return candidates[0]
 }
 
-/** The application icon (build/icon.png at 1024px, build/icon.icns for bundles). */
-export function appIconPath(): string | null {
-  const base = appPath('appPath') || process.cwd()
-  const candidates = [
-    join(base, 'build', 'icon.png'),
-    join(process.resourcesPath || '', 'build', 'icon.png'),
-    join(base, '..', 'build', 'icon.png'),
-    join(__dirname, '..', '..', 'build', 'icon.png')
-  ]
-  return candidates.find((c) => c && existsSync(c)) || null
-}
-
 /** Bundled "what are you trying to do?" scenario definitions. */
 export function scenariosPath(): string {
   const base = appPath('appPath') || process.cwd()

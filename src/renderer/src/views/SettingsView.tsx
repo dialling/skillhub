@@ -402,28 +402,52 @@ export function SettingsView(): React.JSX.Element {
         </div>
         <div className="panel-body">
           <div className="hint" style={{ marginBottom: 14 }}>{t('settings.appearanceHint')}</div>
-          <div className="theme-grid">
-            {THEME_ORDER.map((id) => {
-              const theme = THEMES[id]
-              const active = (settings?.theme || 'azure') === id
-              return (
-                <button
-                  key={id}
-                  className={`theme-tile${active ? ' active' : ''}`}
-                  onClick={() => void updateSettings({ theme: id })}
-                  title={lang === 'zh' ? theme.zh : theme.en}
-                >
-                  <span className="theme-swatches">
-                    <span style={{ background: theme.accent }} />
-                    <span style={{ background: theme.second }} />
-                    <span style={{ background: theme.third }} />
-                  </span>
-                  <span className="theme-name">{lang === 'zh' ? theme.zh : theme.en}</span>
-                  {active && <Check size={12} className="theme-check" />}
-                </button>
-              )
-            })}
-          </div>
+          {(['dark', 'light'] as const).map((scheme) => (
+            <div key={scheme} style={{ marginBottom: 14 }}>
+              <div className="side-section-title" style={{ padding: '0 2px 7px' }}>
+                {scheme === 'dark' ? t('settings.themeDark') : t('settings.themeLight')}
+              </div>
+              <div className="theme-grid">
+                {THEME_ORDER.filter((id) => THEMES[id].scheme === scheme).map((id) => {
+                  const theme = THEMES[id]
+                  const active = (settings?.theme || 'azure') === id
+                  return (
+                    <button
+                      key={id}
+                      className={`theme-tile${active ? ' active' : ''}`}
+                      onClick={() => void updateSettings({ theme: id })}
+                      title={lang === 'zh' ? theme.zh : theme.en}
+                    >
+                      {/* A miniature of the actual surface stack, so the tile
+                          previews the theme instead of just naming it. */}
+                      <span className="theme-preview" style={{ background: theme.vars['--bg-2'] }}>
+                        <span className="tp-panel" style={{ background: theme.vars['--bg-4'] }}>
+                          <span className="tp-dot" style={{ background: theme.swatch[0] }} />
+                          <span
+                            className="tp-line"
+                            style={{ background: theme.vars['--text-2'] }}
+                          />
+                        </span>
+                        <span
+                          className="tp-line tp-line-wide"
+                          style={{ background: theme.vars['--text-3'] }}
+                        />
+                      </span>
+                      <span className="theme-text">
+                        <span className="theme-name">{lang === 'zh' ? theme.zh : theme.en}</span>
+                        <span className="theme-dots">
+                          {theme.swatch.map((c) => (
+                            <i key={c} style={{ background: c }} />
+                          ))}
+                        </span>
+                      </span>
+                      {active && <Check size={13} className="theme-check" />}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
