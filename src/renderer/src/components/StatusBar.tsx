@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Zap, Folder, Bot, Package, Languages } from 'lucide-react'
+import { Zap, Folder, Bot, Package, Languages, CircleAlert } from 'lucide-react'
 import { GithubIcon } from './icons'
 import { useStore } from '../store'
 import { api } from '../api'
@@ -31,18 +31,32 @@ export function StatusBar(): React.JSX.Element {
   const installedCount = Object.values(installMap).reduce((n, l) => n + l.length, 0)
   const activeAgents = agents.filter((a) => a.enabled)
   const totalSkills = library.reduce((n, i) => n + i.skills.length, 0)
-  const pct = rate && rate.limit ? Math.round((rate.remaining / rate.limit) * 100) : 0
-  const quotaClass = !rate?.ok ? 'err' : pct < 15 ? 'warn' : ''
+  const pct = rate && rate.limit ? Math.round((rate.remaining / rate.limit) * 100) : 100
+  const lowQuota = !!rate?.ok && pct < 15
+  const quotaClass = !rate?.ok ? 'err' : lowQuota ? 'warn' : ''
 
   return (
     <footer className="statusbar">
-      <button className="status-item" onClick={() => void refreshRate(true)} title={rate?.error || ''}>
+      {/* Connection state lives here, but the raw quota number does not: it sits
+          at 5000/5000 essentially always, so it was noise. It only earns screen
+          space when it is about to become a problem. */}
+      <button
+        className="status-item"
+        onClick={() => void refreshRate(true)}
+        title={rate?.error || (rate?.ok ? t('status.rateTooltip', { remaining: rate.remaining, limit: rate.limit }) : '')}
+      >
         <span className={`pulse ${quotaClass}`} />
         <GithubIcon size={11} />
         {rate?.ok ? (
           <>
-            {t('status.rate')} {rate.remaining}/{rate.limit}
+            {t('status.connected')}
             {rate.login ? ` · @${rate.login}` : ''}
+            {lowQuota && (
+              <span className="quota-warn">
+                <CircleAlert size={11} />
+                {t('status.quotaLow', { n: rate.remaining })}
+              </span>
+            )}
           </>
         ) : (
           <>{t('status.offline')}</>
@@ -68,7 +82,6 @@ export function StatusBar(): React.JSX.Element {
 
       <span className="status-spacer" />
 
-      {settings?.user && <span className="status-item">@{settings.user.login}</span>}
       <button className="status-item" onClick={() => void toggleLang()} title={t('common.language')}>
         <Languages size={11} />
         {t('lang.current')}

@@ -264,7 +264,7 @@ const DICT: Dict = {
   'settings.credentialSource': ['凭据来源', 'Credential source'],
   'settings.notConnected': ['未连接 GitHub', 'Not connected to GitHub'],
   'settings.notConnectedHint': ['未连接时仍可浏览内置精选目录，但无法搜索 GitHub 或入库私有仓库。', 'Without a connection you can still browse the bundled catalog, but you cannot search GitHub or add private repos.'],
-  'settings.rateLeft': ['剩余额度', 'Rate limit left'],
+
   'settings.library': ['库目录', 'Library directory'],
   'settings.libraryHint': ['技能仓库的克隆位置', 'Where skill repositories are cloned'],
   'settings.installMode': ['默认安装方式', 'Default install mode'],
@@ -322,6 +322,9 @@ const DICT: Dict = {
   'palette.noMatch': ['没有匹配项', 'No matches'],
 
   'status.rate': ['API 额度', 'API quota'],
+  'status.connected': ['GitHub 已连接', 'GitHub connected'],
+  'status.rateTooltip': ['GitHub API 额度 {remaining}/{limit}（每小时回满）', 'GitHub API quota {remaining}/{limit} (resets hourly)'],
+  'status.quotaLow': ['额度仅剩 {n}', 'only {n} calls left'],
   'status.agents': ['智能体', 'Agents'],
   'status.library': ['库', 'Library'],
   'status.installed': ['已安装', 'Installed'],

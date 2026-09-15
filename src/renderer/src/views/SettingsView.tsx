@@ -114,11 +114,7 @@ export function SettingsView(): React.JSX.Element {
                   {t('settings.credentialSource')}:{' '}
                   {t(`profile.src.${tokenSource === 'settings' ? 'settings' : tokenSource === 'env' ? 'env' : tokenSource === 'gh-cli' ? 'gh-cli' : 'none'}`)}
                 </span>
-                {rate?.ok && (
-                  <span className="chip mono">
-                    {t('settings.rateLeft')} {rate.remaining}/{rate.limit}
-                  </span>
-                )}
+
               </div>
             </div>
 

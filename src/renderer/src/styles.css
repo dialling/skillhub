@@ -2858,3 +2858,18 @@ button.status-item:hover {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Quota warning: only rendered when the GitHub API allowance is nearly gone. */
+.quota-warn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 7px;
+  padding: 0 6px;
+  height: 15px;
+  border-radius: 8px;
+  background: rgba(210, 153, 34, 0.16);
+  border: 1px solid rgba(210, 153, 34, 0.36);
+  color: var(--warn);
+  font-size: 10px;
+}
