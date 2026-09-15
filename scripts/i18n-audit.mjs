@@ -184,6 +184,23 @@ const SAME_IN_BOTH = new Set([
   'star.star'
 ])
 
+/*
+  Duplicate keys.
+
+  A repeated key silently keeps the last value, so an edit to the first
+  occurrence has no effect and looks like it was never applied. TypeScript
+  reports it as well, but this audit is what the project runs to reason about
+  the dictionary, and it should not depend on another tool to notice.
+*/
+const duplicateKeys = []
+{
+  const seen = new Map()
+  for (const m of i18nSrc.matchAll(/^\s*'([^']+)':\s*\[/gm)) {
+    seen.set(m[1], (seen.get(m[1]) || 0) + 1)
+  }
+  for (const [key, n] of seen) if (n > 1) duplicateKeys.push({ key, n })
+}
+
 const untranslated = []
 for (const m of i18nSrc.matchAll(/^\s*'([^']+)':\s*\[\s*'([^']*)',\s*'([^']*)'\s*\]/gm)) {
   const [, key, zh, en] = m
@@ -258,6 +275,8 @@ if (asJson) {
   console.log(`\n✗ 主进程面向用户的硬编码中文（经 IPC 显示）：${main.length}`)
   for (const h of main) console.log(`   ${h.file}:${h.line}  ${h.text}`)
 
+  console.log(`\n✗ 重复的词条（后一条会静默覆盖前一条）：${duplicateKeys.length}`)
+  for (const d of duplicateKeys) console.log(`     ${d.key} × ${d.n}`)
   console.log(`\n✗ 未翻译的词条（中英相同 → 中文模式下会显示英文）：${untranslated.length}`)
   for (const u of untranslated) console.log(`   ${u.key} = ${JSON.stringify(u.value)}`)
 }

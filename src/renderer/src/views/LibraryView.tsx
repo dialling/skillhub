@@ -23,6 +23,7 @@ import type { LibraryItem } from '@shared/types'
 import { fmtRelative, fmtStars, gradientFor, gradientTint } from '../api'
 import { useStore } from '../store'
 import { stagger } from '../ui'
+import { BulkInstallModal } from '../components/BulkInstallModal'
 
 /**
  * The library, laid out the way Steam lays out a game library: a big banner for
@@ -49,7 +50,6 @@ export function LibraryView(): React.JSX.Element {
   const removeFromLibrary = useStore((s) => s.removeFromLibrary)
   const install = useStore((s) => s.install)
   const agents = useStore((s) => s.agents)
-  const [bulkBusy, setBulkBusy] = useState(false)
 
   const installedSkillsOf = (item: LibraryItem): number =>
     item.skills.filter((s) => (installMap[s.id] || []).length > 0).length
@@ -79,25 +79,15 @@ export function LibraryView(): React.JSX.Element {
   */
   const installedSkills = Object.values(installMap).filter((l) => l.length).length
   const installedRecords = Object.values(installMap).reduce((n, l) => n + l.length, 0)
-  /** Skills that are not installed anywhere yet — what a bulk install would do. */
-  const pendingSkills = library.reduce(
-    (n, item) => n + item.skills.filter((s) => !(installMap[s.id] || []).length).length,
-    0
+  /** Skills not installed anywhere yet — what a bulk install would act on. */
+  const pendingIds = library.flatMap((item) =>
+    item.skills.filter((s) => !(installMap[s.id] || []).length).map((s) => s.id)
   )
+  const pendingSkills = pendingIds.length
 
-  const installEverything = async (): Promise<void> => {
-    if (!activeAgents.length) return
-    setBulkBusy(true)
-    try {
-      const pending: string[] = []
-      for (const item of library) {
-        for (const s of item.skills) if (!(installMap[s.id] || []).length) pending.push(s.id)
-      }
-      if (pending.length) await install(pending, activeAgents.map((a) => a.id))
-    } finally {
-      setBulkBusy(false)
-    }
-  }
+  // Bulk install now asks where to put things rather than writing into every
+  // enabled agent; the modal owns the choice.
+  const [bulkOpen, setBulkOpen] = useState(false)
 
   if (library.length === 0) {
     return (
@@ -135,6 +125,8 @@ export function LibraryView(): React.JSX.Element {
       <MySkillsPanel />
 
       <SubmissionsPanel />
+
+      <BulkInstallModal open={bulkOpen} pendingIds={pendingIds} onClose={() => setBulkOpen(false)} />
 
       {selected && (
         <LibraryHero
@@ -200,8 +192,8 @@ export function LibraryView(): React.JSX.Element {
           </button>
           <button
             className="btn primary"
-            disabled={bulkBusy || !activeAgents.length || pendingSkills === 0}
-            onClick={() => void installEverything()}
+            disabled={!agents.length || pendingSkills === 0}
+            onClick={() => setBulkOpen(true)}
             title={
               pendingSkills === 0
                 ? t('library.allInstalled')
@@ -211,7 +203,7 @@ export function LibraryView(): React.JSX.Element {
                   })
             }
           >
-            {bulkBusy ? <span className="spinner" /> : pendingSkills === 0 ? <Check size={13} /> : <Download size={13} />}
+            {pendingSkills === 0 ? <Check size={13} /> : <Download size={13} />}
             {pendingSkills === 0
               ? t('library.allInstalledShort')
               : t('library.installPending', { n: pendingSkills })}
