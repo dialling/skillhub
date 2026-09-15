@@ -11732,8 +11732,8 @@
       "truncatedTree": false,
       "installHint": "git clone https://github.com/libukai/awesome-agent-skills",
       "fn": "collections",
-      "taglineZh": "中文整理的智能体技能清单",
-      "taglineEn": "A Chinese-curated list of agent skills",
+      "taglineZh": "中文社区整理的智能体技能清单，按用途归类",
+      "taglineEn": "A Chinese-curated list of agent skills, grouped by use case",
       "useWhen": "想快速了解生态里有什么",
       "aboutZh": "中文整理的智能体技能资源清单，汇总 Claude Code、OpenClaw 等平台的技能与工具，适合中文开发者。",
       "skillDirsAll": 0,
@@ -12862,7 +12862,7 @@
       "truncatedTree": false,
       "installHint": "git clone https://github.com/codeaholicguy/ai-devkit",
       "fn": "coding",
-      "taglineZh": "一个控制台管住所有 AI 工具的技能与配置",
+      "taglineZh": "用一个控制台管住所有 AI 工具的技能与配置",
       "taglineEn": "One control plane for skills and config across AI tools",
       "useWhen": "用了好几个 AI 工具，配置太散",
       "aboutZh": "为 AI 编程智能体提供统一控制面，集中管理技能、配置与工作流，降低多工具切换成本。",
@@ -13391,7 +13391,7 @@
   "blurbStyle": {
     "formula": "[动词] + [对象] + [产出]；或 让/把 + [对象] + [告别/变成] + [痛点]",
     "budgetChars": "13–30",
-    "writtenAt": "2026-09-15T07:09:33.071Z",
+    "writtenAt": "2026-09-15T07:16:27.418Z",
     "corpus": "docs/research/corpus-own.md"
   },
   "skillCounts": {

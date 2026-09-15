@@ -66,8 +66,23 @@ async function main(): Promise<number> {
   section('Curated catalog (bundled)')
   const catalog = await curatedCatalog()
   check('catalog loaded', catalog.length > 0, `${catalog.length} repos`)
-  const withZh = catalog.filter((r) => r.descriptionZh).length
-  check('bilingual descriptions', withZh === catalog.length, `${withZh}/${catalog.length} have 中文简介`)
+  // The store card leads with `taglineZh`; `descriptionZh` is the older long
+  // field that only the original entries carry.
+  const withZh = catalog.filter((r) => r.taglineZh).length
+  const withEn = catalog.filter((r) => r.taglineEn).length
+  const withUseWhen = catalog.filter((r) => r.useWhen && r.useWhenEn).length
+  check('every repo has a Chinese tagline', withZh === catalog.length, `${withZh}/${catalog.length}`)
+  check('every repo has an English tagline', withEn === catalog.length, `${withEn}/${catalog.length}`)
+  check('every repo has a bilingual use-case', withUseWhen === catalog.length, `${withUseWhen}/${catalog.length}`)
+  const lens = catalog.map((r) => [...r.taglineZh].length).sort((a, b) => a - b)
+  const median = lens[lens.length >> 1]
+  check(
+    'taglines obey the 13–32 character budget',
+    lens[0] >= 13 && lens[lens.length - 1] <= 32,
+    `min ${lens[0]} · median ${median} · max ${lens[lens.length - 1]}`
+  )
+  const badOpeners = catalog.filter((r) => /^(为|面向|一个|这是一个)/.test(r.taglineZh))
+  check('no tagline opens with 为/面向/一个', badOpeners.length === 0, `${badOpeners.length} offenders`)
   const withSkills = catalog.filter((r) => (r.skillDirs || []).length > 0)
   check('repos with SKILL.md dirs', withSkills.length > 0, `${withSkills.length}/${catalog.length}`)
 

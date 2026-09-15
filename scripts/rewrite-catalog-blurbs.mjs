@@ -66,7 +66,7 @@ const ENTRIES = {
   },
   'codeaholicguy/ai-devkit': {
     fn: 'coding',
-    taglineZh: '一个控制台管住所有 AI 工具的技能与配置',
+    taglineZh: '用一个控制台管住所有 AI 工具的技能与配置',
     taglineEn: 'One control plane for skills and config across AI tools',
     useWhen: '用了好几个 AI 工具，配置太散'
   },
@@ -297,8 +297,8 @@ const ENTRIES = {
   },
   'libukai/awesome-agent-skills': {
     fn: 'collections',
-    taglineZh: '中文整理的智能体技能清单',
-    taglineEn: 'A Chinese-curated list of agent skills',
+    taglineZh: '中文社区整理的智能体技能清单，按用途归类',
+    taglineEn: 'A Chinese-curated list of agent skills, grouped by use case',
     useWhen: '想快速了解生态里有什么'
   },
 
@@ -477,10 +477,14 @@ const doc = JSON.parse(readFileSync(file, 'utf8'))
 let patched = 0
 const missing = []
 
+const violations = []
+
 for (const repo of doc.repos) {
   const entry = ENTRIES[repo.fullName]
+  // This script owns the original 60 entries; repos added later arrive with
+  // their taglines already written. They are still style-checked below.
   if (!entry) {
-    missing.push(repo.fullName)
+    if (!repo.taglineZh) missing.push(repo.fullName)
     continue
   }
   repo.fn = entry.fn
@@ -488,6 +492,14 @@ for (const repo of doc.repos) {
   repo.taglineEn = entry.taglineEn
   repo.useWhen = entry.useWhen
   repo.useWhenEn = USE_WHEN_EN[repo.fullName]
+
+  // Enforce the house style here too, so the batch tool cannot quietly drift
+  // from docs/blurb-formula.md.
+  const n = [...entry.taglineZh].length
+  if (n < 13 || n > 32) violations.push(`${repo.fullName}: ${n} chars — ${entry.taglineZh}`)
+  if (/^(为|面向|一个|这是一个)/.test(entry.taglineZh)) {
+    violations.push(`${repo.fullName}: banned opener — ${entry.taglineZh}`)
+  }
   // The long repo-centric blurb moves to the detail page as `about`.
   repo.aboutZh = repo.descriptionZh
   patched++
@@ -501,6 +513,25 @@ if (missingEn.length) {
 
 if (missing.length) {
   console.error(`未覆盖 ${missing.length} 个仓库：\n  ${missing.join('\n  ')}`)
+  process.exit(1)
+}
+
+// Style gate over the WHOLE catalog, whoever wrote the entry, so the batch
+// tools cannot quietly drift from docs/blurb-formula.md.
+for (const repo of doc.repos) {
+  const tag = repo.taglineZh || ''
+  const n = [...tag].length
+  if (!tag) violations.push(`${repo.fullName}: 没有中文简介`)
+  else if (n < 13 || n > 32) violations.push(`${repo.fullName}: ${n} 字 — ${tag}`)
+  else if (/^(为|面向|一个|这是一个)/.test(tag)) violations.push(`${repo.fullName}: 禁用开头 — ${tag}`)
+  if (!repo.taglineEn) violations.push(`${repo.fullName}: 没有英文简介`)
+  if (!repo.useWhen || !repo.useWhenEn) violations.push(`${repo.fullName}: 缺少中英 useWhen`)
+}
+
+if (violations.length) {
+  console.error(`不符合简介规范 ${violations.length} 条：`)
+  for (const v of violations.slice(0, 20)) console.error('  ✗ ' + v)
+  if (violations.length > 20) console.error(`  …另有 ${violations.length - 20} 条`)
   process.exit(1)
 }
 
