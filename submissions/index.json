@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-15T13:08:37.627Z",
+  "updatedAt": "2026-09-15T13:12:14.429Z",
   "submissions": [
     {
       "slug": "africa-dropship",
@@ -10,6 +10,17 @@
       "skipped": 0,
       "origin": "本机 ~/.cursor/skills（用户自建技能）",
       "at": "2026-09-15T13:08:37.253Z",
+      "status": "pending"
+    },
+    {
+      "slug": "video-shotcraft-local",
+      "name": "video-shotcraft-local",
+      "description": "Create cinematic product videos from shot recipe cards, a validated template, and code/audio assets (Remotion + real page screenshots + 2.5D camera moves + beat-synced cuts + sound design).",
+      "files": 120,
+      "bytes": 1247574,
+      "skipped": 1432,
+      "origin": "本机 ~/.dsh/skills",
+      "at": "2026-09-15T13:12:13.997Z",
       "status": "pending"
     }
   ]
