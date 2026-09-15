@@ -2,6 +2,7 @@ import type { GrowthRow, RepoMeta } from '../../shared/types'
 import { cache, growthFromSnapshots, stars } from './db'
 import { curatedCatalog } from './catalog'
 import { libraryItems } from './library'
+import { sharedGrowth } from './live'
 import { starsGained } from './github'
 
 export type GrowthWindow = 1 | 7 | 30
@@ -40,6 +41,40 @@ export async function leaderboard(opts: LeaderboardOptions): Promise<GrowthRow[]
 
   const repos = [...map.values()].filter((r) => (r.stars || 0) > 0)
   const rows: GrowthRow[] = []
+
+  /*
+    Pass 0 — the shared series published by this project's GitHub Action.
+
+    This is preferred over anything computed locally: it is the same numbers for
+    every user, it covers days this machine was switched off, and it costs no
+    API calls at all. Local snapshots and the events feed remain as fallbacks
+    for the case the published file has no row yet — a young deployment, or a
+    repository added to the catalog since the last scheduled run.
+  */
+  const shared = sharedGrowth(String(days))
+  if (shared) {
+    const known = new Set(repos.map((r) => r.fullName))
+    const usable = shared.filter((r) => known.has(r.fullName))
+    // A published window that covers only a handful of the catalog means the
+    // Action has barely started; mixing it with locally derived rows would put
+    // two different measurements in one ranking.
+    if (usable.length >= Math.min(10, Math.ceil(repos.length * 0.1))) {
+      const hydrated = usable.map((r) => {
+        const meta = map.get(r.fullName)!
+        return {
+          ...r,
+          name: r.name || meta.name,
+          owner: r.owner || meta.owner,
+          avatarUrl: r.avatarUrl || meta.avatarUrl,
+          category: r.category || meta.category,
+          descriptionZh: r.descriptionZh || meta.descriptionZh,
+          descriptionEn: r.descriptionEn || meta.descriptionEn
+        }
+      })
+      hydrated.sort((a, b) => b.gained - a.gained || b.stars - a.stars)
+      return hydrated.slice(0, limit)
+    }
+  }
 
   // Pass 1 — locally recorded daily snapshots are exact and free.
   const needApi: RepoMeta[] = []

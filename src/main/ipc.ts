@@ -66,6 +66,7 @@ import {
   setInstallRoot
 } from './core/discover'
 import { installLocations, launchTargets, prepareLaunch, runLaunch } from './core/launch'
+import { liveStatus, refreshLiveData } from './core/live'
 
 type Broadcast = (channel: string, payload: unknown) => void
 let broadcast: Broadcast = () => {}
@@ -381,6 +382,13 @@ export function registerIpc(send: Broadcast): void {
   )
   handle('launch:run', (plan: LaunchPlan) => runLaunch(plan))
   handle('launch:locations', (skillName: string) => installLocations(skillName))
+
+  /* -------------------------------------------------------------- live data */
+  // Pulled from this project's own repository: the scheduled Action there keeps
+  // star counts and the growth leaderboard current for everyone, so no server
+  // is involved and a fresh install still gets real history.
+  handle('live:refresh', () => refreshLiveData())
+  handle('live:status', () => liveStatus())
 
   /* ------------------------------------------------------------------ system */
   handle('system:boot', () => ({

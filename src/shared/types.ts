@@ -224,7 +224,8 @@ export interface GrowthRow {
   days: number
   /** gained / days */
   perDay: number
-  source: 'stargazers-api' | 'snapshot' | 'events-api' | 'unavailable'
+  /** 'shared' = precomputed by the project's GitHub Action and published to data/live */
+  source: 'stargazers-api' | 'snapshot' | 'events-api' | 'shared' | 'unavailable'
   /** true when the underlying window was shorter than requested (hot repo) */
   approx?: boolean
   /** how much of the requested window the measurement actually covers */
@@ -289,6 +290,13 @@ export interface Settings {
    */
   seenLibraryAt?: number
   seenAgents?: string[]
+  /**
+   * When the shared star data was last pulled from this project's repository,
+   * and when that data was published upstream. The app reports the age rather
+   * than pretending a refresh happened.
+   */
+  liveUpdatedAt?: number
+  liveDate?: string | null
 }
 
 export interface SearchResult {

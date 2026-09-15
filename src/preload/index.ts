@@ -86,6 +86,10 @@ const api = {
     refresh: () => call<any>('profile:refresh'),
     starred: () => call<any[]>('profile:starred')
   },
+  live: {
+    refresh: () => call<any>('live:refresh'),
+    status: () => call<any>('live:status')
+  },
   launch: {
     targets: () => call<any[]>('launch:targets'),
     prepare: (req: {

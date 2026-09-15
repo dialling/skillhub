@@ -313,6 +313,9 @@ const DICT: Dict = {
   'toast.uninstalled': ['已卸载', 'Uninstalled'],
   'toast.removed': ['已移出库', 'Removed from library'],
   'toast.synced': ['已同步', 'Synced'],
+  'toast.liveUpdated': ['已同步共享数据：{n} 个仓库星数更新，{rows} 条增长记录', 'Synced shared data: {n} star counts updated, {rows} growth rows'],
+  'toast.liveNoGrowth': ['已同步 {n} 个仓库的星数；增长榜还在积累中', 'Synced {n} star counts; the growth board is still accumulating'],
+  'toast.liveFailed': ['共享数据拉取失败：{msg}', 'Could not fetch shared data: {msg}'],
   'toast.failed': ['操作失败：{msg}', 'Failed: {msg}'],
   'toast.loginOk': ['已登录 @{login}', 'Signed in as @{login}'],
   'toast.settingsSaved': ['设置已更新', 'Settings updated']

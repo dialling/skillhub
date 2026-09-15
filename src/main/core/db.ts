@@ -2,6 +2,7 @@ import { JsonStore, registerStore } from './store'
 export { flushAll } from './store'
 import { defaultLibraryDir } from './paths'
 import type {
+  GrowthRow,
   ActivityEvent,
   InstallRecord,
   LibraryItem,
@@ -25,6 +26,8 @@ export const DEFAULT_SETTINGS: Settings = {
   recentWorkspaces: [],
   seenLibraryAt: undefined,
   seenAgents: undefined,
+  liveUpdatedAt: undefined,
+  liveDate: null,
   firstRunDone: false
 }
 
@@ -33,6 +36,9 @@ export const library = new JsonStore<{ items: LibraryItem[] }>('library', { item
 export const installs = new JsonStore<{ records: InstallRecord[] }>('installs', { records: [] })
 export const stars = new JsonStore<{
   history: Record<string, StarSnapshot[]>
+  /** precomputed leaderboards published by the project's own GitHub Action */
+  sharedGrowth: Record<string, GrowthRow[]>
+  sharedAt: number | null
   growth: Record<
     string,
     {
@@ -44,7 +50,7 @@ export const stars = new JsonStore<{
       coveredHours?: number
     }
   >
-}>('stars', { history: {}, growth: {} })
+}>('stars', { history: {}, growth: {}, sharedGrowth: {}, sharedAt: null })
 export const activity = new JsonStore<{ events: ActivityEvent[] }>('activity', { events: [] })
 export const cache = new JsonStore<{
   readme: Record<string, { at: number; text: string }>

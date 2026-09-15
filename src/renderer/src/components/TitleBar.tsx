@@ -12,7 +12,7 @@ export function TitleBar(): React.JSX.Element {
   const view = useStore((s) => s.view)
   const toggleLang = useStore((s) => s.toggleLang)
   const settings = useStore((s) => s.settings)
-  const refreshRate = useStore((s) => s.refreshRate)
+  const refreshAll = useStore((s) => s.refreshAll)
   const searching = useStore((s) => s.searching)
   const refreshing = useStore((s) => s.refreshing)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -90,7 +90,7 @@ export function TitleBar(): React.JSX.Element {
         <button
           className="btn ghost sm"
           title={t('common.refresh')}
-          onClick={() => void refreshRate(true)}
+          onClick={() => void refreshAll()}
           disabled={refreshing}
         >
           <RefreshCw size={13} className={refreshing ? 'spin' : undefined} />

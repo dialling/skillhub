@@ -122,6 +122,7 @@ interface State {
   refreshAgents: () => Promise<void>
   refreshInstalls: () => Promise<void>
   refreshRate: (force?: boolean) => Promise<void>
+  refreshAll: () => Promise<void>
   loadCatalog: () => Promise<void>
   loadGrowth: (days?: 1 | 7 | 30, useApi?: boolean) => Promise<void>
   loadTrending: (days?: 1 | 7 | 30) => Promise<void>
@@ -517,8 +518,40 @@ export const useStore = create<State>((set, get) => ({
     set({ installMap })
   },
 
-  async refreshRate(force = false) {
+  /**
+   * The refresh button. Pulls the shared star data and growth leaderboard from
+   * this project's repository first — one request, no GitHub API budget — then
+   * tops up the local rate-limit reading.
+   */
+  async refreshAll() {
     set({ refreshing: true })
+    try {
+      const live = await api.live.refresh()
+      if (live.ok) {
+        const rows = Object.values(live.growthRows).reduce((n, v) => n + v, 0)
+        const settings = await api.settings.get()
+        set({ settings })
+        get().toast(
+          'success',
+          rows > 0
+            ? get().t('toast.liveUpdated', { n: live.changed, rows })
+            : get().t('toast.liveNoGrowth', { n: live.changed })
+        )
+        // star counts and the leaderboard both come from the published file
+        void get().loadCatalog()
+        if (get().view === 'charts') void get().loadGrowth(get().growthWindow, false)
+      } else {
+        get().toast('error', get().t('toast.liveFailed', { msg: live.error || live.source }))
+      }
+    } catch (err: any) {
+      get().toast('error', get().t('toast.failed', { msg: err?.message || err }))
+    } finally {
+      await get().refreshRate(true)
+      set({ refreshing: false })
+    }
+  },
+
+  async refreshRate(force = false) {
     try {
       const rate = await api.github.rate(force)
       set({ rate })
@@ -536,8 +569,6 @@ export const useStore = create<State>((set, get) => ({
       }
     } catch {
       /* ignore */
-    } finally {
-      set({ refreshing: false })
     }
   },
 

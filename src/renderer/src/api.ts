@@ -120,6 +120,16 @@ export interface SkillHubApi {
     refresh(): Promise<GitHubUser | null>
     starred(): Promise<{ fullName: string; stars: number; avatarUrl?: string; descriptionEn?: string }[]>
   }
+  live: {
+    refresh(): Promise<{
+      ok: boolean
+      source: string
+      error?: string
+      changed: number
+      growthRows: Record<string, number>
+    }>
+    status(): Promise<{ at: number | null; publishedAt: string | null }>
+  }
   launch: {
     targets(): Promise<LaunchTarget[]>
     prepare(req: {
