@@ -14,9 +14,11 @@ import {
   FlaskConical,
   HardDriveDownload,
   Terminal,
-  LogOut
+  LogOut,
+  Palette
 } from 'lucide-react'
 import type { TranslationConfig } from '@shared/types'
+import { THEMES, THEME_ORDER, type ThemeId } from '../theme'
 import { api, fmtBytes } from '../api'
 import { useStore } from '../store'
 
@@ -388,6 +390,39 @@ export function SettingsView(): React.JSX.Element {
                 {t('common.save')}
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Appearance ------------------------------------------------------- */}
+      <div className="panel" style={{ marginBottom: 16 }}>
+        <div className="panel-head">
+          <Palette size={13} />
+          {t('settings.appearance')}
+        </div>
+        <div className="panel-body">
+          <div className="hint" style={{ marginBottom: 14 }}>{t('settings.appearanceHint')}</div>
+          <div className="theme-grid">
+            {THEME_ORDER.map((id) => {
+              const theme = THEMES[id]
+              const active = (settings?.theme || 'azure') === id
+              return (
+                <button
+                  key={id}
+                  className={`theme-tile${active ? ' active' : ''}`}
+                  onClick={() => void updateSettings({ theme: id })}
+                  title={lang === 'zh' ? theme.zh : theme.en}
+                >
+                  <span className="theme-swatches">
+                    <span style={{ background: theme.accent }} />
+                    <span style={{ background: theme.second }} />
+                    <span style={{ background: theme.third }} />
+                  </span>
+                  <span className="theme-name">{lang === 'zh' ? theme.zh : theme.en}</span>
+                  {active && <Check size={12} className="theme-check" />}
+                </button>
+              )
+            })}
           </div>
         </div>
       </div>

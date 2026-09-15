@@ -106,6 +106,16 @@ function stripComments(src) {
 
 /* ----------------------------------------------------------- dictionary --- */
 
+/**
+ * Files that hold bilingual DATA rather than UI copy. Their Chinese literals are
+ * the `zh` half of a `{zh, en}` pair, so they are content, not a missed
+ * translation. Everything else in the renderer must go through the dictionary.
+ */
+const BILINGUAL_DATA_FILES = new Set([
+  'src/renderer/src/i18n.ts',
+  'src/renderer/src/theme.ts'
+])
+
 const i18nPath = join(root, 'src', 'renderer', 'src', 'i18n.ts')
 const i18nSrc = readFileSync(i18nPath, 'utf8')
 const dictKeys = new Set([...i18nSrc.matchAll(/^\s*'([^']+)':\s*\[/gm)].map((m) => m[1]))
@@ -156,7 +166,7 @@ const hardcoded = []
 
 /** Renderer: any CJK left in code (comments already stripped) is UI-facing. */
 for (const file of walk(join(root, 'src', 'renderer', 'src'))) {
-  if (file === i18nPath) continue
+  if (BILINGUAL_DATA_FILES.has(relative(root, file))) continue
   const stripped = stripComments(readFileSync(file, 'utf8'))
   stripped.split('\n').forEach((line, idx) => {
     if (!CJK.test(line)) return

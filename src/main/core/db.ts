@@ -26,6 +26,7 @@ export const DEFAULT_SETTINGS: Settings = {
   customAgents: [],
   projectDir: null,
   sidebarOpen: true,
+  theme: 'azure',
   firstRunDone: false
 }
 

@@ -21,11 +21,14 @@
   --text-2: #6b7d99;
   --text-3: #4a586e;
 
+  /* Overwritten at runtime by src/renderer/src/theme.ts */
   --accent: #2f81f7;
   --accent-hi: #58a6ff;
   --accent-dim: rgba(47, 129, 247, 0.16);
   --cyan: #22d3ee;
   --violet: #8b5cf6;
+  --ambient-1: rgba(47, 129, 247, 0.11);
+  --ambient-2: rgba(139, 92, 246, 0.09);
   --ok: #3fb950;
   --ok-dim: rgba(63, 185, 80, 0.15);
   --warn: #d29922;
@@ -191,9 +194,10 @@ a:hover {
   grid-template-rows: var(--h-title) 1fr var(--h-status);
   height: 100vh;
   background:
-    radial-gradient(1100px 620px at 12% -10%, rgba(47, 129, 247, 0.11), transparent 62%),
-    radial-gradient(900px 520px at 100% 0%, rgba(139, 92, 246, 0.09), transparent 58%),
+    radial-gradient(1100px 620px at 12% -10%, var(--ambient-1), transparent 62%),
+    radial-gradient(900px 520px at 100% 0%, var(--ambient-2), transparent 58%),
     var(--bg-0);
+  transition: background 0.35s ease;
 }
 
 .app-body {
@@ -237,14 +241,9 @@ a:hover {
 }
 
 .brand-mark {
-  width: 22px;
-  height: 22px;
-  border-radius: 7px;
   display: grid;
   place-items: center;
-  background: linear-gradient(135deg, var(--accent) 0%, var(--violet) 100%);
-  box-shadow: 0 0 14px rgba(47, 129, 247, 0.5);
-  color: #fff;
+  filter: drop-shadow(0 0 8px rgba(47, 129, 247, 0.45));
 }
 
 .brand-sub {
@@ -687,7 +686,7 @@ a:hover {
   background: linear-gradient(180deg, var(--accent) 0%, #1f6fe0 100%);
   border-color: rgba(120, 180, 255, 0.45);
   color: #fff;
-  box-shadow: 0 2px 12px -2px rgba(47, 129, 247, 0.6);
+  box-shadow: 0 2px 12px -2px var(--accent-dim);
 }
 .btn.primary:hover {
   background: linear-gradient(180deg, var(--accent-hi) 0%, var(--accent) 100%);
@@ -2603,4 +2602,55 @@ button.status-item:hover {
   flex: 1;
   height: 1px;
   background: linear-gradient(90deg, var(--border-2), transparent);
+}
+
+/* Appearance picker: swatches read faster than names at this size. */
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 9px;
+}
+.theme-tile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--bg-3), var(--bg-2));
+  cursor: pointer;
+  transition: border-color 0.14s, background 0.14s, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.theme-tile:hover {
+  border-color: var(--border-3);
+  background: var(--bg-4);
+  transform: translateY(-2px);
+}
+.theme-tile.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent-dim) inset;
+}
+.theme-swatches {
+  display: flex;
+  flex: none;
+}
+.theme-swatches span {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0, 0, 0, 0.35);
+}
+.theme-swatches span + span {
+  margin-left: -5px;
+}
+.theme-name {
+  font-size: 12.5px;
+  font-weight: 560;
+  color: var(--text-0);
+}
+.theme-check {
+  margin-left: auto;
+  color: var(--accent-hi);
+  flex: none;
 }

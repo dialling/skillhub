@@ -255,6 +255,8 @@ export interface Settings {
   projectDir: string | null
   /** whether the contextual sidebar is expanded */
   sidebarOpen?: boolean
+  /** interface colour scheme id (see src/renderer/src/theme.ts) */
+  theme?: string
   curatedUpdatedAt?: number
   firstRunDone?: boolean
 }

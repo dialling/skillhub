@@ -27,6 +27,11 @@ SkillHub 是一个 macOS 桌面应用（Electron + React），把「登录 GitHu
 | ![设置](docs/screenshots/settings.jpg) | ![英文](docs/screenshots/detail-en.jpg) |
 | 已登录时直接显示账号与凭据来源，不再要求输入 Token | 完整双语，切换后界面无一处语言混杂 |
 
+**应用图标** —— 六边形代表 SKILL.md 这个"包"，中心发光节点通过三条辐条连向三个卫星节点，
+寓意「一份技能，分发给多个 agent」。
+
+<p align="center"><img src="build/icon.png" width="120" alt="SkillHub icon"></p>
+
 ---
 
 ## 快速开始
@@ -218,6 +223,14 @@ npm run dev
 *由 `scripts/update-readme-agents.mjs` 从 `data/agent-registry.json` 生成，请勿手改。*
 <!-- AGENT-TABLE:END -->
 
+### 界面配色
+七套配色在设置里一键切换，**整个界面一起变**（背景光晕、按钮、图表、侧边栏图标、状态栏）：
+深空蓝 / 灰蓝绿 / 石墨灰 / 翡翠绿 / 紫罗兰 / 琥珀橙 / 玫红。
+
+实现上只有一组 CSS 自定义属性（`--accent` / `--accent-hi` / `--accent-dim` / `--cyan` /
+`--violet` / `--ambient-1` / `--ambient-2`），主题就是往 `:root` 上写这几个值，
+所以没有任何组件需要知道「主题」这个概念。
+
 ### 界面细节
 - **文字可框选复制**：技能简介、agent 路径、错误信息等都能直接选中复制；
   只有按钮、标签、导航这类控件不参与选择，避免拖拽时误选。
@@ -292,6 +305,9 @@ src/
       translate.ts        可选 AI 翻译（任意 OpenAI 兼容接口）
   preload/index.ts        contextBridge API
   renderer/src/           React 界面
+build/
+  icon.svg                应用图标源文件（六边形技能包 + 一对多分发）
+  icon.png / icon.icns    1024px PNG 与 macOS 图标（Dock、关于面板）
 data/
   curated-catalog.json    精选技能仓库（含功能分类、中英双语「一眼看懂」简介）
   scenarios.json          13 个场景（「我要做…」）及其推荐仓库

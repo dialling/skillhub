@@ -273,6 +273,8 @@ const DICT: Dict = {
   'settings.refreshCatalog': ['刷新星标', 'Refresh stars'],
   'settings.projectDir': ['项目目录', 'Project directory'],
   'settings.projectHint': ['用于把技能安装到项目级目录（如 .claude/skills）', 'Used to install into project-level dirs (e.g. .claude/skills)'],
+  'settings.appearance': ['界面配色', 'Appearance'],
+  'settings.appearanceHint': ['选择强调色，整个界面（含背景光晕、按钮、图表）会一起变化。', 'Pick an accent colour — the whole interface shifts with it, including background glows, buttons and charts.'],
   'settings.about': ['关于', 'About'],
   'settings.saved': ['已保存', 'Saved'],
   'settings.dangerZone': ['数据', 'Data'],

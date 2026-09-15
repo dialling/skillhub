@@ -14,6 +14,7 @@ import type {
   SkillEntry
 } from '@shared/types'
 import { makeT, type Lang } from './i18n'
+import { applyTheme } from './theme'
 
 export type ViewKey = 'store' | 'library' | 'charts' | 'agents' | 'profile' | 'settings'
 
@@ -186,6 +187,7 @@ export const useStore = create<State>((set, get) => ({
     const settings = await api.settings.get()
     const lang = settings.lang || 'zh'
     set({ settings, lang, t: makeT(lang), sidebarOpen: settings.sidebarOpen !== false })
+    applyTheme(settings.theme)
     await Promise.all([
       get().refreshLibrary(),
       get().refreshAgents(),
@@ -473,6 +475,7 @@ export const useStore = create<State>((set, get) => ({
   async updateSettings(patch) {
     const settings = await api.settings.update(patch)
     set({ settings })
+    if (patch.theme) applyTheme(patch.theme)
     if (patch.lang) {
       set({ lang: patch.lang, t: makeT(patch.lang) })
       await api.system.rebuildMenu().catch(() => {})

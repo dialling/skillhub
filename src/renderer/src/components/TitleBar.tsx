@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Search, X, Languages, RefreshCw, User as UserIcon } from 'lucide-react'
 import { useStore } from '../store'
+import { AppMark } from './AppMark'
 
 export function TitleBar(): React.JSX.Element {
   const t = useStore((s) => s.t)
@@ -35,13 +36,7 @@ export function TitleBar(): React.JSX.Element {
   return (
     <header className="titlebar">
       <div className="brand">
-        <div className="brand-mark">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 3 3 7.5v9L12 21l9-4.5v-9L12 3Z" />
-            <path d="M12 12v9" />
-            <path d="m3 7.5 9 4.5 9-4.5" />
-          </svg>
-        </div>
+        <AppMark size={22} />
         <span>SkillHub</span>
         <span className="brand-sub">{t('app.tagline')}</span>
       </div>

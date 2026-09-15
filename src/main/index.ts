@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, Menu, nativeImage, shell } from 'electron'
 import { join } from 'node:path'
 import { registerIpc } from './ipc'
 import { flushAll, settings, snapshotStars } from './core/db'
@@ -6,6 +6,7 @@ import { libraryItems } from './core/library'
 import { curatedCatalog } from './core/catalog'
 import { ensureEnabledAgents } from './core/agents'
 import { m } from './core/msg'
+import { appIconPath } from './core/paths'
 import { probeRawHost } from './core/github'
 
 // When ELECTRON_RUN_AS_NODE is present in the environment the Electron binary
@@ -24,8 +25,20 @@ if (!app || typeof app.getPath !== 'function') {
 
 let mainWindow: BrowserWindow | null = null
 
+function appIcon(): Electron.NativeImage | undefined {
+  const p = appIconPath()
+  if (!p) return undefined
+  const img = nativeImage.createFromPath(p)
+  return img.isEmpty() ? undefined : img
+}
+
 function createWindow(): void {
+  const icon = appIcon()
+  // Without this the Dock shows the generic Electron logo.
+  if (process.platform === 'darwin' && app.dock && icon) app.dock.setIcon(icon)
+
   mainWindow = new BrowserWindow({
+    icon,
     width: 1480,
     height: 940,
     minWidth: 1040,
