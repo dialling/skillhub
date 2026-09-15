@@ -80,7 +80,6 @@ const DICT: Dict = {
   'store.searching': ['正在搜索 GitHub…', 'Searching GitHub…'],
   'store.resultCount': ['共 {n} 个结果', '{n} results'],
   'store.liveSearch': ['GitHub 实时搜索', 'Live GitHub search'],
-  'store.curatedCatalog': ['内置精选目录', 'Bundled catalog'],
 
   'card.add': ['入库', 'Add'],
   'card.inLibrary': ['已入库', 'In library'],
@@ -294,7 +293,7 @@ const DICT: Dict = {
   'settings.tokenSaved': ['Token 已保存', 'Token saved'],
   'settings.credentialSource': ['凭据来源', 'Credential source'],
   'settings.notConnected': ['未连接 GitHub', 'Not connected to GitHub'],
-  'settings.notConnectedHint': ['未连接时仍可浏览内置精选目录，但无法搜索 GitHub 或入库私有仓库。', 'Without a connection you can still browse the bundled catalog, but you cannot search GitHub or add private repos.'],
+  'settings.notConnectedHint': ['未连接时仍可浏览商店里已有的仓库，但无法搜索 GitHub 或入库私有仓库。', 'Without a connection you can still browse the repositories already in the store, but you cannot search GitHub or add private repos.'],
 
   'settings.library': ['库目录', 'Library directory'],
   'settings.libraryHint': ['技能仓库的克隆位置', 'Where skill repositories are cloned'],

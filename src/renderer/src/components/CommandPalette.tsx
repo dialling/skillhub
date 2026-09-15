@@ -111,7 +111,7 @@ export function CommandPalette(): React.JSX.Element | null {
         id: `cat:${repo.fullName}`,
         label: repo.name,
         sub: repo.fullName,
-        group: t('store.curatedCatalog'),
+        group: t('nav.store'),
         icon: <Store size={14} />,
         run: () => {
           openDetail(repo.fullName)

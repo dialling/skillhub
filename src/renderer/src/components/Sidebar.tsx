@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   Circle,
   Bot,
-  Sparkles,
   Target,
   TrendingUp,
   Info,
@@ -126,18 +125,6 @@ function StoreSidebar(): React.JSX.Element {
         </button>
       </SideSection>
 
-      <div className="side-note">
-        <div className="flex" style={{ gap: 6, marginBottom: 6 }}>
-          <Info size={12} />
-          <strong>{t('store.curatedCatalog')}</strong>
-        </div>
-        {t('charts.hint')}
-        {catalogAt && (
-          <div className="mono dim" style={{ marginTop: 8, fontSize: 10.5 }}>
-            {new Date(catalogAt).toLocaleDateString()}
-          </div>
-        )}
-      </div>
     </aside>
   )
 }

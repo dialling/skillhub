@@ -204,16 +204,6 @@ export function StoreView(): React.JSX.Element {
           </div>
           <div className="view-sub">{t('store.subtitle')}</div>
         </div>
-        <div className="view-head-actions">
-          <span className="chip mono">
-            <Layers size={10} />
-            {catalog.length} repos · {totalSkills} skills
-          </span>
-          <span className="chip mono">
-            <Sparkles size={10} />
-            {t('store.curatedCatalog')}
-          </span>
-        </div>
       </div>
 
       {/* Scenarios: "what are you trying to do?" — the fastest way in. */}
