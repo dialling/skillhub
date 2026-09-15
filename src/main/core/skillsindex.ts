@@ -37,6 +37,51 @@ function cacheFile(name: string): string {
   return join(cacheDir(), name)
 }
 
+/**
+ * Which mirror is actually current.
+ *
+ * jsDelivr caches a branch ref for up to twelve hours, so it can be serving
+ * yesterday's copy while the raw mirror already has today's — measured exactly
+ * that: a shard with 1,373 new labels read as 0 through the CDN and correctly
+ * through raw. Since the index carries an `updatedAt`, both mirrors are asked
+ * for it and the newer one wins; ties go to the CDN, which is faster and
+ * generally the more reliable of the two.
+ */
+type Mirror = 'cdn' | 'raw'
+let preferredMirror: Mirror | null = null
+
+function urlFor(mirror: Mirror, path: string): string {
+  return mirror === 'cdn'
+    ? `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/${path}`
+    : `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/${path}`
+}
+
+function mirrorUrls(path: string): string[] {
+  const order: Mirror[] = preferredMirror === 'raw' ? ['raw', 'cdn'] : ['cdn', 'raw']
+  return order.map((m) => urlFor(m, path))
+}
+
+/** Ask both mirrors for the index and keep whichever is newer. */
+async function chooseMirror(): Promise<void> {
+  const mirrors: Mirror[] = ['cdn', 'raw']
+  const results = await Promise.all(
+    mirrors.map(async (m) => {
+      const text = await fetchText(urlFor(m, `${BASE}/index.json`), 8000)
+      if (!text) return null
+      try {
+        const parsed = JSON.parse(text) as SkillIndex
+        return { mirror: m, updatedAt: parsed.updatedAt || '' }
+      } catch {
+        return null
+      }
+    })
+  )
+  const ok = results.filter(Boolean) as { mirror: Mirror; updatedAt: string }[]
+  if (!ok.length) return
+  ok.sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1))
+  preferredMirror = ok[0].mirror
+}
+
 async function fetchText(url: string, timeoutMs: number): Promise<string | null> {
   try {
     const res = await fetch(url, {
@@ -52,11 +97,7 @@ async function fetchText(url: string, timeoutMs: number): Promise<string | null>
 
 /** Try each mirror in turn, then the authenticated API as a last resort. */
 async function fetchFromMirrors(path: string, timeoutMs = 15000): Promise<string | null> {
-  const urls = [
-    `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@${BRANCH}/${path}`,
-    `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/${path}`
-  ]
-  for (const url of urls) {
+  for (const url of mirrorUrls(path)) {
     const text = await fetchText(url, timeoutMs)
     if (text) return text
   }
@@ -80,6 +121,7 @@ async function fetchFromMirrors(path: string, timeoutMs = 15000): Promise<string
 
 /** What shards exist. Cached for a day; it changes once per scheduled run. */
 export async function skillIndex(): Promise<SkillIndex> {
+  await chooseMirror()
   const cached = cacheFile('index.json')
   if (existsSync(cached)) {
     try {
