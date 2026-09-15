@@ -31,21 +31,35 @@ export function BulkInstallModal({
   const [filter, setFilter] = useState('')
   const [busy, setBusy] = useState(false)
 
-  // Start from what is enabled, but as a suggestion the user can change.
+  /*
+    Default to the agents this machine actually has.
+
+    Starting from `enabled` alone left out half of them: three of the six agents
+    installed here were not switched on, so the skills would have gone to three
+    directories while three other real agents sat unticked and unexplained. Being
+    detected is the stronger signal of "I use this" — `enabled` is a preference
+    someone may simply never have visited.
+  */
+  const suggested = useMemo(
+    () => agents.filter((a) => a.detected || a.enabled).map((a) => a.id),
+    [agents]
+  )
+
   useEffect(() => {
     if (!open) return
-    setChosen(new Set(agents.filter((a) => a.enabled).map((a) => a.id)))
+    setChosen(new Set(suggested))
     setFilter('')
-  }, [open, agents])
+  }, [open, suggested])
 
   const shown = useMemo(() => {
     const q = filter.trim().toLowerCase()
     const list = q ? agents.filter((a) => a.name.toLowerCase().includes(q)) : agents
     // Enabled and detected first: the ones that will actually be written to.
+    // Installed first: those are the ones a person is choosing between.
     return [...list].sort(
       (a, b) =>
-        Number(b.enabled) - Number(a.enabled) ||
         Number(b.detected) - Number(a.detected) ||
+        Number(b.enabled) - Number(a.enabled) ||
         a.name.localeCompare(b.name)
     )
   }, [agents, filter])
@@ -99,11 +113,8 @@ export function BulkInstallModal({
           </div>
 
           <div className="bulk-actions">
-            <button
-              className="btn ghost sm"
-              onClick={() => setChosen(new Set(agents.filter((a) => a.enabled).map((a) => a.id)))}
-            >
-              {t('bulk.pickEnabled')}
+            <button className="btn ghost sm" onClick={() => setChosen(new Set(suggested))}>
+              {t('bulk.pickDetected')}
             </button>
             <button className="btn ghost sm" onClick={() => setChosen(new Set(agents.map((a) => a.id)))}>
               {t('bulk.pickAll')}
@@ -135,13 +146,15 @@ export function BulkInstallModal({
                   {managedHere > 0 && (
                     <span className="chip tiny ok">{t('bulk.alreadyThere', { n: managedHere })}</span>
                   )}
-                  {a.enabled && <span className="chip tiny">{t('agents.enabled')}</span>}
-                  {!a.detected && (
+                  {a.detected ? (
+                    <span className="chip tiny ok">{t('bulk.detected')}</span>
+                  ) : (
                     <span className="chip tiny warn" title={t('bulk.notDetectedHint')}>
                       <TriangleAlert size={9} />
                       {t('bulk.notDetected')}
                     </span>
                   )}
+                  {a.enabled && <span className="chip tiny">{t('agents.enabled')}</span>}
                 </span>
               </label>
               )
