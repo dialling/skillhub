@@ -695,7 +695,8 @@
         "codeFiles": 0,
         "srcFiles": 0,
         "manifests": []
-      }
+      },
+      "agent": "claude-code"
     },
     {
       "fullName": "anthropics/skills",
@@ -913,7 +914,8 @@
         "manifests": [
           "package.json"
         ]
-      }
+      },
+      "agent": "claude-code"
     },
     {
       "fullName": "nextlevelbuilder/ui-ux-pro-max-skill",
@@ -1896,7 +1898,8 @@
         "manifests": [
           "requirements.txt"
         ]
-      }
+      },
+      "agent": "claude-code"
     },
     {
       "fullName": "ComposioHQ/awesome-claude-skills",
@@ -3126,7 +3129,8 @@
           "Makefile",
           "requirements.txt"
         ]
-      }
+      },
+      "agent": "claude-code"
     },
     {
       "fullName": "VoltAgent/awesome-openclaw-skills",
@@ -3270,7 +3274,8 @@
         "codeFiles": 66,
         "srcFiles": 0,
         "manifests": []
-      }
+      },
+      "agent": "claude-code"
     },
     {
       "fullName": "heygen-com/hyperframes",
@@ -3514,7 +3519,8 @@
           "package.json",
           "pyproject.toml"
         ]
-      }
+      },
+      "agent": "claude-code"
     },
     {
       "fullName": "zhayujie/CowAgent",
@@ -6869,7 +6875,8 @@
         "manifests": [
           "package.json"
         ]
-      }
+      },
+      "agent": "copilot"
     },
     {
       "fullName": "emilkowalski/skills",
@@ -6990,7 +6997,8 @@
         "codeFiles": 66,
         "srcFiles": 0,
         "manifests": []
-      }
+      },
+      "agent": "claude-code"
     },
     {
       "fullName": "zhaoxuya520/reverse-skill",
@@ -8405,7 +8413,8 @@
         "manifests": [
           "pyproject.toml"
         ]
-      }
+      },
+      "agent": "claude-code"
     },
     {
       "fullName": "iOfficeAI/OfficeCLI",
@@ -8605,7 +8614,8 @@
         "codeFiles": 60,
         "srcFiles": 0,
         "manifests": []
-      }
+      },
+      "agent": "codex"
     },
     {
       "fullName": "OthmanAdi/planning-with-files",
@@ -9649,7 +9659,8 @@
         "codeFiles": 0,
         "srcFiles": 0,
         "manifests": []
-      }
+      },
+      "agent": "claude-code"
     },
     {
       "fullName": "KKKKhazix/khazix-skills",
@@ -11101,7 +11112,8 @@
         "codeFiles": 35,
         "srcFiles": 0,
         "manifests": []
-      }
+      },
+      "agent": "codex"
     },
     {
       "fullName": "wanshuiyin/Auto-claude-code-research-in-sleep",
@@ -12538,7 +12550,8 @@
         "manifests": [
           "Makefile"
         ]
-      }
+      },
+      "agent": "claude-code"
     },
     {
       "fullName": "LiamGvchi/gc-minimal-zine-poster",
@@ -14072,7 +14085,8 @@
         "codeFiles": 0,
         "srcFiles": 0,
         "manifests": []
-      }
+      },
+      "agent": "claude-code"
     },
     {
       "fullName": "elementalsouls/Claude-BugHunter",
@@ -14401,7 +14415,8 @@
         "codeFiles": 0,
         "srcFiles": 0,
         "manifests": []
-      }
+      },
+      "agent": "codex"
     },
     {
       "fullName": "microsoft/skill-recorder",
@@ -14453,7 +14468,8 @@
           "package.json",
           "tsconfig.json"
         ]
-      }
+      },
+      "agent": "copilot"
     },
     {
       "fullName": "zLanqing/codex-claude-academic-skills",
@@ -14516,7 +14532,8 @@
         "codeFiles": 0,
         "srcFiles": 0,
         "manifests": []
-      }
+      },
+      "agent": "codex"
     },
     {
       "fullName": "browserbase/skills",
@@ -17286,7 +17303,8 @@
         "manifests": [
           "package.json"
         ]
-      }
+      },
+      "agent": "codex"
     },
     {
       "fullName": "jiweiyeah/Skills-Manager",

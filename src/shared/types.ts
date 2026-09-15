@@ -104,6 +104,28 @@ export interface SkillIndexEntry {
   f: string
   /** repository stars, so the list can rank */
   s: number
+  /**
+   * The agent this skill is written for, when that is known.
+   *
+   * Absent means the skill is not specific to one agent — which is the honest
+   * answer for most of them, and the reason this is optional rather than a
+   * "universal" label nobody needs to read.
+   */
+  a?: string
+}
+
+/** Display names for the agents a skill can be tied to. */
+export const AGENT_SKILL_LABELS: Record<string, { zh: string; en: string }> = {
+  'claude-code': { zh: 'Claude Code 专用', en: 'Claude Code' },
+  codex: { zh: 'Codex 专用', en: 'Codex' },
+  cursor: { zh: 'Cursor 专用', en: 'Cursor' },
+  copilot: { zh: 'Copilot 专用', en: 'Copilot' },
+  'gemini-cli': { zh: 'Gemini CLI 专用', en: 'Gemini CLI' },
+  windsurf: { zh: 'Windsurf 专用', en: 'Windsurf' },
+  opencode: { zh: 'opencode 专用', en: 'opencode' },
+  'roo-code': { zh: 'Roo Code 专用', en: 'Roo Code' },
+  kiro: { zh: 'Kiro 专用', en: 'Kiro' },
+  antigravity: { zh: 'Antigravity 专用', en: 'Antigravity' }
 }
 
 export interface SkillShardInfo {
@@ -121,6 +143,12 @@ export interface RepoMeta {
   fn?: FnCategory
   /** whether this is a skill pack, an application, or reference material */
   repoKind?: RepoKind
+  /**
+   * Set when the repository states it targets exactly one agent — "My Codex
+   * Skills", "marketing skills for Claude Code". Absent means it is not tied to
+   * one, which is the common case.
+   */
+  agent?: string
   /** evidence behind repoKind, kept so the classification is auditable */
   repoFacts?: {
     language: string | null

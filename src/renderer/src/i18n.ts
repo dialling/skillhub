@@ -58,6 +58,8 @@ const DICT: Dict = {
   'store.scenarios': ['我要做…', 'What do you want to do?'],
   'store.entry': ['浏览', 'Browse'],
   'store.byFunction': ['按功能分类', 'By function'],
+  'skills.agentFilter': ['适用', 'For'],
+  'skills.agentHint': ['这个技能是给该智能体写的', 'This skill is written for that agent'],
   'skills.tab.repos': ['仓库', 'Repositories'],
   'skills.tab.skills': ['技能', 'Skills'],
   'skills.searchPlaceholder': ['搜索技能名或功能…', 'Search skill names or what they do…'],

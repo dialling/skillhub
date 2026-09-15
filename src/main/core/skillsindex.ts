@@ -109,15 +109,29 @@ export async function skillIndex(): Promise<SkillIndex> {
   return { updatedAt: '', total: 0, shards: {} }
 }
 
-/** One category's skills, from cache when possible. */
-export async function skillShard(fn: string): Promise<SkillIndexEntry[]> {
+/**
+ * One category's skills.
+ *
+ * The cache is keyed to the index's `updatedAt`, not just to existence: the
+ * published shards are rebuilt by the scheduled job, and a cache that never
+ * expires would serve yesterday's copy forever — which is exactly how the agent
+ * labels added to a shard failed to appear. An index we could not read means we
+ * cannot tell whether the cache is current, and a stale list is worse than a
+ * refetch.
+ */
+export async function skillShard(fn: string, index?: SkillIndex): Promise<SkillIndexEntry[]> {
   const safe = fn.replace(/[^a-z]/gi, '')
   if (!safe) return []
+  const meta = index || (await skillIndex())
   const file = cacheFile(`${safe}.json`)
   if (existsSync(file)) {
     try {
-      const parsed = JSON.parse(readFileSync(file, 'utf8')) as { skills?: SkillIndexEntry[] }
-      if (Array.isArray(parsed.skills)) return parsed.skills
+      const parsed = JSON.parse(readFileSync(file, 'utf8')) as {
+        skills?: SkillIndexEntry[]
+        indexUpdatedAt?: string
+      }
+      const current = !meta.updatedAt || parsed.indexUpdatedAt === meta.updatedAt
+      if (current && Array.isArray(parsed.skills)) return parsed.skills
     } catch {
       /* refetch */
     }
@@ -128,7 +142,7 @@ export async function skillShard(fn: string): Promise<SkillIndexEntry[]> {
     const parsed = JSON.parse(text) as { skills?: SkillIndexEntry[] }
     if (!Array.isArray(parsed.skills)) return []
     mkdirSync(cacheDir(), { recursive: true })
-    writeFileSync(file, text, 'utf8')
+    writeFileSync(file, JSON.stringify({ ...parsed, indexUpdatedAt: meta.updatedAt }), 'utf8')
     return parsed.skills
   } catch {
     return []
@@ -143,7 +157,7 @@ export async function searchSkillIndex(term: string, limit = 60): Promise<SkillI
   const fns = Object.keys(index.shards)
   const all: SkillIndexEntry[] = []
   for (const fn of fns) {
-    const list = await skillShard(fn)
+    const list = await skillShard(fn, index)
     for (const s of list) {
       if (s.n.toLowerCase().includes(q) || (s.d || '').toLowerCase().includes(q)) all.push(s)
     }

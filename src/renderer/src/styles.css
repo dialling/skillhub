@@ -3553,3 +3553,12 @@ button.status-item:hover {
   gap: 5px;
   flex: none;
 }
+
+/* Marks a skill as written for one specific agent. Deliberately quiet: most
+   skills are not, and a loud badge on the minority would misrepresent them. */
+.chip.agent-chip {
+  color: var(--violet);
+  border-color: rgba(var(--third-rgb), 0.4);
+  background: rgba(var(--third-rgb), 0.1);
+  flex: none;
+}

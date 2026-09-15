@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Search, Layers, Star, ExternalLink, Plus, Check, X } from 'lucide-react'
 import type { SkillIndexEntry } from '@shared/types'
-import { FN_LABELS, type FnCategory } from '@shared/types'
+import { AGENT_SKILL_LABELS, FN_LABELS, type FnCategory } from '@shared/types'
 import { fmtStars } from '../api'
 import { fnColor } from './Sidebar'
 import { useStore } from '../store'
@@ -70,6 +70,7 @@ export function SkillBrowser(): React.JSX.Element {
   const library = useStore((s) => s.library)
 
   const [fn, setFn] = useState<FnCategory | 'all'>('all')
+  const [agent, setAgent] = useState<string | 'all'>('all')
 
   useEffect(() => {
     void loadIndex()
@@ -99,9 +100,17 @@ export function SkillBrowser(): React.JSX.Element {
     return (shards[fn] || []).slice()
   }, [hits, fn, shards])
 
+  /** Agents actually present in what we have loaded, for the filter row. */
+  const agents = useMemo(() => {
+    const seen = new Map<string, number>()
+    for (const s of Object.values(shards).flat()) if (s.a) seen.set(s.a, (seen.get(s.a) || 0) + 1)
+    return [...seen.entries()].sort((a, b) => b[1] - a[1])
+  }, [shards])
+
   const inLibrary = (repo: string): boolean => library.some((i) => i.fullName === repo && i.status === 'ready')
 
   const categories = info ? Object.entries(info.shards).sort((a, b) => b[1].count - a[1].count) : []
+  const shown = agent === 'all' ? rows : rows.filter((s) => s.a === agent)
 
   return (
     <>
@@ -121,7 +130,7 @@ export function SkillBrowser(): React.JSX.Element {
           )}
         </div>
         <span className="dim mono" style={{ fontSize: 11 }}>
-          {hits ? t('skills.hits', { n: rows.length }) : t('skills.total', { n: info?.total || 0 })}
+          {hits ? t('skills.hits', { n: shown.length }) : t('skills.total', { n: info?.total || 0 })}
         </span>
       </div>
 
@@ -147,6 +156,27 @@ export function SkillBrowser(): React.JSX.Element {
         </div>
       )}
 
+      {!hits && agents.length > 0 && (
+        <div className="skill-filters" style={{ marginTop: -6 }}>
+          <span className="dim" style={{ fontSize: 11, alignSelf: 'center', marginRight: 2 }}>
+            {t('skills.agentFilter')}
+          </span>
+          <button className={`chip clickable${agent === 'all' ? ' active' : ''}`} onClick={() => setAgent('all')}>
+            {t('common.all')}
+          </button>
+          {agents.map(([id, n]) => (
+            <button
+              key={id}
+              className={`chip clickable${agent === id ? ' active' : ''}`}
+              onClick={() => setAgent(id)}
+            >
+              {AGENT_SKILL_LABELS[id] ? (lang === 'zh' ? AGENT_SKILL_LABELS[id].zh : AGENT_SKILL_LABELS[id].en) : id}
+              <span className="dim mono">{n}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       {loading && !rows.length ? (
         <div className="flex" style={{ padding: 40, justifyContent: 'center', gap: 10, color: 'var(--text-2)' }}>
           <span className="spinner" />
@@ -160,7 +190,7 @@ export function SkillBrowser(): React.JSX.Element {
         </div>
       ) : (
         <div className="skill-grid">
-          {rows.slice(0, 120).map((s, i) => (
+          {shown.slice(0, 120).map((s, i) => (
             <div className="skill-card" key={`${s.r}::${s.p}`} style={stagger(i, 8)}>
               <div className="sk-head">
                 <span className="sk-name">{s.n}</span>
@@ -174,6 +204,11 @@ export function SkillBrowser(): React.JSX.Element {
                 <button className="sk-repo mono" title={s.r} onClick={() => void openDetail(s.r)}>
                   {s.r}
                 </button>
+                {s.a && (
+                  <span className="chip agent-chip" title={t('skills.agentHint')}>
+                    {AGENT_SKILL_LABELS[s.a] ? (lang === 'zh' ? AGENT_SKILL_LABELS[s.a].zh : AGENT_SKILL_LABELS[s.a].en) : s.a}
+                  </span>
+                )}
                 {s.f && (
                   <span className="chip fn-chip" style={{ color: fnColor(s.f as FnCategory), borderColor: `${fnColor(s.f as FnCategory)}55` }}>
                     {FN_LABELS[s.f as FnCategory]
@@ -208,9 +243,9 @@ export function SkillBrowser(): React.JSX.Element {
           ))}
         </div>
       )}
-      {rows.length > 120 && (
+      {shown.length > 120 && (
         <div className="dim" style={{ textAlign: 'center', fontSize: 11.5, padding: '14px 0' }}>
-          {t('skills.truncated', { n: rows.length - 120, term: '' })}
+          {t('skills.truncated', { n: shown.length - 120, term: '' })}
         </div>
       )}
     </>

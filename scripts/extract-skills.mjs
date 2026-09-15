@@ -29,6 +29,70 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const liveDir = join(root, 'data', 'live')
 const catalog = JSON.parse(readFileSync(join(root, 'data', 'curated-catalog.json'), 'utf8'))
 
+/**
+ * Which agent a skill is written for, when that can be said with confidence.
+ *
+ * Two signals, both structural rather than keyword-guessing:
+ *
+ *   1. The repository says so. "My Codex Skills" or "marketing skills for
+ *      Claude Code" is the author telling us the target, and it applies to
+ *      everything inside.
+ *   2. The path. A skill stored under `.claude/skills/` or `.gemini/skills/`
+ *      sits in that agent's own directory, which is where it gets installed.
+ *      `.agents/` is the portable convention and implies no particular agent.
+ *
+ * Deliberately NOT used: mentions of an agent in a skill's description. Those
+ * overwhelmingly mean the skill *calls* that service — "Automate Gemini tasks
+ * via Rube MCP" is a skill that drives the Gemini API, not one written for the
+ * Gemini CLI — and labelling those would be worse than labelling nothing.
+ *
+ * When the signals disagree, or name more than one agent, the skill gets no
+ * label: a skill that is not specifically for one agent is for all of them.
+ */
+const REPO_AGENTS = [
+  ['claude-code', /\bclaude\s+code\b|\bclaude-code\b|\bclaudecode\b/i],
+  ['codex', /\bcodex\b/i],
+  ['copilot', /\bcopilot\b/i],
+  ['windsurf', /\bwindsurf\b/i],
+  ['opencode', /\bopencode\b/i],
+  ['antigravity', /\bantigravity\b/i],
+  ['cursor', /\bcursor\b/i],
+  ['kiro', /\bkiro\b/i]
+]
+
+/** Agents named by a repository's own name or description, with the evidence. */
+function repoAgents(repo) {
+  const text = `${repo.name} ${repo.descriptionEn || ''}`
+  const hits = REPO_AGENTS.filter(([, re]) => re.test(text)).map(([id]) => id)
+  return hits
+}
+
+const DIR_AGENT = {
+  '.claude': 'claude-code',
+  '.codex': 'codex',
+  '.cursor': 'cursor',
+  '.gemini': 'gemini-cli',
+  '.windsurf': 'windsurf',
+  '.opencode': 'opencode',
+  '.roo': 'roo-code',
+  '.kiro': 'kiro'
+}
+
+/** The agent a skill is for, or null when it is not specific to one. */
+function agentFor(skillPath, repoAgentList) {
+  const byDir = new Set()
+  for (const seg of skillPath.split('/')) {
+    const hit = DIR_AGENT[seg]
+    if (hit) byDir.add(hit)
+  }
+  if (byDir.size === 1) return [...byDir][0]
+  if (byDir.size > 1) return null // the path itself is ambiguous
+  // No directory signal: fall back to the repository, and only when the author
+  // named exactly one agent.
+  if (repoAgentList.length === 1) return repoAgentList[0]
+  return null
+}
+
 const argv = process.argv.slice(2)
 const limitArg = argv.indexOf('--limit')
 /** Repos below this many skills contribute little and cost a full clone. */
@@ -130,6 +194,7 @@ for (const [i, repo] of targets.entries()) {
     continue
   }
 
+  const repoAgentList = repoAgents(repo)
   const files = walk(dir)
   const seen = new Set()
   let kept = 0
@@ -148,13 +213,15 @@ for (const [i, repo] of targets.entries()) {
     }
     const fm = parseFrontmatter(text)
     const description = fm?.description ? summarize(fm.description) : ''
+    const agent = agentFor(rel, repoAgentList)
     skills.push({
       n: fm?.name || folder,
       r: repo.fullName,
       p: rel,
       d: description,
       f: repo.fn || 'collections',
-      s: repo.stars || 0
+      s: repo.stars || 0,
+      ...(agent ? { a: agent } : {})
     })
     kept++
   }
@@ -187,9 +254,33 @@ writeFileSync(
   'utf8'
 )
 
+// ---- write the repository-level label back into the catalog ---------------
+// A repository that says "My Codex Skills" is Codex-specific even where a
+// particular skill inside it is generic, and the store shows repositories too.
+let catalogTouched = 0
+for (const repo of catalog.repos) {
+  const list = repoAgents(repo)
+  const agent = list.length === 1 ? list[0] : undefined
+  if (agent && repo.agent !== agent) {
+    repo.agent = agent
+    catalogTouched++
+  } else if (!agent && repo.agent) {
+    delete repo.agent
+    catalogTouched++
+  }
+}
+if (catalogTouched) {
+  writeFileSync(join(root, 'data', 'curated-catalog.json'), JSON.stringify(catalog, null, 2) + '\n', 'utf8')
+  console.log(`目录中 ${catalogTouched} 个仓库更新了专用 agent 标注`)
+}
+
 const withDesc = skills.filter((s) => s.d).length
+const byAgent = {}
+for (const s of skills) if (s.a) byAgent[s.a] = (byAgent[s.a] || 0) + 1
 const bytes = Object.values(shardMeta).reduce((n, s) => n + s.bytes, 0)
 console.log(`\n提取 ${skills.length} 个技能（${withDesc} 个有简介）· 克隆失败 ${failures} 个`)
+const agentTotal = Object.values(byAgent).reduce((n, v) => n + v, 0)
+console.log(`其中 ${agentTotal} 个标注了专用 agent：${Object.entries(byAgent).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(' · ') || '（无）'}`)
 console.log(`分片 ${Object.keys(byFn).length} 个，合计 ${(bytes / 1024 / 1024).toFixed(1)} MB`)
 for (const [fn, m] of Object.entries(shardMeta).sort((a, b) => b[1].count - a[1].count)) {
   console.log(`  ${fn.padEnd(12)} ${String(m.count).padStart(5)}  ${(m.bytes / 1024).toFixed(0).padStart(5)} KB`)

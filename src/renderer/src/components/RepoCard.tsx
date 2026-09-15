@@ -2,7 +2,7 @@ import { Star, Check, Plus, ExternalLink, Layers } from 'lucide-react'
 import type { RepoMeta } from '@shared/types'
 import { fmtRelative, fmtStars, gradientFor } from '../api'
 import { useStore } from '../store'
-import { categoryLabel, FN_LABELS, REPO_KIND_LABELS, type FnCategory } from '@shared/types'
+import { AGENT_SKILL_LABELS, categoryLabel, FN_LABELS, REPO_KIND_LABELS, type FnCategory } from '@shared/types'
 import { fnColor } from './Sidebar'
 
 export function RepoCard({
@@ -168,6 +168,15 @@ export function RepoRow({ repo }: { repo: RepoMeta }): React.JSX.Element {
       {repo.repoKind === 'software' && (
         <span className="chip kind-sw">
           {lang === 'zh' ? REPO_KIND_LABELS.software.zh : REPO_KIND_LABELS.software.en}
+        </span>
+      )}
+      {repo.agent && (
+        <span className="chip agent-chip" title={t('skills.agentHint')}>
+          {AGENT_SKILL_LABELS[repo.agent]
+            ? lang === 'zh'
+              ? AGENT_SKILL_LABELS[repo.agent].zh
+              : AGENT_SKILL_LABELS[repo.agent].en
+            : repo.agent}
         </span>
       )}
       <span className="stat strong">
