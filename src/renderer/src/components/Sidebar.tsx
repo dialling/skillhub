@@ -50,7 +50,6 @@ function StoreSidebar(): React.JSX.Element {
   const t = useStore((s) => s.t)
   const lang = useStore((s) => s.lang)
   const catalog = useStore((s) => s.catalogRepos)
-  const catalogAt = useStore((s) => s.catalogAt)
   const category = useStore((s) => s.storeCategory)
   const setCategory = useStore((s) => s.setStoreCategory)
   const loadGrowth = useStore((s) => s.loadGrowth)

@@ -52,8 +52,21 @@ function createWindow(): void {
     minHeight: 660,
     show: false,
     backgroundColor: '#0a0d14',
-    titleBarStyle: 'hiddenInset',
-    trafficLightPosition: { x: 16, y: 16 },
+    // Window chrome differs per platform. macOS keeps the inset traffic lights;
+    // Windows gets its controls overlaid on our titlebar (right-hand side, which
+    // is what the win32 padding in styles.css reserves room for); Linux keeps a
+    // normal frame, since overlay support varies by window manager.
+    //
+    // Without the overlay, `hiddenInset` on Windows produces a frameless window
+    // with no controls at all — the window cannot be closed or minimised.
+    ...(isMac
+      ? { titleBarStyle: 'hiddenInset' as const, trafficLightPosition: { x: 16, y: 16 } }
+      : isLinux
+        ? {}
+        : {
+            titleBarStyle: 'hidden' as const,
+            titleBarOverlay: { color: '#0a0e16', symbolColor: '#a2b2cc', height: 46 }
+          }),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,

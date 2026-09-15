@@ -2366,9 +2366,6 @@ button.status-item:hover {
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
 }
-.muted {
-  color: var(--text-2);
-}
 .dim {
   color: var(--text-3);
 }
@@ -2380,14 +2377,8 @@ button.status-item:hover {
 .flex-wrap {
   flex-wrap: wrap;
 }
-.grow {
-  flex: 1;
-}
 .selectable {
   user-select: text;
-}
-.scroll-y {
-  overflow-y: auto;
 }
 
 /* Filter bar above long lists (e.g. the agent registry) */
@@ -2850,34 +2841,6 @@ button.status-item:hover {
   flex: none;
 }
 
-/* Discovery panel in the Library view. */
-.discover-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 9px;
-}
-.discover-card {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: var(--r-md);
-  border: 1px solid var(--border);
-  background: linear-gradient(180deg, var(--bg-3), var(--bg-2));
-}
-.discover-card .dc-main {
-  min-width: 0;
-  flex: 1;
-}
-.discover-card .dc-name {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text-0);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.discover-card .dc-meta {
   font-size: 11px;
   color: var(--text-3);
   overflow: hidden;
@@ -3017,38 +2980,6 @@ button.status-item:hover {
   font-size: 10.5px;
 }
 
-/* Installed skills, each with its Launch button. */
-.installed-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
-  gap: 8px;
-}
-.installed-card {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 11px;
-  border-radius: var(--r-md);
-  border: 1px solid var(--border);
-  background: linear-gradient(180deg, var(--bg-3), var(--bg-2));
-  transition: border-color 0.14s;
-}
-.installed-card:hover {
-  border-color: var(--border-3);
-}
-.installed-card .ic-main {
-  min-width: 0;
-  flex: 1;
-}
-.installed-card .ic-name {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text-0);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.installed-card .ic-meta {
   font-size: 10.5px;
   color: var(--text-3);
   overflow: hidden;

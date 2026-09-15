@@ -189,10 +189,3 @@ export async function catalogSections(): Promise<{
   const top = [...repos].sort((a, b) => b.stars - a.stars).slice(0, 24)
   return { featured, byCategory, top }
 }
-
-export function skillToCard(skill: SkillEntry, repo?: RepoMeta) {
-  return {
-    skill,
-    repo: repo || null
-  }
-}

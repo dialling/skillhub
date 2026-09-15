@@ -199,18 +199,6 @@ export async function getReadme(fullName: string): Promise<string> {
   }
 }
 
-export async function getFileText(fullName: string, path: string): Promise<string> {
-  try {
-    return await ghFetch<string>(`/repos/${fullName}/contents/${encodeURI(path)}`, {
-      raw: true,
-      headers: { Accept: 'application/vnd.github.raw' }
-    })
-  } catch (err) {
-    if (err instanceof GitHubError && err.status === 404) return ''
-    throw err
-  }
-}
-
 /**
  * raw.githubusercontent.com is the cheapest way to read files (it does not
  * consume REST quota), but it is also the endpoint most likely to be blocked by
@@ -221,10 +209,6 @@ let rawHealth: { ok: number; fail: number; disabledUntil: number } = { ok: 0, fa
 const RAW_TIMEOUT_MS = 3000
 const RAW_FAIL_THRESHOLD = 3
 const RAW_RETRY_AFTER_MS = 10 * 60_000
-
-export function rawHostStatus(): { enabled: boolean; ok: number; fail: number } {
-  return { enabled: Date.now() >= rawHealth.disabledUntil, ok: rawHealth.ok, fail: rawHealth.fail }
-}
 
 /**
  * Pay the reachability cost once at startup instead of on the user's first

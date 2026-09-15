@@ -185,14 +185,24 @@ for (const file of walk(join(root, 'src', 'renderer', 'src'))) {
  * leak, but Chinese in console.* logging is not. Flag the former only.
  */
 for (const file of walk(join(root, 'src', 'main'))) {
-  // cli.ts and selftest.ts are terminal tools, not the app UI: their output is
-  // intentionally Chinese-only and never reaches the window. msg.ts is the
-  // main-process dictionary, so it is bilingual by definition.
-  if (/\/(cli|selftest|msg)\.ts$/.test(file)) continue
+  /*
+    Only selftest.ts is exempt, and only because it is a developer tool whose
+    output never reaches a user. cli.ts used to be exempt too, on the theory
+    that a terminal tool need not be bilingual — that theory hid 45 lines of
+    hard-coded Chinese, so every command printed Chinese to a user running the
+    app in English. `npm run cli` is a first-class interface and follows the
+    language setting like everything else.
+    msg.ts is the main-process dictionary: bilingual by definition.
+  */
+  if (/\/(selftest|msg)\.ts$/.test(file)) continue
+  const isCli = /cli\.ts$/.test(file)
   const stripped = stripComments(readFileSync(file, 'utf8'))
   stripped.split('\n').forEach((line, idx) => {
     if (!CJK.test(line)) return
-    if (/console\.(log|warn|error|info)/.test(line)) return
+    // Console output in the app is logging, not UI copy — but in cli.ts console
+    // *is* the interface, so the exemption must not apply there. Skipping it
+    // unconditionally is half of why 45 lines of Chinese hid in the CLI.
+    if (!isCli && /console\.(log|warn|error|info)/.test(line)) return
     // Bilingual data fields (`descriptionZh` next to `descriptionEn`, etc.) are
     // content with a counterpart, not a UI string that forgot to be translated.
     if (/\b\w+Zh\s*:/.test(line)) return

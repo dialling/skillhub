@@ -288,7 +288,6 @@ export const useStore = create<State>((set, get) => ({
       if (res.ok) {
         get().toast('success', res.message, plan.workspace)
         set({ showLaunchModal: false, launchPlan: null, launchSource: null })
-        await api.profile.activity().then((events) => useStore.setState({})).catch(() => {})
       } else {
         get().toast('error', res.message)
       }

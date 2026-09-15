@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ArrowLeft,
-  Star,
-  GitFork,
   ExternalLink,
   Plus,
   Check,
@@ -42,7 +40,6 @@ export function DetailPanel(): React.JSX.Element | null {
   const install = useStore((s) => s.install)
   const uninstall = useStore((s) => s.uninstall)
   const toast = useStore((s) => s.toast)
-  const settings = useStore((s) => s.settings)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [targets, setTargets] = useState<Set<string>>(new Set())
   const [mode, setMode] = useState<'symlink' | 'copy'>('symlink')

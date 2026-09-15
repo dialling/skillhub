@@ -10,7 +10,6 @@ export function TitleBar(): React.JSX.Element {
   const clearSearch = useStore((s) => s.clearSearch)
   const setView = useStore((s) => s.setView)
   const view = useStore((s) => s.view)
-  const lang = useStore((s) => s.lang)
   const toggleLang = useStore((s) => s.toggleLang)
   const settings = useStore((s) => s.settings)
   const refreshRate = useStore((s) => s.refreshRate)

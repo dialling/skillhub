@@ -12,7 +12,6 @@ export function StatusBar(): React.JSX.Element {
   const agents = useStore((s) => s.agents)
   const installMap = useStore((s) => s.installMap)
   const settings = useStore((s) => s.settings)
-  const lang = useStore((s) => s.lang)
   const toggleLang = useStore((s) => s.toggleLang)
   const [version, setVersion] = useState('')
 

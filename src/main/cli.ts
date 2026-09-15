@@ -20,6 +20,7 @@ import { searchSkills, rateLimit, tokenSource, getRepo, starsGained } from './co
 import { leaderboard } from './core/leaderboard'
 import { curatedCatalog } from './core/catalog'
 import { expandPath, tildify } from './core/paths'
+import { m } from './core/msg'
 
 const argv = process.argv.slice(2)
 const cmd = argv[0]
@@ -77,52 +78,54 @@ const C = {
   cyan: (s: string) => `\x1b[36m${s}\x1b[0m`
 }
 
-const HELP = `
-${C.bold('SkillHub')} — 智能体技能管理器 (CLI)
+function helpText(): string {
+  return `
+${C.bold('SkillHub')} — ${m('cli.title')}
 
-  ${C.cyan('search')} <关键词>              在 GitHub 上搜索技能仓库
-  ${C.cyan('add')} <owner/repo>             入库（git clone + 解析 SKILL.md）
-  ${C.cyan('list')} [--json]                列出库中内容
-  ${C.cyan('sync')} <owner/repo>            更新库中仓库
-  ${C.cyan('remove')} <owner/repo>          移出库（并卸载关联技能）
-  ${C.cyan('agents')} [--json]              列出智能体与技能目录
-  ${C.cyan('install')} <skillId|--all>      安装技能到智能体目录
-        --agents dsh,cursor   指定目标（默认：所有已启用且已检测到的）
-        --copy                使用复制而非软链接
-  ${C.cyan('uninstall')} <skillId>          从所有智能体卸载
-  ${C.cyan('installed')}                    列出已安装技能
-  ${C.cyan('growth')} [1|7|30]              星标增长排行榜
-  ${C.cyan('doctor')}                       环境自检
+  ${C.cyan('search')} ${m('cli.arg.term')}              ${m('cli.help.search')}
+  ${C.cyan('add')} <owner/repo>             ${m('cli.help.add')}
+  ${C.cyan('list')} [--json]                ${m('cli.help.list')}
+  ${C.cyan('sync')} <owner/repo>            ${m('cli.help.sync')}
+  ${C.cyan('remove')} <owner/repo>          ${m('cli.help.remove')}
+  ${C.cyan('agents')} [--json]              ${m('cli.help.agents')}
+  ${C.cyan('install')} <skillId|--all>      ${m('cli.help.install')}
+        --agents dsh,cursor   ${m('cli.help.agentsFlag')}
+        --copy                ${m('cli.help.copyFlag')}
+  ${C.cyan('uninstall')} <skillId>          ${m('cli.help.uninstall')}
+  ${C.cyan('installed')}                    ${m('cli.help.installed')}
+  ${C.cyan('growth')} [1|7|30]              ${m('cli.help.growth')}
+  ${C.cyan('doctor')}                       ${m('cli.help.doctor')}
 
-  ${C.dim('示例：node out/main/cli.js install --all --agents dsh')}
+  ${C.dim(m('cli.help.example'))}
 `
+}
 
 async function main(): Promise<number> {
   switch (cmd) {
     case undefined:
     case 'help':
     case '--help':
-      console.log(HELP)
+      console.log(helpText())
       return 0
 
     case 'doctor': {
       const rate = await rateLimit(true)
-      console.log(`${C.bold('凭据')}     ${tokenSource()} ${rate.ok ? C.green('✓') : C.red('✗')} ${rate.ok ? `${rate.remaining}/${rate.limit}` : rate.error}`)
-      console.log(`${C.bold('库目录')}   ${tildify(expandPath(settings.get().libraryDir))}`)
+      console.log(`${C.bold(m('cli.doctor.credentials'))}     ${tokenSource()} ${rate.ok ? C.green('✓') : C.red('✗')} ${rate.ok ? `${rate.remaining}/${rate.limit}` : rate.error}`)
+      console.log(`${C.bold(m('cli.doctor.libraryDir'))}   ${tildify(expandPath(settings.get().libraryDir))}`)
       const catalog = await curatedCatalog()
-      console.log(`${C.bold('精选目录')} ${catalog.length} 个仓库 ${catalog.length ? C.green('✓') : C.yellow('（未找到 data/curated-catalog.json）')}`)
+      console.log(`${C.bold(m('cli.doctor.catalog'))} ${catalog.length} ${catalog.length ? C.green('✓') : C.yellow(m('cli.doctor.catalogMissing'))}`)
       const agents = listAgents()
-      console.log(`${C.bold('智能体')}   ${agents.filter((a) => a.detected).length}/${agents.length} 已检测`)
+      console.log(`${C.bold(m('cli.doctor.agents'))}   ${m('cli.doctor.detected', { n: agents.filter((a) => a.detected).length, total: agents.length })}`)
       for (const a of agents.filter((x) => x.detected)) console.log(`           ${a.name} → ${tildify(expandPath(a.path))}`)
-      console.log(`${C.bold('库')}       ${libraryItems().length} 个仓库 · ${installedSkills().length} 条安装记录`)
+      console.log(`${C.bold(m('cli.doctor.library'))}       ${m('cli.doctor.libraryLine', { repos: libraryItems().length, installs: installedSkills().length })}`)
       return 0
     }
 
     case 'search': {
       const term = positional().join(' ')
-      if (!term) return fail('用法：search <关键词>')
+      if (!term) return fail(m('cli.usage.search'))
       const res = await searchSkills(term, { perPage: 20 })
-      console.log(`${C.dim(`${res.repos.length} 个结果 / ${res.elapsedMs}ms`)}\n`)
+      console.log(`${C.dim(m('cli.searchResults', { n: res.repos.length, ms: res.elapsedMs }))}\n`)
       for (const r of res.repos) {
         console.log(`${C.bold(r.fullName.padEnd(48))} ${C.yellow(String(r.stars).padStart(7))}★  ${C.dim(r.descriptionZh || r.descriptionEn || '')}`)
       }
@@ -131,10 +134,10 @@ async function main(): Promise<number> {
 
     case 'add': {
       const target = positional()[0]
-      if (!target) return fail('用法：add <owner/repo>')
-      console.log(`入库 ${target} …`)
+      if (!target) return fail(m('cli.usage.add'))
+      console.log(m('cli.adding', { target }))
       const item = await addRepo(target)
-      if (item.status !== 'ready') return fail(item.error || '入库失败')
+      if (item.status !== 'ready') return fail(item.error || m('cli.addFailed'))
       console.log(`${C.green('✓')} ${item.fullName} → ${tildify(item.sourcePath)}`)
       for (const s of item.skills) console.log(`   ${C.cyan(s.id)}  ${C.dim(s.descriptionEn?.slice(0, 70) || '')}`)
       return 0
@@ -147,13 +150,13 @@ async function main(): Promise<number> {
         return 0
       }
       if (!items.length) {
-        console.log(C.dim('库是空的。用 `add <owner/repo>` 入库。'))
+        console.log(C.dim(m('cli.libraryEmpty')))
         return 0
       }
       const map: Record<string, string[]> = {}
       for (const r of installs.get().records) (map[r.skillId] ||= []).push(r.agentName)
       for (const item of items) {
-        console.log(`${C.bold(item.fullName)} ${C.dim(`· ${item.skills.length} 个技能 · ${item.status}`)}`)
+        console.log(`${C.bold(item.fullName)} ${C.dim(m('cli.itemLine', { n: item.skills.length, status: item.status }))}`)
         for (const s of item.skills) {
           const where = map[s.id]
           console.log(`   ${where ? C.green('●') : C.dim('○')} ${s.name.padEnd(34)} ${C.dim(s.path)} ${where ? C.green(`→ ${where.join(', ')}`) : ''}`)
@@ -164,17 +167,17 @@ async function main(): Promise<number> {
 
     case 'sync': {
       const target = positional()[0]
-      if (!target) return fail('用法：sync <owner/repo>')
+      if (!target) return fail(m('cli.usage.sync'))
       const item = await syncItem(target)
-      console.log(`${C.green('✓')} ${item.fullName} 已更新（${item.skills.length} 个技能）`)
+      console.log(`${C.green('✓')} ${m('cli.synced', { name: item.fullName, n: item.skills.length })}`)
       return 0
     }
 
     case 'remove': {
       const target = positional()[0]
-      if (!target) return fail('用法：remove <owner/repo>')
+      if (!target) return fail(m('cli.usage.remove'))
       const res = removeItem(target, true)
-      console.log(`${C.green('✓')} 已移出库，卸载 ${res.removedInstalls} 条安装记录`)
+      console.log(`${C.green('✓')} ${m('cli.removed', { n: res.removedInstalls })}`)
       return 0
     }
 
@@ -200,23 +203,23 @@ async function main(): Promise<number> {
       } else {
         skillIds = positional()
       }
-      if (!skillIds.length) return fail('用法：install <skillId> | --all')
+      if (!skillIds.length) return fail(m('cli.usage.install'))
 
       const wanted = has('agents') ? flag('agents')!.split(',').map((s) => s.trim()) : null
       const all = listAgents()
       const targets = wanted
         ? all.filter((a) => wanted.includes(a.id) || wanted.includes(a.name))
         : all.filter((a) => a.enabled)
-      if (!targets.length) return fail('没有匹配的目标智能体。用 `agents` 查看。')
+      if (!targets.length) return fail(m('cli.noTargets'))
       for (const a of targets) {
-        if (!resolveAgentDir(a.id)) return fail(`无法解析 ${a.name} 的目录`)
-        console.log(`目标 ${C.bold(a.name)} → ${tildify(expandPath(a.path))}`)
+        if (!resolveAgentDir(a.id)) return fail(m('agent.dirUnresolved', { name: a.name }))
+        console.log(m('cli.target', { name: C.bold(a.name), path: tildify(expandPath(a.path)) }))
       }
       const res = installSkills(
         { skillIds, agentIds: targets.map((a) => a.id), mode: copy ? 'copy' : 'symlink' },
         (p) => p.message && p.phase === 'link' && console.log(`   ${p.message}`)
       )
-      console.log(`\n${C.green('✓')} 成功 ${res.ok.length} · 跳过 ${res.skipped.length} · 失败 ${res.errors.length}`)
+      console.log(`\n${C.green('✓')} ${m('cli.installSummary', { ok: res.ok.length, skipped: res.skipped.length, failed: res.errors.length })}`)
       for (const e of res.errors) console.log(`   ${C.red('✗')} ${e.skillId} → ${e.agentId}: ${e.reason}`)
       for (const s of res.skipped) console.log(`   ${C.yellow('!')} ${s.skillId} → ${s.agentId}: ${s.reason}`)
       return res.errors.length ? 1 : 0
@@ -224,19 +227,19 @@ async function main(): Promise<number> {
 
     case 'uninstall': {
       const skillId = positional()[0]
-      if (!skillId) return fail('用法：uninstall <skillId>')
+      if (!skillId) return fail(m('cli.usage.uninstall'))
       let n = 0
       for (const rec of installedSkills().filter((r) => r.skillId === skillId || r.skillName === skillId)) {
         if (uninstall(rec.skillId, rec.agentId)) n++
       }
-      console.log(n ? `${C.green('✓')} 已卸载 ${n} 处` : C.dim('没有找到对应的安装记录'))
+      console.log(n ? `${C.green('✓')} ${m('cli.uninstalled', { n })}` : C.dim(m('cli.noInstallRecords')))
       return n ? 0 : 1
     }
 
     case 'installed': {
       const rows = installedSkills()
       if (!rows.length) {
-        console.log(C.dim('还没有安装任何技能。'))
+        console.log(C.dim(m('cli.noneInstalled')))
         return 0
       }
       for (const r of rows) {
@@ -247,7 +250,7 @@ async function main(): Promise<number> {
 
     case 'growth': {
       const days = (Number(positional()[0]) || 7) as 1 | 7 | 30
-      console.log(`计算最近 ${days} 天的星标增长 …`)
+      console.log(m('cli.computingGrowth', { days }))
       const rows = await leaderboard({ days, limit: 20, useApi: true, apiBudget: 40 })
       for (const [i, r] of rows.entries()) {
         const mark = r.approx ? '≥' : '+'
@@ -258,12 +261,12 @@ async function main(): Promise<number> {
 
     case 'stars': {
       const repo = positional()[0]
-      if (!repo) return fail('用法：stars <owner/repo>')
+      if (!repo) return fail(m('cli.usage.stars'))
       const meta = await getRepo(repo, { force: true })
       const g = await starsGained(repo, meta.stars, 7)
       console.log(`${meta.fullName}: ${meta.stars}★, +${g.gained} in 7d via ${g.source}${g.approx ? ' (lower bound)' : ''}`)
       const hist = stars.get().history[repo]
-      if (hist) console.log(`本地快照: ${hist.map((h) => `${h.date}=${h.stars}`).join(' ')}`)
+      if (hist) console.log(m('cli.localSnapshots', { list: hist.map((h) => `${h.date}=${h.stars}`).join(' ') }))
       return 0
     }
 
@@ -272,20 +275,20 @@ async function main(): Promise<number> {
         const dir = resolveAgentDir(a.id)
         if (!dir) continue
         const entries = scanAgentDir(a.id)
-        console.log(`${C.bold(a.name)} ${C.dim(tildify(dir))} ${existsSync(dir) ? '' : C.dim('(不存在)')}`)
+        console.log(`${C.bold(a.name)} ${C.dim(tildify(dir))} ${existsSync(dir) ? '' : C.dim(m('cli.notExist'))}`)
         for (const e of entries) console.log(`   ${e.managed ? C.green('◆') : C.dim('·')} ${e.name} ${C.dim(e.linkTarget || '')}`)
       }
       return 0
     }
 
     default:
-      console.log(HELP)
+      console.log(helpText())
       return 1
   }
 }
 
 function fail(msg: string): number {
-  console.error(`${C.red('错误')} ${msg}`)
+  console.error(`${C.red(m('cli.error'))} ${msg}`)
   return 1
 }
 
@@ -300,6 +303,6 @@ main()
   })
   .then((code) => process.exit(code))
   .catch((err) => {
-    console.error(C.red('崩溃:'), err?.message || err)
+    console.error(C.red(m('cli.crashed')), err?.message || err)
     process.exit(2)
   })

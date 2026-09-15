@@ -15,7 +15,6 @@ export function ActivityBar(): React.JSX.Element {
   const t = useStore((s) => s.t)
   const library = useStore((s) => s.library)
   const agents = useStore((s) => s.agents)
-  const installMap = useStore((s) => s.installMap)
   const toggleSidebar = useStore((s) => s.toggleSidebar)
   const sidebarOpen = useStore((s) => s.sidebarOpen)
 

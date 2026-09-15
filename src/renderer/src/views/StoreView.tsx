@@ -63,11 +63,6 @@ export function StoreView(): React.JSX.Element {
     [catalog]
   )
 
-  const totalSkills = useMemo(
-    () => catalog.reduce((n, r) => n + (r.skillCount ?? r.skillDirs?.length ?? 0), 0),
-    [catalog]
-  )
-
   const hot = useMemo(() => (trending || []).slice(0, 6), [trending])
   const scenario = scenarios.find((s) => s.id === activeScenario) || null
 

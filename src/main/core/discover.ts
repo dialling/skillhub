@@ -152,8 +152,6 @@ export async function recommendInstallTarget(): Promise<InstallTargetAdvice> {
     (a, b) => b.count - a.count || weight(a.absPath) - weight(b.absPath) || a.path.localeCompare(b.path)
   )
 
-  const counts = (p: string): number => candidates.find((c) => c.absPath === p)?.count ?? 0
-
   if (configured) {
     const abs = expandPath(configured)
     return {

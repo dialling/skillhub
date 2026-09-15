@@ -2,7 +2,6 @@ import { translate } from './i18n'
 import type {
   AgentTarget,
   ActivityEvent,
-  CuratedCatalog,
   DiskStats,
   GrowthRow,
   InstallProgress,

@@ -363,11 +363,6 @@ export function removeItem(id: string, deleteFiles = true): { removedInstalls: n
   return { removedInstalls }
 }
 
-/** Which library items already contain this fullName. */
-export function isInLibrary(fullName: string): boolean {
-  return library.get().items.some((i) => i.id === fullName)
-}
-
 /** Read a single SKILL.md from a checkout. */
 export function readSkillFile(fullName: string, relPath: string): string | null {
   const item = getItem(fullName)
@@ -422,32 +417,6 @@ export async function fetchRemoteSkillMeta(
     })
   )
   return out
-}
-
-export function diskUsage(dir: string): number {
-  if (!existsSync(dir)) return 0
-  let total = 0
-  const walk = (p: string, depth: number): void => {
-    if (depth > 6) return
-    let entries: string[] = []
-    try {
-      entries = readdirSync(p)
-    } catch {
-      return
-    }
-    for (const name of entries) {
-      const full = join(p, name)
-      try {
-        const st = statSync(full)
-        if (st.isDirectory()) walk(full, depth + 1)
-        else total += st.size
-      } catch {
-        /* ignore */
-      }
-    }
-  }
-  walk(dir, 0)
-  return total
 }
 
 export { cpSync }

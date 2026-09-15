@@ -37,7 +37,7 @@ export function ChartsView(): React.JSX.Element {
     if (mode !== 'stars') return
     const sorted = [...catalog].sort((a, b) => (b.stars || 0) - (a.stars || 0)).slice(0, 40)
     if (sorted.length) setTop(sorted)
-    else void api.board.top(40).then(setTop)
+    else void api.board.top(40).then(setTop).catch(() => setTop([]))
   }, [mode, catalog])
 
   useEffect(() => {

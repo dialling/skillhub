@@ -296,6 +296,20 @@ function writeInstruction(input: {
   writeFileSync(path, next, 'utf8')
 }
 
+/**
+ * Quote one value for POSIX `sh`, the way the shell itself would.
+ *
+ * Everything handed to Terminal is a shell command line, so a workspace path or
+ * a skill name is not data — it is code. Wrapping in single quotes and escaping
+ * embedded ones is the only form that survives every character: `$`, backticks,
+ * `\`, `;` and quotes all stop being special. The previous version escaped only
+ * double quotes, which left command substitution live — a workspace folder
+ * literally named `a$(whoami)b` would have been executed.
+ */
+function shellQuote(value: string): string {
+  return `'${value.replace(/'/g, `'\\''`)}'`
+}
+
 function isSymlink(p: string): boolean {
   try {
     return require('node:fs').lstatSync(p).isSymbolicLink()
@@ -323,10 +337,11 @@ end tell`
 export async function runLaunch(plan: LaunchPlan): Promise<{ ok: boolean; message: string }> {
   try {
     if (plan.launchKind === 'cli' && plan.command) {
-      const prompt = plan.promptArg
-        ? ` "${plan.prompt.replace(/"/g, '\\"')}"`
-        : ''
-      const line = `cd "${plan.workspace}" && ${plan.command}${prompt}`
+      // Every interpolated value is quoted for the shell, not merely for
+      // AppleScript: `do script` hands this line to `sh`.
+      const prompt = plan.promptArg ? ` ${shellQuote(plan.prompt)}` : ''
+      const command = plan.command.replace(/[^\w./-]/g, '')
+      const line = `cd ${shellQuote(plan.workspace)} && ${command}${prompt}`
       if (process.platform === 'darwin') {
         await openTerminal(line)
       } else {

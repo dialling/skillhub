@@ -1,5 +1,5 @@
 import { app } from 'electron'
-import { existsSync, readFileSync, renameSync, writeFileSync, mkdirSync } from 'node:fs'
+import { existsSync, readFileSync, renameSync, writeFileSync, mkdirSync, statSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { userDataDir } from './paths'
 
@@ -14,6 +14,8 @@ export class JsonStore<T extends object> {
   private file: string
   private timer: NodeJS.Timeout | null = null
   private defaults: T
+  /** mtime of the file as we last wrote it, to spot another process's writes. */
+  private writtenAt = 0
 
   constructor(name: string, defaults: T) {
     this.file = join(userDataDir(), `${name}.json`)
@@ -34,17 +36,44 @@ export class JsonStore<T extends object> {
     return structuredClone(this.defaults)
   }
 
+  /**
+   * Adopt a newer on-disk copy before mutating.
+   *
+   * The GUI and the CLI deliberately share `~/.skillhub/state`, so both hold the
+   * same document in memory. Without this, adding a repository from the CLI
+   * while the app is open would be silently reverted the next time the app
+   * wrote anything — it would flush its stale copy over the CLI's addition.
+   * Read-modify-write keeps the last writer from discarding the others.
+   */
+  private adoptExternalWrite(): void {
+    // A pending timer means local edits are queued but not yet on disk. Adopting
+    // the file now would throw them away — measured as three installs collapsing
+    // into one record, because each update re-read the pre-install file.
+    if (this.timer) return
+    try {
+      if (!existsSync(this.file)) return
+      const mtime = statSync(this.file).mtimeMs
+      if (mtime <= this.writtenAt) return
+      const parsed = JSON.parse(readFileSync(this.file, 'utf8'))
+      this.data = { ...structuredClone(this.defaults), ...parsed }
+    } catch {
+      // An unreadable file must not block the mutation; keep what we have.
+    }
+  }
+
   get(): T {
     return this.data
   }
 
   set(patch: Partial<T>): T {
+    this.adoptExternalWrite()
     this.data = { ...this.data, ...patch }
     this.schedule()
     return this.data
   }
 
   replace(next: T): T {
+    this.adoptExternalWrite()
     this.data = next
     this.schedule()
     return this.data
@@ -52,6 +81,7 @@ export class JsonStore<T extends object> {
 
   /** Mutate through a callback, then persist. */
   update<R>(fn: (draft: T) => R): R {
+    this.adoptExternalWrite()
     const result = fn(this.data)
     this.schedule()
     return result
@@ -72,6 +102,7 @@ export class JsonStore<T extends object> {
       const tmp = `${this.file}.tmp`
       writeFileSync(tmp, JSON.stringify(this.data, null, 2), 'utf8')
       renameSync(tmp, this.file)
+      this.writtenAt = statSync(this.file).mtimeMs
     } catch (err) {
       console.error(`[store] failed to write ${this.file}`, err)
     }
@@ -90,8 +121,4 @@ const stores: { flush: () => void }[] = []
 
 export function registerStore(s: { flush: () => void }): void {
   stores.push(s)
-}
-
-export function appConfigDir(): string {
-  return app.getPath('userData')
 }

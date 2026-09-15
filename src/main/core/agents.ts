@@ -119,10 +119,6 @@ export function loadRegistry(): RegistryEntry[] {
   return registryCache
 }
 
-export function registryMeta(): { path: string; count: number; agents: RegistryEntry[] } {
-  return { path: curatedAgentRegistryPath(), count: loadRegistry().length, agents: loadRegistry() }
-}
-
 function resolveBinary(name: string): string | null {
   return which(name)
 }
@@ -361,8 +357,4 @@ export function scanAgentDir(agentId: string): DirEntry[] {
     })
   }
   return out.sort((a, b) => a.name.localeCompare(b.name))
-}
-
-export function displayPath(p: string): string {
-  return tildify(expandPath(p))
 }

@@ -355,27 +355,3 @@ export function managedCountByAgent(): Record<string, number> {
   }
   return out
 }
-
-export function totalSkillsOnDisk(): number {
-  const dirs = new Set<string>()
-  for (const item of library.get().items) {
-    for (const s of item.skills) if (s.localPath) dirs.add(s.localPath)
-  }
-  let n = 0
-  for (const d of dirs) {
-    try {
-      if (existsSync(d) && readdirSync(d).length) n++
-    } catch {
-      /* ignore */
-    }
-  }
-  return n
-}
-
-export function readMarker(p: string): any | null {
-  try {
-    return JSON.parse(readFileSync(join(p, MARKER), 'utf8'))
-  } catch {
-    return null
-  }
-}

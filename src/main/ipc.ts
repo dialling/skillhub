@@ -2,13 +2,11 @@ import { ipcMain, shell, dialog, app } from 'electron'
 import { existsSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import type {
-  AgentTarget,
   LaunchPlan,
   DiskStats,
   InstallProgress,
   InstallRequest,
   JobProgress,
-  LibraryItem,
   RepoMeta,
   Settings,
   SkillEntry
@@ -231,7 +229,7 @@ export function registerIpc(send: Broadcast): void {
   handle('library:addLocal', (dir: string) => addLocalDir(dir))
   handle('library:sync', (id: string) => syncItem(id))
   handle('library:remove', (id: string, deleteFiles?: boolean) => removeItem(id, deleteFiles !== false))
-  handle('library:addWithSkills', async (fullName: string, skillDirs: string[]) => {
+  handle('library:addWithSkills', async (fullName: string) => {
     const item = await addRepo(fullName)
     return item
   })

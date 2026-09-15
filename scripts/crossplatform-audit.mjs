@@ -76,6 +76,35 @@ function walk(dir, out = []) {
   return out
 }
 
+/*
+  Consistency rules. These catch a different failure than the pattern rules above:
+  not "the code uses a macOS-only API" but "two halves of one feature disagree".
+  They exist because a claimed platform branch was once committed in a message
+  while the edit silently did not apply, and no single-file check could see it.
+*/
+const CONSISTENCY = [
+  {
+    what: 'CSS 为 Windows 预留了窗口控件空间，主进程却没有设置 titleBarOverlay（窗口将无法关闭）',
+    check: (read) => {
+      const css = read('src/renderer/src/styles.css') || ''
+      const main = read('src/main/index.ts') || ''
+      if (!/data-platform='win32'/.test(css)) return null
+      if (/titleBarOverlay/.test(main)) return null
+      return "styles.css 里有 html[data-platform='win32'] .titlebar 的留白，但 index.ts 从未设置 titleBarOverlay"
+    }
+  },
+  {
+    what: 'CSS 为 macOS 预留了红绿灯空间，主进程却没有使用 hiddenInset',
+    check: (read) => {
+      const css = read('src/renderer/src/styles.css') || ''
+      const main = read('src/main/index.ts') || ''
+      if (!/data-platform='darwin'/.test(css)) return null
+      if (/titleBarStyle:\s*'hiddenInset'/.test(main)) return null
+      return "styles.css 为 darwin 留了 92px，但 index.ts 没有 hiddenInset，标题栏会白白空出一块"
+    }
+  }
+]
+
 const findings = []
 let waivedCount = 0
 
@@ -101,8 +130,19 @@ for (const file of [...walk(join(root, 'src')), ...walk(join(root, 'scripts'))])
   })
 }
 
+for (const rule of CONSISTENCY) {
+  const problem = rule.check((rel) => {
+    try {
+      return readFileSync(join(root, rel), 'utf8')
+    } catch {
+      return null
+    }
+  })
+  if (problem) findings.push({ rule: 'consistency', what: rule.what, file: '(跨文件)', line: 0, text: problem })
+}
+
 if (!findings.length) {
-  console.log(`PASS — 未发现未处理的平台专属写法（已豁免 ${waivedCount} 处，均有书面理由）`)
+  console.log(`PASS — 未发现未处理的平台专属写法（已豁免 ${waivedCount} 处，均有书面理由），跨文件一致性检查通过`)
   process.exit(0)
 }
 

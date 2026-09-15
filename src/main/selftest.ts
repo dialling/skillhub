@@ -13,6 +13,7 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, lstatSync }
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { flushAll, installs, library, settings } from './core/db'
+import { JsonStore } from './core/store'
 import {
   activeToken,
   listSkillDirs,
@@ -26,6 +27,7 @@ import { curatedCatalog } from './core/catalog'
 import { addRepo, libraryItems, removeItem } from './core/library'
 import { installSkills, installedSkills, uninstall } from './core/installer'
 import { buildRemoteSkills } from './core/skills'
+import { userDataDir } from './core/paths'
 import { leaderboard } from './core/leaderboard'
 
 const results: { name: string; ok: boolean; detail: string }[] = []
@@ -62,6 +64,43 @@ async function main(): Promise<number> {
     }
   }
   check('authenticated viewer lookup', viewerOk, viewerDetail)
+
+  /*
+    The GUI and the CLI share ~/.skillhub/state on purpose, so two processes hold
+    the same document. Without a read-before-write, whichever flushed last would
+    silently erase the other's change. This reproduces that interleaving: write
+    from "another process", then mutate through the store, and check the other
+    process's change survived.
+  */
+  section('State store: two writers do not clobber each other')
+  {
+    const probe = new JsonStore<{ items: string[] }>('__selftest_concurrent', { items: [] })
+    probe.update((d) => {
+      d.items = ['from-app']
+    })
+    probe.flush()
+
+    // Stand in for the CLI: a separate writer changes the file underneath us.
+    const other = new JsonStore<{ items: string[] }>('__selftest_concurrent', { items: [] })
+    other.update((d) => {
+      d.items = [...d.items, 'from-cli']
+    })
+    other.flush()
+
+    probe.update((d) => {
+      d.items = [...d.items, 'from-app-again']
+    })
+    probe.flush()
+
+    const final = JSON.parse(readFileSync(join(userDataDir(), '__selftest_concurrent.json'), 'utf8'))
+    check('adopts another process\'s write instead of overwriting it', final.items.includes('from-cli'), final.items.join(' → '))
+    check('keeps its own writes too', final.items.includes('from-app-again'), `${final.items.length} entries`)
+    try {
+      rmSync(join(userDataDir(), '__selftest_concurrent.json'), { force: true })
+    } catch {
+      /* best effort */
+    }
+  }
 
   section('Curated catalog (bundled)')
   const catalog = await curatedCatalog()

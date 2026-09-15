@@ -30,19 +30,6 @@ export function defaultLibraryDir(): string {
   return join(skillhubRoot(), 'library')
 }
 
-/** Materialized, SkillHub-owned skill folders that agents point at. */
-export function storeDir(): string {
-  const dir = join(skillhubRoot(), 'store')
-  ensureDir(dir)
-  return dir
-}
-
-export function cacheDir(): string {
-  const dir = join(skillhubRoot(), 'cache')
-  ensureDir(dir)
-  return dir
-}
-
 export function ensureDir(dir: string): string {
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
   return dir
@@ -154,9 +141,4 @@ export function safeSegment(input: string): string {
 /** Deterministic folder name for a library checkout. */
 export function libraryFolderName(fullName: string): string {
   return safeSegment(fullName.replace('/', '__'))
-}
-
-/** Deterministic folder name for a materialized skill in the store. */
-export function storeFolderName(skillId: string): string {
-  return safeSegment(skillId.replace('::', '__').replace(/\//g, '__'))
 }

@@ -5,20 +5,18 @@ import {
   FolderOpen,
   Link2,
   Copy,
-  Languages,
   Sparkles,
   RefreshCw,
   Database,
   Info,
   Check,
-  FlaskConical,
   HardDriveDownload,
   Terminal,
   LogOut,
   Palette
 } from 'lucide-react'
-import { THEMES, THEME_ORDER, type ThemeId } from '../theme'
-import { api, fmtBytes } from '../api'
+import { THEMES, THEME_ORDER } from '../theme'
+import { api } from '../api'
 import { useStore } from '../store'
 
 export function SettingsView(): React.JSX.Element {
@@ -26,7 +24,6 @@ export function SettingsView(): React.JSX.Element {
   const lang = useStore((s) => s.lang)
   const settings = useStore((s) => s.settings)
   const updateSettings = useStore((s) => s.updateSettings)
-  const rate = useStore((s) => s.rate)
   const tokenSource = useStore((s) => s.tokenSource)
   const installTarget = useStore((s) => s.installTarget)
   const setShowTargetModal = useStore((s) => s.setShowTargetModal)
@@ -36,7 +33,6 @@ export function SettingsView(): React.JSX.Element {
   const [token, setToken] = useState(settings?.token || '')
   const [libraryDir, setLibraryDir] = useState(settings?.libraryDir || '')
   const [sys, setSys] = useState<Record<string, any> | null>(null)
-  const [testing, setTesting] = useState(false)
   const [showToken, setShowToken] = useState(false)
 
   /** Language changes also have to rebuild the native application menu. */
@@ -47,7 +43,9 @@ export function SettingsView(): React.JSX.Element {
   const [refreshing, setRefreshing] = useState(false)
 
   useEffect(() => {
-    void api.system.stats().then(setSys)
+    // The stats pane is informational; if the call fails it stays empty rather
+    // than raising an unhandled rejection (preload rejects on ok:false).
+    void api.system.stats().then(setSys).catch(() => setSys(null))
   }, [])
 
   useEffect(() => {

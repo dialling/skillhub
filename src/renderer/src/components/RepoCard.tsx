@@ -1,8 +1,8 @@
-import { Star, Download, Check, Plus, ExternalLink, GitFork, Layers } from 'lucide-react'
+import { Star, Check, Plus, ExternalLink, Layers } from 'lucide-react'
 import type { RepoMeta } from '@shared/types'
 import { fmtRelative, fmtStars, gradientFor } from '../api'
 import { useStore } from '../store'
-import { CATEGORY_LABELS, FN_LABELS, REPO_KIND_LABELS, type FnCategory, type RepoKind } from '@shared/types'
+import { CATEGORY_LABELS, FN_LABELS, REPO_KIND_LABELS, type FnCategory } from '@shared/types'
 import { fnColor } from './Sidebar'
 
 export function RepoArt({

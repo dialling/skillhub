@@ -7,8 +7,7 @@
  * Windows, so they are collected here rather than sprinkled through the code.
  */
 import { execFileSync } from 'node:child_process'
-import { existsSync, readdirSync } from 'node:fs'
-import { delimiter, isAbsolute, join } from 'node:path'
+import { isAbsolute, join } from 'node:path'
 
 export const isMac = process.platform === 'darwin'
 export const isWindows = process.platform === 'win32'
