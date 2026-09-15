@@ -29,10 +29,12 @@ export function LaunchModal(): React.JSX.Element | null {
   const runLaunch = useStore((s) => s.runLaunch)
   const library = useStore((s) => s.library)
   const settings = useStore((s) => s.settings)
+  const installMap = useStore((s) => s.installMap)
 
   const [workspace, setWorkspace] = useState('')
   const [agentId, setAgentId] = useState('')
 
+  const skillIdPrefix = source?.from === 'library' ? source.skillId : null
   const skill = source?.from === 'library' ? library.flatMap((i) => i.skills).find((s) => s.id === source.skillId) : undefined
   const skillLabel = source?.from === 'library' ? skill?.name || '' : source?.name || ''
 
@@ -49,6 +51,21 @@ export function LaunchModal(): React.JSX.Element | null {
     const handle = setTimeout(() => void buildPlan(agentId, workspace), 250)
     return () => clearTimeout(handle)
   }, [open, agentId, workspace, buildPlan])
+
+  /*
+    Whether the chosen agent already has this skill globally.
+
+    Launching does not require it: the skill is installed into the workspace at
+    project level either way, which is what makes an unimported skill launchable
+    at all. But "not installed" is something the user wanted to be told, so it is
+    stated rather than left to be discovered — as a fact, not as an error, since
+    the launch works regardless.
+  */
+  const skillIdsForLaunch = library
+    .flatMap((i) => i.skills)
+    .filter((sk) => (skillIdPrefix ? sk.id.startsWith(skillIdPrefix) : false))
+    .map((sk) => sk.id)
+  const installedHere = skillIdsForLaunch.some((id) => (installMap[id] || []).includes(agentId))
 
   if (!open) return null
 
@@ -69,6 +86,19 @@ export function LaunchModal(): React.JSX.Element | null {
           <p className="dim" style={{ fontSize: 12.5, marginBottom: 16, lineHeight: 1.65 }}>
             {t('launch.intro')}
           </p>
+          {agentId && (
+            <div className={`notice ${installedHere ? 'notice-ok' : 'notice-plain'}`} style={{ marginBottom: 14 }}>
+              <Info size={14} />
+              <span>
+                {installedHere
+                  ? t('launch.installedHere', { agent: targets.find((x) => x.agentId === agentId)?.name || agentId })
+                  : t('launch.notInstalledHere', {
+                      agent: targets.find((x) => x.agentId === agentId)?.name || agentId
+                    })}
+              </span>
+            </div>
+          )}
+
           {source?.from === 'local' && (
             <div className="notice notice-plain" style={{ marginBottom: 16 }}>
               <Info size={14} />
@@ -117,6 +147,9 @@ export function LaunchModal(): React.JSX.Element | null {
           {/* 2. agent ----------------------------------------------------- */}
           <div className="side-section-title" style={{ padding: '0 0 8px' }}>
             2 · {t('launch.agent')}
+            <span className="dim" style={{ marginLeft: 8, fontWeight: 400 }}>
+              {t('launch.agentCount', { ready: targets.filter((x) => x.ready).length, total: targets.length })}
+            </span>
           </div>
           <div className="launch-agents">
             {targets.map((a) => (

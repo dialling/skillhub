@@ -132,6 +132,33 @@ for (const file of walk(join(root, 'src', 'renderer', 'src'))) {
   })
 }
 
+/*
+  Template keys.
+
+  `t(`launch.kind.${kind}`) never goes through the literal scan below, so a
+  missing `launch.kind.*` family shipped to the window as raw keys — the store
+  showed "launch.kind.app" where it should have said "应用". Any template whose
+  prefix resolves to nothing in the dictionary is a family that does not exist.
+*/
+const templatePrefixes = new Map()
+for (const file of walk(join(root, 'src', 'renderer', 'src'))) {
+  const src = stripComments(readFileSync(file, 'utf8'))
+  src.split('\n').forEach((line, idx) => {
+    for (const m of line.matchAll(/\bt\(\s*`([^`$]*)\$\{/g)) {
+      const prefix = m[1]
+      if (!prefix) continue
+      if (!templatePrefixes.has(prefix)) templatePrefixes.set(prefix, [])
+      templatePrefixes.get(prefix).push({ file: relative(root, file), line: idx + 1 })
+    }
+  })
+}
+const emptyFamilies = [...templatePrefixes.entries()].filter(
+  ([prefix]) => ![...dictKeys].some((k) => k.startsWith(prefix))
+)
+for (const [prefix, refs] of emptyFamilies) {
+  missing.push({ key: `${prefix}*`, refs, uses: refs.length })
+}
+
 const missing = [...usedKeys.entries()]
   .filter(([key]) => !dictKeys.has(key))
   .map(([key, refs]) => ({ key, refs: refs.slice(0, 3), uses: refs.length }))

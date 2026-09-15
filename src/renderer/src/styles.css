@@ -3578,3 +3578,16 @@ button.status-item:hover {
 .star-btn:disabled {
   opacity: 0.6;
 }
+
+/* Positive state notice: "this is already in place", not a warning. */
+.notice.notice-ok {
+  border-color: rgba(63, 185, 80, 0.4);
+  background: rgba(63, 185, 80, 0.08);
+}
+.notice.notice-ok svg {
+  color: var(--ok);
+}
+/* The agent list is the step that needs choosing, so it gets the room. */
+.launch-agents {
+  max-height: 320px;
+}

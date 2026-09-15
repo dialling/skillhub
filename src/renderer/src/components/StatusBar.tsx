@@ -27,7 +27,10 @@ export function StatusBar(): React.JSX.Element {
     return () => clearInterval(handle)
   }, [refreshRate])
 
-  const installedCount = Object.values(installMap).reduce((n, l) => n + l.length, 0)
+  // Distinct skills, not install records: one skill in three agents is one
+  // installed skill, and reporting it as three overstates what the user has.
+  const installedCount = Object.values(installMap).filter((l) => l.length).length
+  const installedAgents = new Set(Object.values(installMap).flat()).size
   const activeAgents = agents.filter((a) => a.enabled)
   const totalSkills = library.reduce((n, i) => n + i.skills.length, 0)
   const pct = rate && rate.limit ? Math.round((rate.remaining / rate.limit) * 100) : 100
@@ -76,7 +79,9 @@ export function StatusBar(): React.JSX.Element {
 
       <span className="status-item">
         <Zap size={11} className={installedCount ? 'up' : ''} />
-        {t('status.installed')} {installedCount}
+        <span title={t('status.installedHint', { n: installedAgents })}>
+          {t('status.installed')} {installedCount}
+        </span>
       </span>
 
       <span className="status-spacer" />

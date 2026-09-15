@@ -130,6 +130,17 @@ export function DetailPanel(): React.JSX.Element | null {
     }
   }
 
+  /*
+    How much of the current selection is already in place. `installMap` counts a
+    skill once per agent, so a skill present in one of two chosen agents still
+    has work left — the comparison is per agent, not per skill.
+  */
+  const selectedSkills = skills.filter((s) => selected.has(s.id))
+  const installedSelection = selectedSkills.filter((s) => (installMap[s.id] || []).length > 0).length
+  const pendingSelection = selectedSkills.filter((s) =>
+    [...targets].some((a) => !(installMap[s.id] || []).includes(a))
+  ).length
+
   const doInstall = async (): Promise<void> => {
     if (!selected.size) {
       toast('info', t('detail.noneSelected'))
@@ -568,13 +579,35 @@ export function DetailPanel(): React.JSX.Element | null {
                     </button>
                   </div>
 
+                  {/*
+                    Select only what actually needs installing.
+
+                    Clicking install with everything already in place used to run
+                    the whole operation again: the installer is idempotent, so
+                    nothing broke, but the user could not tell that it was a no-op
+                    and reasonably read the second run as a duplicate install.
+                    The button now reports what it would do and does nothing when
+                    there is nothing to do.
+                  */}
                   <button
                     className="btn primary lg block"
-                    disabled={busy || !skills.length}
+                    disabled={busy || !skills.length || pendingSelection === 0}
                     onClick={() => void doInstall()}
                   >
-                    {busy ? <span className="spinner" /> : <Download size={14} />}
-                    {inLibrary ? t('detail.doInstall') : t('detail.addAndInstall')}
+                    {busy ? (
+                      <span className="spinner" />
+                    ) : pendingSelection === 0 ? (
+                      <Check size={14} />
+                    ) : (
+                      <Download size={14} />
+                    )}
+                    {pendingSelection === 0
+                      ? t('detail.alreadyInstalled')
+                      : installedSelection > 0
+                        ? t('detail.installRemaining', { n: pendingSelection })
+                        : inLibrary
+                          ? t('detail.doInstall')
+                          : t('detail.addAndInstall')}
                   </button>
                   {(meta?.repoKind === 'reference' || !skills.length) && (
                     <div className="hint" style={{ marginTop: 8, textAlign: 'center' }}>

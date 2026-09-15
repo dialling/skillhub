@@ -14,6 +14,11 @@ window.addEventListener('unhandledrejection', (e) => {
   e.preventDefault()
 })
 
+// Verification hook: a key that resolved to itself is a translation that never
+// existed, and it would otherwise only be noticed as odd-looking text.
+import { missingI18nKeys } from './i18n'
+;(window as unknown as Record<string, unknown>).__missingI18nKeys = missingI18nKeys
+
 const el = document.getElementById('root')
 if (!el) throw new Error('#root not found')
 

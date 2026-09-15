@@ -69,7 +69,21 @@ export function LibraryView(): React.JSX.Element {
 
   const selected = items.find((i) => i.id === selectedId) || items[0] || null
   const activeAgents = agents.filter((a) => a.enabled)
-  const installedTotal = Object.values(installMap).reduce((n, l) => n + l.length, 0)
+  /*
+    Two different numbers, and the UI used to show the wrong one.
+
+    One skill installed into three agents produces three install records; showing
+    that total as "installed 201" tells the user they have 201 skills when they
+    have 67. The count people mean is distinct skills; the record count is a
+    detail for the tooltip.
+  */
+  const installedSkills = Object.values(installMap).filter((l) => l.length).length
+  const installedRecords = Object.values(installMap).reduce((n, l) => n + l.length, 0)
+  /** Skills that are not installed anywhere yet — what a bulk install would do. */
+  const pendingSkills = library.reduce(
+    (n, item) => n + item.skills.filter((s) => !(installMap[s.id] || []).length).length,
+    0
+  )
 
   const installEverything = async (): Promise<void> => {
     if (!activeAgents.length) return
@@ -174,7 +188,9 @@ export function LibraryView(): React.JSX.Element {
         </div>
 
         <span className="dim mono" style={{ fontSize: 11 }}>
-          {t('library.installedTotal', { n: installedTotal })}
+          <span title={t('library.installedBreakdown', { skills: installedSkills, records: installedRecords, agents: activeAgents.length })}>
+            {t('library.installedTotal', { n: installedSkills })}
+          </span>
         </span>
 
         <div className="row" style={{ marginLeft: 'auto', gap: 8 }}>
@@ -184,12 +200,21 @@ export function LibraryView(): React.JSX.Element {
           </button>
           <button
             className="btn primary"
-            disabled={bulkBusy || !activeAgents.length}
+            disabled={bulkBusy || !activeAgents.length || pendingSkills === 0}
             onClick={() => void installEverything()}
-            title={activeAgents.map((a) => a.name).join(', ')}
+            title={
+              pendingSkills === 0
+                ? t('library.allInstalled')
+                : t('library.installPendingHint', {
+                    n: pendingSkills,
+                    agents: activeAgents.map((a) => a.name).join(', ')
+                  })
+            }
           >
-            {bulkBusy ? <span className="spinner" /> : <Download size={13} />}
-            {t('detail.doInstall')} · {activeAgents.length}
+            {bulkBusy ? <span className="spinner" /> : pendingSkills === 0 ? <Check size={13} /> : <Download size={13} />}
+            {pendingSkills === 0
+              ? t('library.allInstalledShort')
+              : t('library.installPending', { n: pendingSkills })}
           </button>
         </div>
       </div>

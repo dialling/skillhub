@@ -101,6 +101,8 @@ const DICT: Dict = {
   'card.installed': ['已安装', 'Installed'],
   'card.details': ['详情', 'Details'],
   'card.viewRepo': ['GitHub', 'GitHub'],
+  'detail.alreadyInstalled': ['已全部安装', 'All installed'],
+  'detail.installRemaining': ['安装剩余 {n} 个', 'Install remaining {n}'],
   'detail.nothingToInstall': ['该仓库没有可安装的技能', 'This repository has no installable skills'],
   'detail.kindReference': ['这是一个资料 / 规范仓库，本身不含可安装的技能。可以入库收藏，但无法安装到智能体。', 'This is a reference or specification repository. It ships no installable skills — you can bookmark it, but there is nothing to install into an agent.'],
   'detail.kindSoftware': ['这是一个软件项目，下面列出的技能是它附带的。仓库本身需要单独安装或构建。', 'This is a software project; the skills below are ones it happens to ship. The application itself is installed or built separately.'],
@@ -158,6 +160,11 @@ const DICT: Dict = {
   'library.sync': ['同步更新', 'Sync'],
   'library.syncing': ['同步中…', 'Syncing…'],
   'library.viewGrid': ['网格', 'Grid'],
+  'library.installedBreakdown': ['{skills} 个技能已安装，共 {records} 条安装记录（同一技能装到多个智能体各计一条），启用中的智能体 {agents} 个', '{skills} installed skills across {records} records (one per skill per agent), {agents} agents enabled'],
+  'library.allInstalled': ['库里的技能都已经装到所有启用中的智能体', 'Every skill in the library is already installed in all enabled agents'],
+  'library.allInstalledShort': ['已全部安装', 'All installed'],
+  'library.installPending': ['安装待装 {n} 个', 'Install {n} pending'],
+  'library.installPendingHint': ['有 {n} 个技能还没安装，将装到：{agents}', '{n} skills are not installed yet; they will go to: {agents}'],
   'library.installedTotal': ['已安装 {n} 个技能', '{n} skills installed'],
   'library.open': ['打开', 'Open'],
   'library.heroNotInstalled': ['尚未安装到任何智能体 —— 点「启动」会自动装好', 'Not installed into any agent yet — Launch installs it for you'],
@@ -171,8 +178,14 @@ const DICT: Dict = {
   'launch.workspace': ['工作区', 'Workspace'],
   'launch.workspacePlaceholder': ['选择或输入一个项目目录', 'Choose or type a project folder'],
   'launch.agent': ['智能体', 'Agent'],
+  'launch.kind.cli': ['终端', 'terminal'],
+  'launch.kind.app': ['应用', 'app'],
+  'launch.kind.web': ['网页', 'web'],
   'launch.noAgents': ['没有可启动的智能体', 'No launchable agents found'],
   'launch.notInstalled': ['未检测到，无法启动', 'not installed'],
+  'launch.installedHere': ['这个技能已经装在 {agent} 上', 'This skill is already installed in {agent}'],
+  'launch.notInstalledHere': ['这个技能还没全局装到 {agent} —— 启动时会给工作区做项目级安装，所以照样能用；想让它全局可用可以先去安装', 'This skill is not installed globally in {agent}. Launching installs it into the workspace at project level, so it still works; install it first if you want it available everywhere.'],
+  'launch.agentCount': ['{ready} 个可用 / 共 {total} 个', '{ready} available of {total}'],
   'launch.willDo': ['将会执行', 'What will happen'],
   'launch.stepFolder': ['创建工作目录', 'Create working folder'],
   'launch.stepInstall': ['项目级安装技能到', 'Install the skill at project level into'],
@@ -327,6 +340,7 @@ const DICT: Dict = {
   'status.rateTooltip': ['GitHub API 额度 {remaining}/{limit}（每小时回满）', 'GitHub API quota {remaining}/{limit} (resets hourly)'],
   'status.quotaLow': ['额度仅剩 {n}', 'only {n} calls left'],
   'status.agents': ['智能体', 'Agents'],
+  'status.installedHint': ['分布在 {n} 个智能体上', 'across {n} agents'],
   'status.installed': ['已安装', 'Installed'],
   'status.offline': ['离线', 'offline'],
 
@@ -365,6 +379,29 @@ export function translate(
   return out
 }
 
+/**
+ * Keys the dictionary did not have, recorded rather than silently rendered.
+ *
+ * A missing key returns the key itself, which puts "launch.kind.app" on screen —
+ * exactly what happened, and the static audit could not see it because that call
+ * builds its key from a template. Recording them means the leak is detectable
+ * instead of merely visible: `window.__missingI18nKeys` lists them, and the
+ * console says so once per key.
+ */
+const missingKeys = new Set<string>()
+
 export function makeT(lang: Lang) {
-  return (key: string, vars?: Record<string, string | number | undefined>): string => translate(lang, key, vars)
+  return (key: string, vars?: Record<string, string | number | undefined>): string => {
+    const out = translate(lang, key, vars)
+    if (out === key && key.includes('.') && !missingKeys.has(key)) {
+      missingKeys.add(key)
+      console.error(`[i18n] 缺少词条：${key}`)
+    }
+    return out
+  }
+}
+
+/** Exposed for verification: every key that resolved to itself. */
+export function missingI18nKeys(): string[] {
+  return [...missingKeys]
 }
