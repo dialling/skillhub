@@ -27,6 +27,7 @@ import { curatedCatalog } from './core/catalog'
 import { CATEGORY_LABELS, FN_LABELS, REPO_KIND_LABELS } from '../shared/types'
 import { addRepo, libraryItems, removeItem } from './core/library'
 import { installSkills, installedSkills, uninstall } from './core/installer'
+import { launchTargets, prepareLaunch } from './core/launch'
 import { buildRemoteSkills } from './core/skills'
 import { userDataDir } from './core/paths'
 import { leaderboard } from './core/leaderboard'
@@ -263,6 +264,57 @@ async function main(): Promise<number> {
   const copied = join(fakeAgentDir, outcome2.ok[0] ? outcome2.ok[0].linkPath.split('/').pop()! : '')
   check('copy is a real directory', existsSync(copied) && !lstatSync(copied).isSymbolicLink())
   check('copy carries marker file', existsSync(join(copied, '.skillhub-install.json')))
+
+  /*
+    The launch plan must carry everything runLaunch reads.
+
+    Every app-kind launch failed for a while because `appName` was declared on
+    the metadata, shown in the dialog, and then never copied into the plan — so
+    `plan.launchKind === 'app' && plan.appName` was never true and the launch fell
+    through to "no usable launch method". A shape check catches that class of
+    omission without launching anything.
+  */
+  section('Launch plan carries what the launcher needs')
+  {
+    const targets = launchTargets().filter((t) => t.ready)
+    const madeWorkspaces: string[] = []
+    check('at least one agent is launchable', targets.length > 0, `${targets.length} ready`)
+
+    const appTarget = targets.find((t) => t.kind === 'app')
+    const cliTarget = targets.find((t) => t.kind === 'cli')
+
+    if (appTarget) {
+      const wsA = mkdtempSync(join(tmpdir(), 'skillhub-launch-'))
+      madeWorkspaces.push(wsA)
+      const plan = await prepareLaunch({
+        skillId: pick[0].id,
+        agentId: appTarget.agentId,
+        workspace: wsA
+      })
+      check('app plan carries launchKind', plan.launchKind === 'app', plan.launchKind)
+      check('app plan carries appName', !!plan.appName, plan.appName || '(missing)')
+    }
+
+    if (cliTarget) {
+      const wsB = mkdtempSync(join(tmpdir(), 'skillhub-launch-'))
+      madeWorkspaces.push(wsB)
+      const plan = await prepareLaunch({
+        skillId: pick[0].id,
+        agentId: cliTarget.agentId,
+        workspace: wsB
+      })
+      check('cli plan carries command', !!plan.command, plan.command || '(missing)')
+      check(
+        'cli plan carries prompt routing',
+        plan.promptArgs !== undefined || plan.promptStyle !== undefined,
+        JSON.stringify(plan.promptArgs ?? plan.promptStyle ?? null)
+      )
+    }
+
+    // The plans wrote a workspace under the throwaway home; drop them so the
+    // "agent dir emptied" check later still means what it says.
+    for (const w of madeWorkspaces) rmSync(w, { recursive: true, force: true })
+  }
 
   section('Uninstall + cleanup')
   /*

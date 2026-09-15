@@ -238,7 +238,8 @@
         "kind": "app",
         "appName": "Windsurf",
         "command": "windsurf",
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
       }
     },
     {
@@ -265,7 +266,8 @@
         "kind": "app",
         "appName": "Visual Studio Code",
         "command": "code",
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
       }
     },
     {
@@ -320,7 +322,8 @@
         "kind": "app",
         "appName": "Visual Studio Code",
         "command": "code",
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
       }
     },
     {
@@ -347,7 +350,8 @@
         "kind": "app",
         "appName": "Visual Studio Code",
         "command": "code",
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
       }
     },
     {
@@ -403,7 +407,8 @@
       "launch": {
         "kind": "app",
         "appName": "Trae",
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
       }
     },
     {
@@ -431,7 +436,8 @@
       "launch": {
         "kind": "app",
         "appName": "Kiro",
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
       }
     },
     {
@@ -525,7 +531,8 @@
         "kind": "app",
         "appName": "Visual Studio Code",
         "command": "code",
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
       }
     },
     {
@@ -555,7 +562,8 @@
         "kind": "app",
         "appName": "Zed",
         "command": "zed",
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
       }
     },
     {
@@ -581,7 +589,8 @@
       "launch": {
         "kind": "app",
         "appName": "Warp",
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
       }
     },
     {
@@ -640,8 +649,10 @@
         "kind": "app",
         "appName": "DSH Desktop",
         "command": "dsh",
-        "instructionFile": "AGENTS.md"
-      }
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
+      },
+      "launchNote": "打开 DSH Desktop 客户端。本应用无法为它新建工作区 —— 该客户端是外壳，工作区由内部 harness 管理，主进程只读 argv 判断安全模式，从不解析路径，也没有声明 URL scheme 或文档类型。因此提示词会复制到剪贴板，你在客户端里打开 ~/.skillhub/sandbox/<技能名> 后直接粘贴即可。"
     },
     {
       "id": "agents-standard",
@@ -664,7 +675,8 @@
       "launch": {
         "kind": "web",
         "url": "https://chatgpt.com",
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
       }
     },
     {
@@ -688,7 +700,8 @@
       "launch": {
         "kind": "app",
         "appName": "Tongyi Lingma",
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
       }
     },
     {
@@ -1240,7 +1253,8 @@
       "launch": {
         "kind": "web",
         "url": "https://grok.com",
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
       }
     },
     {
@@ -1266,7 +1280,8 @@
       "launch": {
         "kind": "web",
         "url": "https://app.devin.ai",
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
       }
     },
     {
@@ -1503,7 +1518,8 @@
       "launch": {
         "kind": "app",
         "appName": "OpenClaw",
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
       }
     },
     {
@@ -1778,7 +1794,8 @@
       "launch": {
         "kind": "app",
         "appName": "Emdash",
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
       }
     },
     {
@@ -2062,7 +2079,8 @@
       "launch": {
         "kind": "web",
         "url": "https://replit.com",
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
       }
     },
     {

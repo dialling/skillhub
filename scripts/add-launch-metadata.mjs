@@ -49,8 +49,13 @@ const LAUNCH = {
   'kimi-code': { kind: 'cli', command: 'kimi', promptStyle: 'flag', promptFlag: '-p', instructionFile: 'AGENTS.md' },
   // DSH's desktop client, not its CLI. `dsh` on PATH is "profile boot, plugin
   // management, and the browser UI alias" — it does not take a prompt, and the
-  // form people actually work in is the app. Launching the CLI opened a terminal
-  // that did not start anything resembling the agent.
+  // form people actually work in is the app.
+  //
+  // The client cannot be handed a workspace either: it is a shell around an
+  // internal harness that owns workspaces, its main process reads argv only for
+  // safe-mode and GPU switches (never a path), and it declares no URL scheme and
+  // no document types. So the prompt goes to the clipboard and the user pastes it
+  // after opening the sandbox folder. promptMode 'clipboard' says exactly that.
   dsh: { kind: 'app', appName: 'DSH Desktop', command: 'dsh', instructionFile: 'AGENTS.md' },
   'agents-standard': { kind: 'web', url: 'https://chatgpt.com', instructionFile: 'AGENTS.md' },
   'factory-droid': { kind: 'cli', command: 'droid', promptArg: true, instructionFile: 'AGENTS.md' },

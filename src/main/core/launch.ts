@@ -19,7 +19,7 @@ interface LaunchMeta {
   promptStyle?: 'positional' | 'flag' | 'none'
   promptFlag?: string
   promptArgs?: string[]
-  promptMode?: 'interactive' | 'oneshot'
+  promptMode?: 'interactive' | 'oneshot' | 'clipboard'
   /** legacy boolean, still honoured so existing registry data keeps working */
   promptArg?: boolean
   appName?: string
@@ -125,8 +125,8 @@ export function launchTargets(): LaunchTarget[] {
             // single "dsh <prompt>" shape hid the cases where it was wrong.
             describeCli(meta)
           : meta.kind === 'app'
-            ? m('launch.detailApp', { app: meta.appName || '' })
-            : (meta.url ?? ''),
+            ? `${m('launch.detailApp', { app: meta.appName || '' })}  ·  ${m('launch.modeClipboard')}`
+            : `${meta.url ?? ''}  ·  ${m('launch.modeClipboard')}`,
       ready,
       detected: agent.detected
     })
@@ -249,6 +249,11 @@ export function prepareLaunch(input: {
     agentId: input.agentId,
     agentName: entry?.name || input.agentId,
     launchKind: meta.kind,
+    // Without this the app branch could never run: `runLaunch` guards on
+    // `plan.launchKind === 'app' && plan.appName`, and appName was declared and
+    // displayed but never copied into the plan, so every app launch fell through
+    // to "no usable launch method".
+    appName: meta.appName,
     workspace,
     workFolder,
     projectSkillPath,

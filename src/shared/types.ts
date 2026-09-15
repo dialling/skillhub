@@ -565,7 +565,16 @@ export interface LaunchPlan {
    * for some tools, but it means the session is over before the user can add
    * anything, which is a surprise worth stating rather than hiding.
    */
-  promptMode?: 'interactive' | 'oneshot'
+  promptMode?: 'interactive' | 'oneshot' | 'clipboard'
+  /*
+    Three outcomes, and the user deserves to know which one they are about to get:
+
+      interactive  handed to the tool; the session stays open, keep typing
+      oneshot      handed to the tool; it answers and exits
+      clipboard    cannot be handed over at all — a GUI client has no way to
+                   receive text from outside — so it is put on the clipboard
+                   ready to paste
+  */
   /** legacy boolean, still read when promptStyle is absent */
   promptArg?: boolean
   appName?: string
