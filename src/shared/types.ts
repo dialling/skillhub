@@ -557,6 +557,15 @@ export interface LaunchPlan {
   promptArgs?: string[]
   /** @deprecated superseded by promptArgs */
   promptFlag?: string
+  /**
+   * What handing the prompt over does.
+   *
+   * `interactive` keeps the session open and the user continues in it, which is
+   * what launching from a GUI should do. `oneshot` answers and exits — correct
+   * for some tools, but it means the session is over before the user can add
+   * anything, which is a surprise worth stating rather than hiding.
+   */
+  promptMode?: 'interactive' | 'oneshot'
   /** legacy boolean, still read when promptStyle is absent */
   promptArg?: boolean
   appName?: string

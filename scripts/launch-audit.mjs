@@ -54,6 +54,9 @@ for (const a of agents) {
       if (l.promptStyle !== undefined || l.promptFlag !== undefined || l.promptArg !== undefined) {
         problems.push(`${where}: promptArgs is set alongside the legacy prompt fields`)
       }
+      if (l.promptMode && !['interactive', 'oneshot'].includes(l.promptMode)) {
+        problems.push(`${where}: unknown promptMode "${l.promptMode}"`)
+      }
     } else {
       if (l.promptStyle && !['positional', 'flag', 'none'].includes(l.promptStyle)) {
         problems.push(`${where}: unknown promptStyle "${l.promptStyle}"`)

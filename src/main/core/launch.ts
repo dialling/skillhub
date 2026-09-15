@@ -19,6 +19,7 @@ interface LaunchMeta {
   promptStyle?: 'positional' | 'flag' | 'none'
   promptFlag?: string
   promptArgs?: string[]
+  promptMode?: 'interactive' | 'oneshot'
   /** legacy boolean, still honoured so existing registry data keeps working */
   promptArg?: boolean
   appName?: string
@@ -33,10 +34,16 @@ function launchMeta(agentId: string): LaunchMeta | null {
 
 /** Does this GUI application actually exist on this machine? */
 function appInstalled(name: string | undefined, command: string | undefined): boolean {
-  // The CLI shim an app installs (`cursor`, `code`, `zed`) is the most reliable
-  // signal, and it is also what `open -a` will end up matching.
-  if (command && which(isWindows ? `${command}.exe` : command)) return true
-  if (!name) return false
+  /*
+    Only the bundle counts, because the bundle is what `open -a` needs.
+
+    This used to accept a command on PATH as proof first, on the theory that the
+    shim an app installs is what `open -a` matches. It is not. `cursor-agent`
+    installs a `cursor` shim without installing Cursor IDE, so Cursor showed as
+    launchable and every launch failed with "does not exist" — the shim proved a
+    different program was present.
+  */
+  if (!name) return Boolean(command && which(isWindows ? `${command}.exe` : command))
   if (isWindows) {
     const local = process.env.LOCALAPPDATA || ''
     const pf = process.env.ProgramFiles || 'C:\\Program Files'
@@ -75,7 +82,13 @@ function describeCli(meta: LaunchMeta): string {
   // the cases that were wrong.
   if (meta.promptArgs) {
     const prefix = meta.promptArgs.length ? `${meta.promptArgs.join(' ')} ` : ''
-    return `${command} ${prefix}"${m('launch.promptToken')}"`
+    const line = `${command} ${prefix}"${m('launch.promptToken')}"`
+    // Say which it is. "Runs and exits" is a materially different promise from
+    // "opens a session you can keep typing in", and the user cannot tell from
+    // the command line alone.
+    return meta.promptMode === 'oneshot'
+      ? `${line}  ·  ${m('launch.modeOneshot')}`
+      : `${line}  ·  ${m('launch.modeInteractive')}`
   }
   // Legacy shapes, kept so older registry data still describes itself.
   const style = meta.promptStyle || (meta.promptArg ? 'positional' : 'none')
@@ -244,6 +257,7 @@ export function prepareLaunch(input: {
     prompt,
     command: meta.command,
     promptArgs: meta.promptArgs,
+    promptMode: meta.promptMode,
 
     url: meta.url
   }

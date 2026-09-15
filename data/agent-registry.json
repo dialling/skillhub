@@ -27,10 +27,9 @@
       "launch": {
         "kind": "cli",
         "command": "claude",
-        "promptArgs": [
-          "-p"
-        ],
-        "instructionFile": "CLAUDE.md"
+        "promptArgs": [],
+        "instructionFile": "CLAUDE.md",
+        "promptMode": "interactive"
       }
     },
     {
@@ -58,10 +57,9 @@
       "launch": {
         "kind": "cli",
         "command": "codex",
-        "promptArgs": [
-          "exec"
-        ],
-        "instructionFile": "AGENTS.md"
+        "promptArgs": [],
+        "instructionFile": "AGENTS.md",
+        "promptMode": "interactive"
       }
     },
     {
@@ -88,10 +86,11 @@
       "confidence": "high",
       "sourceUrl": "https://cursor.com/docs/skills",
       "launch": {
-        "kind": "app",
-        "appName": "Cursor",
-        "command": "cursor",
-        "instructionFile": "AGENTS.md"
+        "kind": "cli",
+        "command": "cursor-agent",
+        "promptArgs": [],
+        "instructionFile": "AGENTS.md",
+        "promptMode": "interactive"
       }
     },
     {
@@ -119,10 +118,9 @@
       "launch": {
         "kind": "cli",
         "command": "gemini",
-        "promptArgs": [
-          "-p"
-        ],
-        "instructionFile": "GEMINI.md"
+        "promptArgs": [],
+        "instructionFile": "GEMINI.md",
+        "promptMode": "interactive"
       }
     },
     {
@@ -154,7 +152,8 @@
         "promptArgs": [
           "-p"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -189,7 +188,8 @@
         "promptArgs": [
           "-p"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -294,7 +294,8 @@
         "kind": "cli",
         "command": "qwen",
         "promptArgs": [],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -375,9 +376,10 @@
         "kind": "cli",
         "command": "opencode",
         "promptArgs": [
-          "run"
+          "--prompt"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "interactive"
       }
     },
     {
@@ -459,7 +461,8 @@
         "promptArgs": [
           "-x"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -492,7 +495,8 @@
           "run",
           "-t"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -605,10 +609,9 @@
       "launch": {
         "kind": "cli",
         "command": "droid",
-        "promptArgs": [
-          "exec"
-        ],
-        "instructionFile": "AGENTS.md"
+        "promptArgs": [],
+        "instructionFile": "AGENTS.md",
+        "promptMode": "interactive"
       }
     },
     {
@@ -712,7 +715,8 @@
         "kind": "cli",
         "command": "qoder",
         "promptArgs": [],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -738,10 +742,9 @@
       "launch": {
         "kind": "cli",
         "command": "codebuddy",
-        "promptArgs": [
-          "-p"
-        ],
-        "instructionFile": "AGENTS.md"
+        "promptArgs": [],
+        "instructionFile": "AGENTS.md",
+        "promptMode": "interactive"
       }
     },
     {
@@ -826,10 +829,9 @@
       "launch": {
         "kind": "cli",
         "command": "mcode",
-        "promptArgs": [
-          "exec"
-        ],
-        "instructionFile": "AGENTS.md"
+        "promptArgs": [],
+        "instructionFile": "AGENTS.md",
+        "promptMode": "interactive"
       }
     },
     {
@@ -874,10 +876,9 @@
       "launch": {
         "kind": "cli",
         "command": "neovate",
-        "promptArgs": [
-          "-q"
-        ],
-        "instructionFile": "AGENTS.md"
+        "promptArgs": [],
+        "instructionFile": "AGENTS.md",
+        "promptMode": "interactive"
       }
     },
     {
@@ -906,7 +907,8 @@
         "promptArgs": [
           "-p"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -954,7 +956,8 @@
         "promptArgs": [
           "-p"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -1063,7 +1066,8 @@
           "-x",
           "-p"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -1092,7 +1096,8 @@
         "promptArgs": [
           "exec"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -1118,10 +1123,9 @@
       "launch": {
         "kind": "cli",
         "command": "kode",
-        "promptArgs": [
-          "-p"
-        ],
-        "instructionFile": "AGENTS.md"
+        "promptArgs": [],
+        "instructionFile": "AGENTS.md",
+        "promptMode": "interactive"
       }
     },
     {
@@ -1148,8 +1152,11 @@
       "launch": {
         "kind": "cli",
         "command": "junie",
-        "promptArgs": [],
-        "instructionFile": "AGENTS.md"
+        "promptArgs": [
+          "--prompt"
+        ],
+        "instructionFile": "AGENTS.md",
+        "promptMode": "interactive"
       }
     },
     {
@@ -1175,10 +1182,9 @@
       "launch": {
         "kind": "cli",
         "command": "auggie",
-        "promptArgs": [
-          "-p"
-        ],
-        "instructionFile": "AGENTS.md"
+        "promptArgs": [],
+        "instructionFile": "AGENTS.md",
+        "promptMode": "interactive"
       }
     },
     {
@@ -1207,7 +1213,8 @@
         "promptArgs": [
           "-p"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -1289,7 +1296,8 @@
           "--headless",
           "-t"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -1318,7 +1326,8 @@
         "promptArgs": [
           "-p"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -1348,7 +1357,8 @@
           "rovodev",
           "run"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -1374,10 +1384,9 @@
       "launch": {
         "kind": "cli",
         "command": "vibe",
-        "promptArgs": [
-          "--prompt"
-        ],
-        "instructionFile": "AGENTS.md"
+        "promptArgs": [],
+        "instructionFile": "AGENTS.md",
+        "promptMode": "interactive"
       }
     },
     {
@@ -1406,7 +1415,8 @@
         "promptArgs": [
           "run"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -1435,7 +1445,8 @@
         "promptArgs": [
           "-p"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -1464,7 +1475,8 @@
         "promptArgs": [
           "run"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -1522,7 +1534,8 @@
           "--oneshot",
           "-q"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -1552,7 +1565,8 @@
         "promptArgs": [
           "run"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -1621,7 +1635,8 @@
         "kind": "cli",
         "command": "qodo",
         "promptArgs": [],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -1650,7 +1665,8 @@
         "promptArgs": [
           "-p"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -1679,7 +1695,8 @@
         "promptArgs": [
           "-p"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -1705,10 +1722,9 @@
       "launch": {
         "kind": "cli",
         "command": "pi",
-        "promptArgs": [
-          "-p"
-        ],
-        "instructionFile": "AGENTS.md"
+        "promptArgs": [],
+        "instructionFile": "AGENTS.md",
+        "promptMode": "interactive"
       }
     },
     {
@@ -1735,7 +1751,8 @@
         "kind": "cli",
         "command": "autohand",
         "promptArgs": [],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -1791,7 +1808,8 @@
           "go",
           "--message"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -1820,7 +1838,8 @@
         "promptArgs": [
           "-m"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -1849,7 +1868,8 @@
         "promptArgs": [
           "-p"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -1878,7 +1898,8 @@
         "promptArgs": [
           "run"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -1994,7 +2015,8 @@
         "promptArgs": [
           "run"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -2069,7 +2091,8 @@
         "promptArgs": [
           "-q"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -2098,7 +2121,8 @@
         "promptArgs": [
           "-p"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     },
     {
@@ -2124,10 +2148,9 @@
       "launch": {
         "kind": "cli",
         "command": "kimchi",
-        "promptArgs": [
-          "-p"
-        ],
-        "instructionFile": "AGENTS.md"
+        "promptArgs": [],
+        "instructionFile": "AGENTS.md",
+        "promptMode": "interactive"
       }
     },
     {
@@ -2156,7 +2179,8 @@
         "promptArgs": [
           "run"
         ],
-        "instructionFile": "AGENTS.md"
+        "instructionFile": "AGENTS.md",
+        "promptMode": "oneshot"
       }
     }
   ],
