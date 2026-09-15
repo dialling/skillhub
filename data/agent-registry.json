@@ -621,9 +621,9 @@
       "confidence": "high",
       "sourceUrl": "https://github.com/dataelement/dsh-desktop",
       "launch": {
-        "kind": "cli",
+        "kind": "app",
+        "appName": "DSH Desktop",
         "command": "dsh",
-        "promptArg": true,
         "instructionFile": "AGENTS.md"
       }
     },

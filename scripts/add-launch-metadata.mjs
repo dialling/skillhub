@@ -43,7 +43,11 @@ const LAUNCH = {
   continue: { kind: 'app', appName: 'Visual Studio Code', command: 'code', instructionFile: 'AGENTS.md' },
   'kimi-code': { kind: 'cli', command: 'kimi', promptArg: true, instructionFile: 'AGENTS.md' },
   'kimi-cli': { kind: 'cli', command: 'kimi', promptArg: true, instructionFile: 'AGENTS.md' },
-  dsh: { kind: 'cli', command: 'dsh', promptArg: true, instructionFile: 'AGENTS.md' },
+  // DSH's desktop client, not its CLI. `dsh` on PATH is "profile boot, plugin
+  // management, and the browser UI alias" — it does not take a prompt, and the
+  // form people actually work in is the app. Launching the CLI opened a terminal
+  // that did not start anything resembling the agent.
+  dsh: { kind: 'app', appName: 'DSH Desktop', command: 'dsh', instructionFile: 'AGENTS.md' },
   'agents-standard': { kind: 'web', url: 'https://chatgpt.com', instructionFile: 'AGENTS.md' },
   'factory-droid': { kind: 'cli', command: 'droid', promptArg: true, instructionFile: 'AGENTS.md' },
   openclaw: { kind: 'app', appName: 'OpenClaw', instructionFile: 'AGENTS.md' },
