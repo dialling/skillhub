@@ -90,6 +90,7 @@ const M: Record<string, [zh: string, en: string]> = {
   ],
   'launch.startedCli': ['已在终端启动 {agent}', 'Started {agent} in Terminal'],
   'launch.startedApp': ['已打开 {agent}，提示词已复制到剪贴板', 'Opened {agent}; the prompt is on your clipboard'],
+  'launch.promptToken': ['提示词', 'prompt'],
   'launch.detailCliFlag': ['{command} {flag} "<提示词>"', '{command} {flag} "<prompt>"'],
   'launch.detailCli': ['{command}', '{command}'],
   'launch.detailCliPrompt': ['{command} "<提示词>"', '{command} "<prompt>"'],

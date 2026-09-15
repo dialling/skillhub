@@ -27,7 +27,9 @@
       "launch": {
         "kind": "cli",
         "command": "claude",
-        "promptArg": true,
+        "promptArgs": [
+          "-p"
+        ],
         "instructionFile": "CLAUDE.md"
       }
     },
@@ -56,7 +58,9 @@
       "launch": {
         "kind": "cli",
         "command": "codex",
-        "promptArg": true,
+        "promptArgs": [
+          "exec"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -115,7 +119,9 @@
       "launch": {
         "kind": "cli",
         "command": "gemini",
-        "promptArg": true,
+        "promptArgs": [
+          "-p"
+        ],
         "instructionFile": "GEMINI.md"
       }
     },
@@ -145,8 +151,9 @@
       "launch": {
         "kind": "cli",
         "command": "copilot",
-        "promptStyle": "flag",
-        "promptFlag": "-p",
+        "promptArgs": [
+          "-p"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -179,8 +186,9 @@
       "launch": {
         "kind": "cli",
         "command": "kimi",
-        "promptStyle": "flag",
-        "promptFlag": "-p",
+        "promptArgs": [
+          "-p"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -285,7 +293,7 @@
       "launch": {
         "kind": "cli",
         "command": "qwen",
-        "promptArg": true,
+        "promptArgs": [],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -366,7 +374,9 @@
       "launch": {
         "kind": "cli",
         "command": "opencode",
-        "promptArg": true,
+        "promptArgs": [
+          "run"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -446,7 +456,9 @@
       "launch": {
         "kind": "cli",
         "command": "amp",
-        "promptArg": true,
+        "promptArgs": [
+          "-x"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -476,7 +488,10 @@
       "launch": {
         "kind": "cli",
         "command": "goose",
-        "promptArg": false,
+        "promptArgs": [
+          "run",
+          "-t"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -590,7 +605,9 @@
       "launch": {
         "kind": "cli",
         "command": "droid",
-        "promptArg": true,
+        "promptArgs": [
+          "exec"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -694,7 +711,7 @@
       "launch": {
         "kind": "cli",
         "command": "qoder",
-        "promptArg": true,
+        "promptArgs": [],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -721,7 +738,9 @@
       "launch": {
         "kind": "cli",
         "command": "codebuddy",
-        "promptArg": true,
+        "promptArgs": [
+          "-p"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -807,7 +826,9 @@
       "launch": {
         "kind": "cli",
         "command": "mcode",
-        "promptArg": false,
+        "promptArgs": [
+          "exec"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -853,7 +874,9 @@
       "launch": {
         "kind": "cli",
         "command": "neovate",
-        "promptArg": false,
+        "promptArgs": [
+          "-q"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -880,7 +903,9 @@
       "launch": {
         "kind": "cli",
         "command": "pochi",
-        "promptArg": false,
+        "promptArgs": [
+          "-p"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -926,7 +951,9 @@
       "launch": {
         "kind": "cli",
         "command": "iflow",
-        "promptArg": false,
+        "promptArgs": [
+          "-p"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1032,7 +1059,10 @@
       "launch": {
         "kind": "cli",
         "command": "deepcode",
-        "promptArg": false,
+        "promptArgs": [
+          "-x",
+          "-p"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1059,7 +1089,9 @@
       "launch": {
         "kind": "cli",
         "command": "codewhale",
-        "promptArg": false,
+        "promptArgs": [
+          "exec"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1086,7 +1118,9 @@
       "launch": {
         "kind": "cli",
         "command": "kode",
-        "promptArg": false,
+        "promptArgs": [
+          "-p"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1114,7 +1148,7 @@
       "launch": {
         "kind": "cli",
         "command": "junie",
-        "promptArg": false,
+        "promptArgs": [],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1141,7 +1175,9 @@
       "launch": {
         "kind": "cli",
         "command": "auggie",
-        "promptArg": false,
+        "promptArgs": [
+          "-p"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1167,8 +1203,10 @@
       "sourceUrl": "https://antigravity.google/docs/skills",
       "launch": {
         "kind": "cli",
-        "command": "antigravity",
-        "promptArg": false,
+        "command": "agy",
+        "promptArgs": [
+          "-p"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1247,7 +1285,10 @@
       "launch": {
         "kind": "cli",
         "command": "openhands",
-        "promptArg": true,
+        "promptArgs": [
+          "--headless",
+          "-t"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1274,7 +1315,9 @@
       "launch": {
         "kind": "cli",
         "command": "tabnine",
-        "promptArg": false,
+        "promptArgs": [
+          "-p"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1300,8 +1343,11 @@
       "sourceUrl": "https://support.atlassian.com/rovo/docs/extend-rovo-dev-cli-with-agent-skills/",
       "launch": {
         "kind": "cli",
-        "command": "rovodev",
-        "promptArg": false,
+        "command": "acli",
+        "promptArgs": [
+          "rovodev",
+          "run"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1328,7 +1374,9 @@
       "launch": {
         "kind": "cli",
         "command": "vibe",
-        "promptArg": true,
+        "promptArgs": [
+          "--prompt"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1355,8 +1403,9 @@
       "launch": {
         "kind": "cli",
         "command": "crush",
-        "promptStyle": "flag",
-        "promptFlag": "run",
+        "promptArgs": [
+          "run"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1383,7 +1432,9 @@
       "launch": {
         "kind": "cli",
         "command": "letta",
-        "promptArg": false,
+        "promptArgs": [
+          "-p"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1409,8 +1460,10 @@
       "sourceUrl": "https://aiderdesk.hotovo.com/docs/agent-mode/skills",
       "launch": {
         "kind": "cli",
-        "command": "aider-desk",
-        "promptArg": false,
+        "command": "aiderdesk",
+        "promptArgs": [
+          "run"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1464,7 +1517,11 @@
       "launch": {
         "kind": "cli",
         "command": "hermes",
-        "promptArg": false,
+        "promptArgs": [
+          "chat",
+          "--oneshot",
+          "-q"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1491,8 +1548,10 @@
       "sourceUrl": "https://mux.coder.com/agent-skills",
       "launch": {
         "kind": "cli",
-        "command": "mux",
-        "promptArg": false,
+        "command": "xum",
+        "promptArgs": [
+          "run"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1536,13 +1595,7 @@
       "confidence": "high",
       "sourceUrl": "https://ona.com/docs/ona/agents/skills",
       "projectOnly": true,
-      "notes": "该 agent 未记录用户级技能目录，只能安装到项目内的 .ona/skills。",
-      "launch": {
-        "kind": "cli",
-        "command": "ona",
-        "promptArg": false,
-        "instructionFile": "AGENTS.md"
-      }
+      "notes": "该 agent 未记录用户级技能目录，只能安装到项目内的 .ona/skills。"
     },
     {
       "id": "qodo",
@@ -1567,7 +1620,7 @@
       "launch": {
         "kind": "cli",
         "command": "qodo",
-        "promptArg": false,
+        "promptArgs": [],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1594,7 +1647,9 @@
       "launch": {
         "kind": "cli",
         "command": "cortex",
-        "promptArg": false,
+        "promptArgs": [
+          "-p"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1620,8 +1675,10 @@
       "sourceUrl": "https://commandcode.ai/docs/skills",
       "launch": {
         "kind": "cli",
-        "command": "command-code",
-        "promptArg": false,
+        "command": "cmd",
+        "promptArgs": [
+          "-p"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1648,7 +1705,9 @@
       "launch": {
         "kind": "cli",
         "command": "pi",
-        "promptStyle": "positional",
+        "promptArgs": [
+          "-p"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1675,7 +1734,7 @@
       "launch": {
         "kind": "cli",
         "command": "autohand",
-        "promptArg": false,
+        "promptArgs": [],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1700,9 +1759,8 @@
       "confidence": "high",
       "sourceUrl": "https://docs.emdash.sh/library/skills",
       "launch": {
-        "kind": "cli",
-        "command": "emdash",
-        "promptArg": false,
+        "kind": "app",
+        "appName": "Emdash",
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1729,7 +1787,10 @@
       "launch": {
         "kind": "cli",
         "command": "fast-agent",
-        "promptArg": false,
+        "promptArgs": [
+          "go",
+          "--message"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1756,7 +1817,9 @@
       "launch": {
         "kind": "cli",
         "command": "nanobot",
-        "promptArg": false,
+        "promptArgs": [
+          "-m"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1783,7 +1846,9 @@
       "launch": {
         "kind": "cli",
         "command": "vtcode",
-        "promptArg": false,
+        "promptArgs": [
+          "-p"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1810,7 +1875,9 @@
       "launch": {
         "kind": "cli",
         "command": "bub",
-        "promptArg": false,
+        "promptArgs": [
+          "run"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1860,13 +1927,7 @@
       "readsUniversalDir": false,
       "supportsSymlink": false,
       "confidence": "medium",
-      "sourceUrl": "https://github.com/vercel-labs/skills/blob/main/src/agents.ts",
-      "launch": {
-        "kind": "cli",
-        "command": "zencoder",
-        "promptArg": false,
-        "instructionFile": "AGENTS.md"
-      }
+      "sourceUrl": "https://github.com/vercel-labs/skills/blob/main/src/agents.ts"
     },
     {
       "id": "zenflow",
@@ -1930,7 +1991,9 @@
       "launch": {
         "kind": "cli",
         "command": "bob",
-        "promptArg": false,
+        "promptArgs": [
+          "run"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -2003,7 +2066,9 @@
       "launch": {
         "kind": "cli",
         "command": "adal",
-        "promptArg": false,
+        "promptArgs": [
+          "-q"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -2030,7 +2095,9 @@
       "launch": {
         "kind": "cli",
         "command": "forge",
-        "promptArg": false,
+        "promptArgs": [
+          "-p"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -2057,7 +2124,9 @@
       "launch": {
         "kind": "cli",
         "command": "kimchi",
-        "promptArg": false,
+        "promptArgs": [
+          "-p"
+        ],
         "instructionFile": "AGENTS.md"
       }
     },
@@ -2084,10 +2153,12 @@
       "launch": {
         "kind": "cli",
         "command": "dexto",
-        "promptArg": false,
+        "promptArgs": [
+          "run"
+        ],
         "instructionFile": "AGENTS.md"
       }
     }
   ],
-  "launchAddedAt": "2026-09-15T08:33:20.288Z"
+  "launchAddedAt": "2026-09-15T15:16:14.424Z"
 }

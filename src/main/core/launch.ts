@@ -18,6 +18,7 @@ interface LaunchMeta {
   command?: string
   promptStyle?: 'positional' | 'flag' | 'none'
   promptFlag?: string
+  promptArgs?: string[]
   /** legacy boolean, still honoured so existing registry data keeps working */
   promptArg?: boolean
   appName?: string
@@ -69,6 +70,14 @@ function appInstalled(name: string | undefined, command: string | undefined): bo
  */
 function describeCli(meta: LaunchMeta): string {
   const command = meta.command || ''
+  // The current shape: literal tokens, then the prompt. Showing them is the
+  // point — the tokens differ per tool, and a generic description hid exactly
+  // the cases that were wrong.
+  if (meta.promptArgs) {
+    const prefix = meta.promptArgs.length ? `${meta.promptArgs.join(' ')} ` : ''
+    return `${command} ${prefix}"${m('launch.promptToken')}"`
+  }
+  // Legacy shapes, kept so older registry data still describes itself.
   const style = meta.promptStyle || (meta.promptArg ? 'positional' : 'none')
   if (style === 'positional') return m('launch.detailCliPrompt', { command })
   if (style === 'flag' && meta.promptFlag) {
@@ -234,9 +243,8 @@ export function prepareLaunch(input: {
     instructionPath,
     prompt,
     command: meta.command,
-    promptStyle: meta.promptStyle || (meta.promptArg ? 'positional' : 'none'),
-    promptFlag: meta.promptFlag,
-    appName: meta.appName,
+    promptArgs: meta.promptArgs,
+
     url: meta.url
   }
 
@@ -382,17 +390,21 @@ export async function runLaunch(plan: LaunchPlan): Promise<{ ok: boolean; messag
       // Every interpolated value is quoted for the shell, not merely for
       // AppleScript: `do script` hands this line to `sh`.
       const command = plan.command.replace(/[^\w./-]/g, '')
-      // The prompt goes in differently per tool: as the last argument, behind a
-      // flag, or not at all. The flag itself is validated against a safe charset
-      // because it is interpolated into a shell line.
-      const flag = (plan.promptFlag || '').replace(/[^\w-]/g, '')
-      const prompt =
-        plan.promptStyle === 'positional'
-          ? ` ${shellQuote(plan.prompt)}`
-          : plan.promptStyle === 'flag' && flag
-            ? ` ${flag} ${shellQuote(plan.prompt)}`
-            : ''
-      const line = `cd ${shellQuote(plan.workspace)} && ${command}${prompt}`
+      /*
+        The tokens that go between the command and the prompt.
+
+        Most of these tools take a one-shot prompt behind a subcommand, and some
+        behind a subcommand plus a flag, so one flag field could not express them:
+        goose run -t "<p>", hermes chat --oneshot -q "<p>", opencode run "<p>".
+        Each token is validated against a safe charset because the whole line is
+        handed to a shell.
+      */
+      const tokens = (plan.promptArgs || [])
+        .map((x) => String(x).replace(/[^\w-]/g, ''))
+        .filter(Boolean)
+      const prefix = tokens.length ? ` ${tokens.join(' ')}` : ''
+      const prompt = plan.promptArgs ? ` ${shellQuote(plan.prompt)}` : ''
+      const line = `cd ${shellQuote(plan.workspace)} && ${command}${prefix}${prompt}`
       if (process.platform === 'darwin') {
         await openTerminal(line)
       } else {

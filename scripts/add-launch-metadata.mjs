@@ -47,7 +47,6 @@ const LAUNCH = {
   // Usage is `kimi [options] [command]`: a bare string is read as a subcommand and
   // fails with "unknown command". Verified on this machine. The prompt needs -p.
   'kimi-code': { kind: 'cli', command: 'kimi', promptStyle: 'flag', promptFlag: '-p', instructionFile: 'AGENTS.md' },
-  'kimi-cli': { kind: 'cli', command: 'kimi', promptStyle: 'flag', promptFlag: '-p', instructionFile: 'AGENTS.md' },
   // DSH's desktop client, not its CLI. `dsh` on PATH is "profile boot, plugin
   // management, and the browser UI alias" — it does not take a prompt, and the
   // form people actually work in is the app. Launching the CLI opened a terminal
@@ -71,23 +70,39 @@ const LAUNCH = {
 
 const registry = JSON.parse(readFileSync(file, 'utf8'))
 let added = 0
+let kept = 0
 for (const agent of registry.agents) {
+  /*
+    Never overwrite metadata that is already there.
+
+    This script used to reassign `agent.launch` for every entry in the table
+    above, and to invent one for anything with a binary on the strength of the
+    comment "most CLIs take a prompt argument". That assumption is what produced
+    the wrong entries: `kimi "text"` errors with "unknown command", `crush` needs
+    its `run` subcommand, DeepSeek Harness is a desktop app rather than a
+    terminal tool. The registry is now the verified source — each entry was
+    checked against the vendor's own documentation — so this pass only fills in
+    what is missing.
+  */
+  if (agent.launch) {
+    kept++
+    continue
+  }
   const launch = LAUNCH[agent.id]
   if (launch) {
     agent.launch = launch
     added++
-  } else if (agent.detect?.binaries?.length) {
-    // Fall back to the first known binary: most CLIs take a prompt argument.
-    agent.launch = { kind: 'cli', command: agent.detect.binaries[0], promptArg: false, instructionFile: 'AGENTS.md' }
-    added++
   }
+  // No fallback. Guessing a prompt form from the presence of a binary is how
+  // the wrong entries got in; an agent with no verified launch is simply not
+  // offered as launchable.
 }
 registry.launchAddedAt = new Date().toISOString()
 writeFileSync(file, JSON.stringify(registry, null, 2) + '\n', 'utf8')
 
 const byKind = {}
 for (const a of registry.agents) if (a.launch) (byKind[a.launch.kind] ||= []).push(a.id)
-console.log(`已为 ${added}/${registry.agents.length} 个 agent 补充启动信息`)
+console.log(`已为 ${added} 个 agent 补充启动信息，保留 ${kept} 条已验证的记录`)
 for (const [k, list] of Object.entries(byKind)) console.log(`  ${k.padEnd(5)} ${list.length}  ${list.slice(0, 6).join(', ')}${list.length > 6 ? ' …' : ''}`)
 const none = registry.agents.filter((a) => !a.launch).map((a) => a.id)
 if (none.length) console.log(`\n无启动信息 ${none.length} 个（界面上会置灰）：${none.slice(0, 12).join(', ')}${none.length > 12 ? ' …' : ''}`)

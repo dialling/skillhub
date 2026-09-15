@@ -36,19 +36,37 @@ for (const a of agents) {
 
   if (l.kind === 'cli') {
     if (!l.command) problems.push(`${where}: cli launch without a command`)
-    // The three prompt styles mean three different command lines; an ambiguous
-    // one silently produces a launch that does not carry the prompt.
-    if (l.promptStyle && !['positional', 'flag', 'none'].includes(l.promptStyle)) {
-      problems.push(`${where}: unknown promptStyle "${l.promptStyle}"`)
-    }
-    if (l.promptStyle === 'flag' && !l.promptFlag) {
-      problems.push(`${where}: promptStyle "flag" without a promptFlag`)
-    }
-    if (l.promptStyle === 'positional' && l.promptFlag) {
-      problems.push(`${where}: promptFlag is set but promptStyle is "positional"`)
-    }
-    if (l.promptStyle && l.promptArg !== undefined) {
-      problems.push(`${where}: both promptStyle and the legacy promptArg are set`)
+    // `promptArgs` is the current shape: literal tokens placed before the prompt,
+    // empty meaning a plain positional. The older style/flag fields are still
+    // read, so both are validated and mixing them is refused.
+    if (l.promptArgs !== undefined) {
+      if (!Array.isArray(l.promptArgs)) {
+        problems.push(`${where}: promptArgs must be an array`)
+      } else {
+        for (const token of l.promptArgs) {
+          if (typeof token !== 'string' || !/^[\w-]+$/.test(token)) {
+            // Tokens end up in a shell command line; anything else is refused
+            // rather than sanitised into something surprising.
+            problems.push(`${where}: promptArgs token "${token}" is not a bare word`)
+          }
+        }
+      }
+      if (l.promptStyle !== undefined || l.promptFlag !== undefined || l.promptArg !== undefined) {
+        problems.push(`${where}: promptArgs is set alongside the legacy prompt fields`)
+      }
+    } else {
+      if (l.promptStyle && !['positional', 'flag', 'none'].includes(l.promptStyle)) {
+        problems.push(`${where}: unknown promptStyle "${l.promptStyle}"`)
+      }
+      if (l.promptStyle === 'flag' && !l.promptFlag) {
+        problems.push(`${where}: promptStyle "flag" without a promptFlag`)
+      }
+      if (l.promptStyle === 'positional' && l.promptFlag) {
+        problems.push(`${where}: promptFlag is set but promptStyle is "positional"`)
+      }
+      if (l.promptStyle && l.promptArg !== undefined) {
+        problems.push(`${where}: both promptStyle and the legacy promptArg are set`)
+      }
     }
   }
 
@@ -69,7 +87,7 @@ const seen = new Map()
 for (const a of agents) {
   const l = a.launch
   if (!l || l.kind !== 'cli' || !l.command) continue
-  const key = `${l.command}|${l.promptStyle || (l.promptArg ? 'positional' : 'none')}|${l.promptFlag || ''}`
+  const key = `${l.command}|${(l.promptArgs || []).join(' ')}|${l.promptStyle || (l.promptArg ? 'positional' : 'none')}|${l.promptFlag || ''}`
   if (seen.has(key)) {
     problems.push(`duplicate launch: "${a.id}" and "${seen.get(key)}" both run ${l.command} identically`)
   } else {

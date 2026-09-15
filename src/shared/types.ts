@@ -539,7 +539,23 @@ export interface LaunchPlan {
    * both as `promptArg: true` produced one launch that did nothing.
    */
   promptStyle?: 'positional' | 'flag' | 'none'
-  /** the flag to use when promptStyle is 'flag' */
+  /**
+   * Literal tokens placed between the command and the prompt.
+   *
+   * A single flag was not enough. Most of these tools take their one-shot prompt
+   * behind a *subcommand*, and several need a subcommand plus a flag:
+   *
+   *   goose run -t "<p>"        hermes chat --oneshot -q "<p>"
+   *   opencode run "<p>"        codex exec "<p>"
+   *
+   * An empty array means the prompt is a plain positional argument. Absent means
+   * the tool cannot be handed a prompt at all.
+   *
+   * Ordering matters where a token takes a value: hermes's `-q` consumes the
+   * next word, so value-taking tokens must come last or they swallow a flag.
+   */
+  promptArgs?: string[]
+  /** @deprecated superseded by promptArgs */
   promptFlag?: string
   /** legacy boolean, still read when promptStyle is absent */
   promptArg?: boolean
