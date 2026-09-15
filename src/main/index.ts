@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, Menu, nativeImage, shell } from 'electron'
 import { join } from 'node:path'
 import { registerIpc } from './ipc'
 import { flushAll, settings, snapshotStars } from './core/db'
@@ -6,6 +6,7 @@ import { libraryItems } from './core/library'
 import { curatedCatalog } from './core/catalog'
 import { ensureEnabledAgents } from './core/agents'
 import { m } from './core/msg'
+import { electronDefaultIconPath } from './core/paths'
 import { probeRawHost } from './core/github'
 
 // When ELECTRON_RUN_AS_NODE is present in the environment the Electron binary
@@ -22,7 +23,25 @@ if (!app || typeof app.getPath !== 'function') {
   process.exit(1)
 }
 
+// Must happen before `ready`: this is the name the menu bar and About panel use.
+app.setName('SkillHub')
+
 let mainWindow: BrowserWindow | null = null
+
+/**
+ * WeChat DevTools ships Electron's stock bundle identifier, so this machine has
+ * two apps registered as `com.github.Electron` and the Dock picks the one in
+ * /Applications. Pinning the icon here takes that decision away from
+ * LaunchServices. A unique bundle id (i.e. actually packaging the app) is the
+ * permanent fix.
+ */
+function pinDockIcon(): void {
+  if (process.platform !== 'darwin' || !app.dock) return
+  const iconPath = electronDefaultIconPath()
+  if (!iconPath) return
+  const image = nativeImage.createFromPath(iconPath)
+  if (!image.isEmpty()) app.dock.setIcon(image)
+}
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -173,6 +192,7 @@ async function dailySnapshot(): Promise<void> {
 }
 
 app.whenReady().then(() => {
+  pinDockIcon()
   buildMenu()
   registerIpc((channel, payload) => {
     if (mainWindow && !mainWindow.isDestroyed()) {

@@ -78,6 +78,25 @@ export function curatedCatalogPath(): string {
   return candidates[0]
 }
 
+/**
+ * The icon a bare Electron build shows in the Dock.
+ *
+ * Not cosmetic: WeChat DevTools is an Electron app that was packaged WITHOUT
+ * changing Electron's default bundle identifier, so `com.github.Electron` maps
+ * to two applications on this machine and LaunchServices hands the Dock the one
+ * installed in /Applications. Setting the icon explicitly at runtime overrides
+ * that resolution. The real fix is a unique bundle id, which needs packaging.
+ */
+export function electronDefaultIconPath(): string | null {
+  const base = appPath('appPath') || process.cwd()
+  const candidates = [
+    join(base, 'node_modules', 'electron', 'dist', 'Electron.app', 'Contents', 'Resources', 'electron.icns'),
+    join(base, '..', 'node_modules', 'electron', 'dist', 'Electron.app', 'Contents', 'Resources', 'electron.icns'),
+    join(process.resourcesPath || '', 'electron.icns')
+  ]
+  return candidates.find((c) => c && existsSync(c)) || null
+}
+
 /** Bundled "what are you trying to do?" scenario definitions. */
 export function scenariosPath(): string {
   const base = appPath('appPath') || process.cwd()
