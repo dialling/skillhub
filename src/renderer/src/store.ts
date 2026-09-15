@@ -330,8 +330,15 @@ export const useStore = create<State>((set, get) => ({
         tab: 'overview'
       }
     })
+    // The fetch outlives the panel whenever the user closes it (or opens a
+    // different repo) before the network answers. Writing the result back
+    // unconditionally would resurrect a closed panel — the "it pops back in
+    // after I hit back" bug — or paint the wrong repository. So the response is
+    // only applied to the detail it was requested for.
+    const stillCurrent = (): boolean => get().detail?.fullName === fullName
     try {
       const res = await api.github.repoDetail(fullName, { withSkills: true, withReadme: true })
+      if (!stillCurrent()) return
       const libItem = get().library.find((i) => i.fullName === fullName)
       const skills = libItem && libItem.skills.length ? libItem.skills : res.skills
       set({
@@ -341,19 +348,21 @@ export const useStore = create<State>((set, get) => ({
           meta: res.meta,
           skills,
           readme: res.readme || '',
-          tab: 'overview'
+          // keep whichever tab the user has since switched to
+          tab: get().detail?.tab ?? 'overview'
         }
       })
     } catch (err: any) {
+      if (!stillCurrent()) return
       set({
         detail: {
           fullName,
           loading: false,
-          meta: null,
-          skills: [],
+          meta: get().detail?.meta ?? null,
+          skills: get().detail?.skills ?? [],
           readme: '',
           error: err?.message || String(err),
-          tab: 'overview'
+          tab: get().detail?.tab ?? 'overview'
         }
       })
     }

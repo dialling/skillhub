@@ -68,12 +68,14 @@ export function DetailPanel(): React.JSX.Element | null {
    * Play the exit animation before unmounting. Without this the panel would
    * vanish instantly and the motion would feel one-sided.
    */
+  const closingRef = useRef(false)
   const requestClose = useCallback((): void => {
-    setClosing((already) => {
-      if (already) return already
-      window.setTimeout(() => closeDetail(), 190)
-      return true
-    })
+    // A ref, not the state updater: React may invoke an updater more than once,
+    // which would schedule several close timers from a single click.
+    if (closingRef.current) return
+    closingRef.current = true
+    setClosing(true)
+    window.setTimeout(() => closeDetail(), 190)
   }, [closeDetail])
 
   useEffect(() => {
@@ -88,6 +90,7 @@ export function DetailPanel(): React.JSX.Element | null {
 
   // A different repository should start reading from the top.
   useEffect(() => {
+    closingRef.current = false
     setClosing(false)
     bodyRef.current?.scrollTo({ top: 0 })
   }, [repoFullName])

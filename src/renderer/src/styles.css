@@ -1201,7 +1201,14 @@ a:hover {
 }
 .detail.closing {
   animation: detail-out 0.18s cubic-bezier(0.4, 0, 1, 1) both;
-  pointer-events: none;
+  /*
+    Deliberately NOT `pointer-events: none`. During the ~180ms exit animation
+    the panel is still on screen, so disabling hit-testing let a second click
+    (or a double-click on the back button) fall through to the store card
+    underneath and immediately reopen a detail page. Staying hit-testable makes
+    those extra clicks land on a panel that is already going away.
+  */
+  pointer-events: auto;
 }
 @keyframes detail-in {
   from {
