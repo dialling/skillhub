@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { api } from './api'
 import type {
   AgentTarget,
+  Scenario,
   GrowthRow,
   InstallProgress,
   JobProgress,
@@ -60,12 +61,17 @@ interface State {
   sidebarOpen: boolean
   lang: Lang
   storeCategory: string | null
+  scenarios: Scenario[]
+  activeScenario: string | null
+  scenarioRepos: RepoMeta[]
   libraryFilter: 'all' | 'pending' | 'installed'
   librarySort: 'recent' | 'stars' | 'name'
   chartMode: 'stars' | 'growth'
 
   t: (key: string, vars?: Record<string, string | number>) => string
   setChartMode: (m: 'stars' | 'growth') => void
+  loadScenarios: () => Promise<void>
+  openScenario: (id: string | null) => Promise<void>
   setStoreCategory: (c: string | null) => void
   setLibraryFilter: (f: 'all' | 'pending' | 'installed') => void
   setLibrarySort: (s: 'recent' | 'stars' | 'name') => void
@@ -127,6 +133,9 @@ export const useStore = create<State>((set, get) => ({
   sidebarOpen: true,
   lang: 'zh',
   storeCategory: null,
+  scenarios: [],
+  activeScenario: null,
+  scenarioRepos: [],
   libraryFilter: 'all',
   librarySort: 'recent',
   chartMode: 'growth',
@@ -137,8 +146,31 @@ export const useStore = create<State>((set, get) => ({
     set({ chartMode: m })
   },
 
+  async loadScenarios() {
+    try {
+      const scenarios = await api.catalog.scenarios()
+      set({ scenarios })
+    } catch {
+      /* scenarios are optional chrome */
+    }
+  },
+
+  async openScenario(id) {
+    if (!id) {
+      set({ activeScenario: null, scenarioRepos: [], storeCategory: null })
+      return
+    }
+    set({ activeScenario: id, storeCategory: null, view: 'store' })
+    try {
+      const scenarioRepos = await api.catalog.scenarioRepos(id)
+      if (get().activeScenario === id) set({ scenarioRepos })
+    } catch {
+      set({ scenarioRepos: [] })
+    }
+  },
+
   setStoreCategory(c) {
-    set({ storeCategory: c })
+    set({ storeCategory: c, activeScenario: null, scenarioRepos: [] })
   },
   setLibraryFilter(f) {
     set({ libraryFilter: f })
@@ -156,7 +188,8 @@ export const useStore = create<State>((set, get) => ({
       get().refreshAgents(),
       get().refreshInstalls(),
       get().refreshRate(),
-      get().loadCatalog()
+      get().loadCatalog(),
+      get().loadScenarios()
     ])
     // Deep links: `skillhub --view=charts --repo=owner/name --q="term"`
     try {

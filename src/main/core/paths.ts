@@ -78,6 +78,21 @@ export function curatedCatalogPath(): string {
   return candidates[0]
 }
 
+/** Bundled "what are you trying to do?" scenario definitions. */
+export function scenariosPath(): string {
+  const base = appPath('appPath') || process.cwd()
+  const candidates = [
+    join(base, 'data', 'scenarios.json'),
+    join(process.resourcesPath || '', 'data', 'scenarios.json'),
+    join(base, '..', 'data', 'scenarios.json'),
+    join(__dirname, '..', '..', 'data', 'scenarios.json')
+  ]
+  for (const c of candidates) {
+    if (c && existsSync(c)) return c
+  }
+  return candidates[0]
+}
+
 /** Bundled agent path registry shipped with the app. */
 export function curatedAgentRegistryPath(): string {
   const base = appPath('appPath') || process.cwd()

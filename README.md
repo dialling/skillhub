@@ -7,20 +7,25 @@ SkillHub 是一个 macOS 桌面应用（Electron + React），把「登录 GitHu
 
 ## 界面
 
-| 技能商店 | 仓库详情页 |
+| 技能商店 | 场景页（「我要做…」） |
 |---|---|
-| ![商店](docs/screenshots/store.jpg) | ![详情](docs/screenshots/detail.jpg) |
-| 精选目录 + 实时搜索 + 本周热门（按真实星标增长排序） | 中英文双简介、技能文件列表、右侧一键安装栏 |
+| ![商店](docs/screenshots/store.jpg) | ![场景](docs/screenshots/scenario.jpg) |
+| 按功能分类 + 场景入口 + 本周热门（按真实星标增长排序） | 按「我现在要干什么」挑，比翻领域更快 |
+
+| 仓库详情页 | 我的库 |
+|---|---|
+| ![详情](docs/screenshots/detail.jpg) | ![库](docs/screenshots/library.jpg) |
+| 一句话说清做什么、什么时候用、技能清单、右侧一键安装栏 | 已入库仓库，可批量安装到所有已启用 agent |
 
 | 排行榜 | 我的库 |
 |---|---|
 | ![排行榜](docs/screenshots/charts.jpg) | ![库](docs/screenshots/library.jpg) |
 | 总星数榜与 24h / 7d / 30d 增长榜，每行标注数据来源 | 已入库仓库，可批量安装到所有已启用的 agent |
 
-| 智能体 | 设置 |
+| 设置 | |
 |---|---|
-| ![智能体](docs/screenshots/agents.jpg) | ![设置](docs/screenshots/settings.jpg) |
-| 80 个 agent 的技能目录，自动探测本机已装哪些 | 凭据、库目录、安装方式、AI 翻译 |
+| ![设置](docs/screenshots/settings.jpg) | |
+| 凭据、库目录、安装方式、AI 翻译 | |
 
 ---
 
@@ -49,10 +54,29 @@ npm run dev
 ## 功能
 
 ### 商店（Discover）
-- **内置精选目录**：随应用分发的 60 个技能仓库，每个都有**中文简介 + 英文原简介**、分类、星数、技能数量。
+
+**按功能分类，不按仓库类型分。** 原来的分类（官方 / 合集 / 工具 / 框架）描述的是「这个仓库是什么」，
+用户看到的却是「我想做什么」。现在十个功能类目回答后者：
+
+| 文档与办公 | 设计与前端 | 编程与开发 | 科研与数据 | 安全与合规 |
+|---|---|---|---|---|
+| 云与自动化 | 内容与创意 | 技能管理 | 技能合集 | 规范与标准 |
+
+**场景入口（「我要做…」）** —— 参照 agent skill 目录站的 Popular Scenarios：
+不问你属于哪个领域，而问你现在要干什么。13 个场景，如「做一份好看的演示文稿」
+「让 AI 的前端不再一眼假」「长任务不丢上下文」「处理 PDF / Word / Excel」，
+每个场景给出经过挑选的仓库清单（人工置顶 + 关键词补充）。
+
+**一句话说清做什么。** 商店里每条目都有一行「一眼看懂」的简介，写法有硬性标准：
+13–30 字、动词开头、说产出不说身份、禁止实现细节与「技能/工具」自指。
+60 条简介的中位字数从 **50 字降到 20 字**，最长的从 89 降到 31。
+标准与逐字语料见 [`docs/blurb-formula.md`](docs/blurb-formula.md) 与
+[`docs/research/corpus-own.md`](docs/research/corpus-own.md)。
+
+- **内置精选目录**：随应用分发的 60 个技能仓库，每个都有「一眼看懂」的中文简介、英文简介、
+  功能分类、来源标签（官方 / 合集 / 工具）、星数与技能数量。
 - **GitHub 实时搜索**：多个定向查询合并去重（`topic:agent-skills`、`topic:claude-skills`、`SKILL.md in:readme`…），
   而不是把关键词直接丢给 GitHub 的相关性排序。
-- 按分类浏览：规范标准 / 官方出品 / 技能合集 / 管理工具 / 方法论框架 / 垂直领域。
 
 ### 入库（Library）
 - 对仓库执行 `git clone --depth 1` 到 `~/.skillhub/library/<owner>__<repo>`。
@@ -249,7 +273,8 @@ src/
   preload/index.ts        contextBridge API
   renderer/src/           React 界面
 data/
-  curated-catalog.json    60 个精选技能仓库（含中文简介）
+  curated-catalog.json    60 个精选技能仓库（含功能分类与「一眼看懂」简介）
+  scenarios.json          13 个场景（「我要做…」）及其推荐仓库
   agent-registry.json     80 个 agent 的技能目录（含出处与置信度）
 ```
 

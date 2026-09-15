@@ -40,6 +40,9 @@ const api = {
   catalog: {
     curated: () => call<any>('catalog:curated'),
     sections: () => call<any>('catalog:sections'),
+    byFunction: () => call<Record<string, any[]>>('catalog:byFunction'),
+    scenarios: () => call<any[]>('catalog:scenarios'),
+    scenarioRepos: (id: string) => call<any[]>('catalog:scenarioRepos', id),
     refresh: (limit?: number) => call<any>('catalog:refresh', limit)
   },
   library: {

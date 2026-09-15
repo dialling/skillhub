@@ -47,7 +47,12 @@
       ],
       "skillCount": 14,
       "truncatedTree": false,
-      "installHint": "npx skills add obra/superpowers"
+      "installHint": "npx skills add obra/superpowers",
+      "fn": "coding",
+      "taglineZh": "把「先规划再写码」变成 AI 的默认习惯",
+      "taglineEn": "Makes planning-before-coding your agent's default habit",
+      "useWhen": "想让 AI 别一上来就乱写代码",
+      "aboutZh": "为 AI 编程智能体打造的技能框架与开发方法论，把头脑风暴、计划、子智能体执行和代码审查串成可复用工作流。"
     },
     {
       "fullName": "anthropics/skills",
@@ -93,7 +98,12 @@
       ],
       "skillCount": 20,
       "truncatedTree": false,
-      "installHint": "npx skills add anthropics/skills"
+      "installHint": "npx skills add anthropics/skills",
+      "fn": "docs",
+      "taglineZh": "让 AI 会读会写 PDF、Word、Excel、PPT",
+      "taglineEn": "Reads and writes PDF, Word, Excel and PowerPoint",
+      "useWhen": "要处理办公文档",
+      "aboutZh": "Anthropic 官方 Agent Skills 示例仓库，提供文档处理、创意设计、企业沟通等可直接安装的官方技能实现。"
     },
     {
       "fullName": "nextlevelbuilder/ui-ux-pro-max-skill",
@@ -150,7 +160,12 @@
       ],
       "skillCount": 13,
       "truncatedTree": false,
-      "installHint": "npx skills add nextlevelbuilder/ui-ux-pro-max-skill"
+      "installHint": "npx skills add nextlevelbuilder/ui-ux-pro-max-skill",
+      "fn": "design",
+      "taglineZh": "让 AI 做出来的界面不再一眼假",
+      "taglineEn": "Stops AI-generated UI from looking obviously templated",
+      "useWhen": "AI 生成的前端太丑太像模板",
+      "aboutZh": "为跨平台界面设计注入设计智能的技能，帮助智能体产出更专业的 UI/UX 方案与前端实现。"
     },
     {
       "fullName": "addyosmani/agent-skills",
@@ -206,7 +221,12 @@
       ],
       "skillCount": 25,
       "truncatedTree": false,
-      "installHint": "npx skills add addyosmani/agent-skills"
+      "installHint": "npx skills add addyosmani/agent-skills",
+      "fn": "coding",
+      "taglineZh": "一线工程实践：代码质量、测试、性能、架构",
+      "taglineEn": "Production engineering practices: quality, testing, performance, architecture",
+      "useWhen": "想把代码写得更像样",
+      "aboutZh": "面向 AI 编程智能体的生产级工程技能集，涵盖代码质量、测试、性能与架构等一线工程实践。"
     },
     {
       "fullName": "ComposioHQ/awesome-claude-skills",
@@ -1112,7 +1132,12 @@
       ],
       "skillCount": 864,
       "truncatedTree": false,
-      "installHint": "npx skills add ComposioHQ/awesome-claude-skills"
+      "installHint": "npx skills add ComposioHQ/awesome-claude-skills",
+      "fn": "collections",
+      "taglineZh": "Claude 技能资源大全，按用途挑现成的",
+      "taglineEn": "A large curated index of Claude skills by use case",
+      "useWhen": "不知道装什么，先逛一遍",
+      "aboutZh": "精选的 Claude Skills 与工具资源清单，收录可定制 Claude 工作流的技能、教程和配套项目。"
     },
     {
       "fullName": "hesreallyhim/awesome-claude-code",
@@ -1155,7 +1180,12 @@
       "skillDirs": [],
       "skillCount": 0,
       "truncatedTree": false,
-      "installHint": "git clone https://github.com/hesreallyhim/awesome-claude-code"
+      "installHint": "git clone https://github.com/hesreallyhim/awesome-claude-code",
+      "fn": "collections",
+      "taglineZh": "Claude Code 资源大全：技能、子智能体、插件",
+      "taglineEn": "Claude Code resource index: skills, subagents, plugins",
+      "useWhen": "想系统了解 Claude Code 能做什么",
+      "aboutZh": "精心整理的 Claude Code 资源大全，涵盖技能、子智能体、状态栏与插件等社区优质工具。"
     },
     {
       "fullName": "VoltAgent/awesome-openclaw-skills",
@@ -1191,7 +1221,12 @@
       "skillDirs": [],
       "skillCount": 0,
       "truncatedTree": false,
-      "installHint": "git clone https://github.com/VoltAgent/awesome-openclaw-skills"
+      "installHint": "git clone https://github.com/VoltAgent/awesome-openclaw-skills",
+      "fn": "collections",
+      "taglineZh": "5000+ OpenClaw 技能，已按用途筛选分类",
+      "taglineEn": "5000+ OpenClaw skills, filtered and categorised by use case",
+      "useWhen": "用 OpenClaw 想找现成技能",
+      "aboutZh": "从官方 OpenClaw 技能注册表筛选分类的五千多个技能合集，便于 OpenClaw 用户按需挑选安装。"
     },
     {
       "fullName": "kepano/obsidian-skills",
@@ -1238,7 +1273,12 @@
       ],
       "skillCount": 6,
       "truncatedTree": false,
-      "installHint": "npx skills add kepano/obsidian-skills"
+      "installHint": "npx skills add kepano/obsidian-skills",
+      "fn": "content",
+      "taglineZh": "让 AI 直接翻你的 Obsidian 笔记库",
+      "taglineEn": "Lets the agent work directly on your Obsidian vault",
+      "useWhen": "笔记在 Obsidian，想让 AI 读写",
+      "aboutZh": "Obsidian 官方推出的技能集，教会智能体使用 Obsidian CLI 命令行，以及 Markdown、Bases、JSON Canvas 等开放格式，适合笔记知识库用户。"
     },
     {
       "fullName": "Imbad0202/academic-research-skills",
@@ -1275,7 +1315,12 @@
       ],
       "skillCount": 4,
       "truncatedTree": false,
-      "installHint": "npx skills add Imbad0202/academic-research-skills"
+      "installHint": "npx skills add Imbad0202/academic-research-skills",
+      "fn": "research",
+      "taglineZh": "从选题调研到同行评审走完论文全流程",
+      "taglineEn": "Full academic paper workflow from literature review to peer review",
+      "useWhen": "写论文、做学术研究",
+      "aboutZh": "面向 Claude Code 的学术研究技能，覆盖选题调研、写作、同行评审、修改到定稿的完整论文流程。"
     },
     {
       "fullName": "sickn33/agentic-awesome-skills",
@@ -7990,7 +8035,12 @@
       ],
       "skillCount": 6670,
       "truncatedTree": false,
-      "installHint": "npx skills add sickn33/agentic-awesome-skills"
+      "installHint": "npx skills add sickn33/agentic-awesome-skills",
+      "fn": "collections",
+      "taglineZh": "本地技能控制台，内置 2000+ 技能目录",
+      "taglineEn": "Local skill control plane bundling 2000+ skill directories",
+      "useWhen": "想要一个装好就有一大堆技能的环境",
+      "aboutZh": "以智能体为中心的本地技能控制面，内置两千多个技能目录、CLI、本地 MCP 与工作台，便于检索选型与校验。"
     },
     {
       "fullName": "K-Dense-AI/scientific-agent-skills",
@@ -8198,7 +8248,12 @@
       ],
       "skillCount": 166,
       "truncatedTree": false,
-      "installHint": "npx skills add K-Dense-AI/scientific-agent-skills"
+      "installHint": "npx skills add K-Dense-AI/scientific-agent-skills",
+      "fn": "research",
+      "taglineZh": "166 个科研技能：生物、化学、医学、制药",
+      "taglineEn": "166 research skills across biology, chemistry, medicine and pharma",
+      "useWhen": "做生命科学或药物研究",
+      "aboutZh": "把通用智能体变成科研助手的一百六十多个经校验技能，覆盖生物、化学、医学与药物发现等领域。"
     },
     {
       "fullName": "wshobson/agents",
@@ -8426,7 +8481,12 @@
       ],
       "skillCount": 183,
       "truncatedTree": false,
-      "installHint": "npx skills add wshobson/agents"
+      "installHint": "npx skills add wshobson/agents",
+      "fn": "coding",
+      "taglineZh": "跨运行时的插件市场，一份配置多工具通用",
+      "taglineEn": "Cross-runtime plugin marketplace with one shared config",
+      "useWhen": "在多个 agent 之间来回切",
+      "aboutZh": "面向多种智能体运行时的插件市场，统一为 Claude Code、Codex、Cursor、Copilot 等提供技能与代理。"
     },
     {
       "fullName": "github/awesome-copilot",
@@ -8894,7 +8954,12 @@
       ],
       "skillCount": 435,
       "truncatedTree": false,
-      "installHint": "npx skills add github/awesome-copilot"
+      "installHint": "npx skills add github/awesome-copilot",
+      "fn": "coding",
+      "taglineZh": "GitHub 官方 Copilot 资源合集",
+      "taglineEn": "GitHub's official collection of Copilot instructions and agents",
+      "useWhen": "用 Copilot 想找官方资源",
+      "aboutZh": "GitHub 官方社区合集，提供面向 Copilot 的指令、智能体、技能与配置，帮助开发者用好 Copilot。"
     },
     {
       "fullName": "anthropics/claude-plugins-official",
@@ -8953,7 +9018,12 @@
       ],
       "skillCount": 31,
       "truncatedTree": false,
-      "installHint": "npx skills add anthropics/claude-plugins-official"
+      "installHint": "npx skills add anthropics/claude-plugins-official",
+      "fn": "collections",
+      "taglineZh": "Anthropic 官方插件目录，挑现成的装",
+      "taglineEn": "Anthropic's official plugin directory",
+      "useWhen": "想找官方维护的现成能力",
+      "aboutZh": "Anthropic 官方维护的 Claude Code 高质量插件目录，便于发现并安装经过审核的插件与技能。"
     },
     {
       "fullName": "VoltAgent/awesome-agent-skills",
@@ -8989,7 +9059,12 @@
       "skillDirs": [],
       "skillCount": 0,
       "truncatedTree": false,
-      "installHint": "git clone https://github.com/VoltAgent/awesome-agent-skills"
+      "installHint": "git clone https://github.com/VoltAgent/awesome-agent-skills",
+      "fn": "collections",
+      "taglineZh": "上千个社区技能，兼容主流编码智能体",
+      "taglineEn": "Thousands of community skills for mainstream coding agents",
+      "useWhen": "想一次拿到大量社区技能",
+      "aboutZh": "汇集官方团队与社区的上千个智能体技能，兼容 Claude Code、Codex、Gemini CLI、Cursor 等主流工具。"
     },
     {
       "fullName": "mukul975/Anthropic-Cybersecurity-Skills",
@@ -9852,7 +9927,12 @@
       ],
       "skillCount": 818,
       "truncatedTree": false,
-      "installHint": "npx skills add mukul975/Anthropic-Cybersecurity-Skills"
+      "installHint": "npx skills add mukul975/Anthropic-Cybersecurity-Skills",
+      "fn": "security",
+      "taglineZh": "818 个网安技能，对齐 MITRE ATT&CK",
+      "taglineEn": "818 cybersecurity skills mapped to MITRE ATT&CK",
+      "useWhen": "做安全测试或合规",
+      "aboutZh": "面向 AI 智能体的八百多个结构化网络安全技能，映射 MITRE ATT&CK、NIST 等六大框架，覆盖二十九个安全领域。"
     },
     {
       "fullName": "vercel-labs/skills",
@@ -9877,7 +9957,12 @@
       ],
       "skillCount": 1,
       "truncatedTree": false,
-      "installHint": "git clone https://github.com/vercel-labs/skills"
+      "installHint": "git clone https://github.com/vercel-labs/skills",
+      "fn": "tooling",
+      "taglineZh": "一条命令把技能装进 80 种 AI 工具",
+      "taglineEn": "One command installs a skill into 80 different agents",
+      "useWhen": "想在多个工具之间共用技能",
+      "aboutZh": "Vercel 出品的开放智能体技能工具，一条 npx skills 命令即可发现、安装并管理各类技能。"
     },
     {
       "fullName": "vercel-labs/agent-skills",
@@ -9910,7 +9995,12 @@
       ],
       "skillCount": 9,
       "truncatedTree": false,
-      "installHint": "npx skills add vercel-labs/agent-skills"
+      "installHint": "npx skills add vercel-labs/agent-skills",
+      "fn": "design",
+      "taglineZh": "按前端最佳实践写 React 与网页",
+      "taglineEn": "Frontend best practices for React and the web",
+      "useWhen": "写前端想少踩坑",
+      "aboutZh": "Vercel 官方维护的智能体技能合集，围绕其平台与前端框架的最佳实践编写。"
     },
     {
       "fullName": "googleworkspace/cli",
@@ -10046,7 +10136,12 @@
       ],
       "skillCount": 95,
       "truncatedTree": false,
-      "installHint": "npx skills add googleworkspace/cli"
+      "installHint": "npx skills add googleworkspace/cli",
+      "fn": "docs",
+      "taglineZh": "一条命令操作 Gmail、Drive、日历和文档",
+      "taglineEn": "One CLI for Gmail, Drive, Calendar and Docs",
+      "useWhen": "要脚本化操作 Google Workspace",
+      "aboutZh": "Google Workspace 官方命令行工具，用一个命令统一操作 Drive、Gmail、日历、文档与后台管理，并附带 AI 智能体技能。"
     },
     {
       "fullName": "openai/skills",
@@ -10114,7 +10209,12 @@
       ],
       "skillCount": 44,
       "truncatedTree": false,
-      "installHint": "npx skills add openai/skills"
+      "installHint": "npx skills add openai/skills",
+      "fn": "collections",
+      "taglineZh": "OpenAI 官方 Codex 技能目录",
+      "taglineEn": "OpenAI's official skill directory for Codex",
+      "useWhen": "用 Codex，想装官方技能",
+      "aboutZh": "OpenAI 官方 Codex 技能目录，收录可直接安装的官方技能，帮助 Codex 完成各类专业任务。"
     },
     {
       "fullName": "OthmanAdi/planning-with-files",
@@ -10177,7 +10277,12 @@
       ],
       "skillCount": 18,
       "truncatedTree": false,
-      "installHint": "npx skills add OthmanAdi/planning-with-files"
+      "installHint": "npx skills add OthmanAdi/planning-with-files",
+      "fn": "coding",
+      "taglineZh": "把长任务计划写成文件，断了也能接着干",
+      "taglineEn": "Writes the plan to a file so long tasks survive a context reset",
+      "useWhen": "任务很长、跨会话、容易丢上下文",
+      "aboutZh": "为长时间运行的编码任务提供基于文件的持久化计划，支持会话恢复与逐轮重注入，抵御上下文腐化。"
     },
     {
       "fullName": "op7418/guizang-ppt-skill",
@@ -10214,7 +10319,12 @@
       ],
       "skillCount": 1,
       "truncatedTree": false,
-      "installHint": "npx skills add op7418/guizang-ppt-skill"
+      "installHint": "npx skills add op7418/guizang-ppt-skill",
+      "fn": "content",
+      "taglineZh": "生成杂志排版的 HTML 幻灯片",
+      "taglineEn": "Generates magazine-grade HTML slide decks",
+      "useWhen": "要做一份好看的中文演示",
+      "aboutZh": "生成精致 HTML 幻灯片的智能体技能，内置杂志与瑞士排版风格、配图提示词和演示运行时。"
     },
     {
       "fullName": "alirezarezvani/claude-skills",
@@ -11105,7 +11215,12 @@
       ],
       "skillCount": 846,
       "truncatedTree": false,
-      "installHint": "npx skills add alirezarezvani/claude-skills"
+      "installHint": "npx skills add alirezarezvani/claude-skills",
+      "fn": "collections",
+      "taglineZh": "380+ 技能覆盖工程、市场、产品与合规",
+      "taglineEn": "380+ skills spanning engineering, marketing, product and compliance",
+      "useWhen": "需要非技术岗位的技能",
+      "aboutZh": "收录三百八十多个技能与插件的综合合集，覆盖工程、市场、产品、合规、研究和财务等方向。"
     },
     {
       "fullName": "agentskills/agentskills",
@@ -11130,7 +11245,12 @@
       "skillDirs": [],
       "skillCount": 0,
       "truncatedTree": false,
-      "installHint": "git clone https://github.com/agentskills/agentskills"
+      "installHint": "git clone https://github.com/agentskills/agentskills",
+      "fn": "spec",
+      "taglineZh": "SKILL.md 的官方规范：格式与发现机制",
+      "taglineEn": "The official SKILL.md specification",
+      "useWhen": "想知道 SKILL.md 该怎么写",
+      "aboutZh": "Agent Skills 的官方规范与文档仓库，定义 SKILL.md 的结构、发现机制与最佳实践，是该生态的权威依据。"
     },
     {
       "fullName": "KKKKhazix/khazix-skills",
@@ -11170,7 +11290,12 @@
       ],
       "skillCount": 6,
       "truncatedTree": false,
-      "installHint": "npx skills add KKKKhazix/khazix-skills"
+      "installHint": "npx skills add KKKKhazix/khazix-skills",
+      "fn": "coding",
+      "taglineZh": "卡兹克开源：定目标、整理、写作等实用技能",
+      "taglineEn": "Practical skills from Khaizix: goal-setting, tidying, writing",
+      "useWhen": "想要中文语境下的实用技能",
+      "aboutZh": "数字生命卡兹克开源的 AI 技能合集，包含目标定义、洁癖整理、写作等实用技能，兼容主流智能体。"
     },
     {
       "fullName": "google/skills",
@@ -11341,7 +11466,12 @@
       ],
       "skillCount": 143,
       "truncatedTree": false,
-      "installHint": "npx skills add google/skills"
+      "installHint": "npx skills add google/skills",
+      "fn": "cloud",
+      "taglineZh": "Google 官方技能：Gemini、Cloud 与 GCP",
+      "taglineEn": "Official Google skills for Gemini and Google Cloud",
+      "useWhen": "在 GCP 上开发",
+      "aboutZh": "Google 官方智能体技能集，围绕 Gemini、Google Cloud 等产品与技术，提供权威且可直接使用的最佳实践指导。"
     },
     {
       "fullName": "NVIDIA/SkillSpector",
@@ -11402,7 +11532,12 @@
       ],
       "skillCount": 25,
       "truncatedTree": false,
-      "installHint": "git clone https://github.com/NVIDIA/SkillSpector"
+      "installHint": "git clone https://github.com/NVIDIA/SkillSpector",
+      "fn": "security",
+      "taglineZh": "装之前先扫一遍：查后门、注入与外泄",
+      "taglineEn": "Scans a skill for backdoors, prompt injection and data exfiltration before install",
+      "useWhen": "要装来路不明的技能",
+      "aboutZh": "智能体技能安全扫描器，可在安装前检测漏洞、恶意模式、提示词注入、数据外泄与供应链风险。"
     },
     {
       "fullName": "yusufkaraaslan/Skill_Seekers",
@@ -11471,7 +11606,12 @@
       ],
       "skillCount": 26,
       "truncatedTree": false,
-      "installHint": "git clone https://github.com/yusufkaraaslan/Skill_Seekers"
+      "installHint": "git clone https://github.com/yusufkaraaslan/Skill_Seekers",
+      "fn": "tooling",
+      "taglineZh": "把文档站、仓库或 PDF 自动变成技能",
+      "taglineEn": "Turns documentation sites, repos or PDFs into skills automatically",
+      "useWhen": "想让 AI 学会一套内部文档",
+      "aboutZh": "把文档站点、GitHub 仓库和 PDF 自动转换成 Claude 技能的生成工具，并支持冲突检测。"
     },
     {
       "fullName": "Agents365-ai/drawio-skill",
@@ -11517,7 +11657,12 @@
       ],
       "skillCount": 1,
       "truncatedTree": false,
-      "installHint": "npx skills add Agents365-ai/drawio-skill"
+      "installHint": "npx skills add Agents365-ai/drawio-skill",
+      "fn": "docs",
+      "taglineZh": "把代码或 SQL 画成可编辑的架构图",
+      "taglineEn": "Turns code, Terraform or SQL into editable draw.io diagrams",
+      "useWhen": "要画架构图但不想手拖",
+      "aboutZh": "把自然语言、代码、Terraform、SQL 等来源转成可编辑 draw.io 架构图的技能，支持增量同步与导出。"
     },
     {
       "fullName": "modelcontextprotocol/modelcontextprotocol",
@@ -11548,7 +11693,12 @@
       ],
       "skillCount": 2,
       "truncatedTree": false,
-      "installHint": "git clone https://github.com/modelcontextprotocol/modelcontextprotocol"
+      "installHint": "git clone https://github.com/modelcontextprotocol/modelcontextprotocol",
+      "fn": "spec",
+      "taglineZh": "MCP 协议官方规范：模型怎么连工具",
+      "taglineEn": "The official Model Context Protocol specification",
+      "useWhen": "要写 MCP 服务器",
+      "aboutZh": "MCP 协议的官方规范与文档仓库，定义模型与外部工具、数据源的连接标准，是 MCP 生态的源头。"
     },
     {
       "fullName": "revfactory/harness",
@@ -11578,7 +11728,12 @@
       ],
       "skillCount": 1,
       "truncatedTree": false,
-      "installHint": "git clone https://github.com/revfactory/harness"
+      "installHint": "git clone https://github.com/revfactory/harness",
+      "fn": "coding",
+      "taglineZh": "按你的领域自动组建一支 AI 团队并分工",
+      "taglineEn": "Auto-assembles a specialist agent team for your domain",
+      "useWhen": "一个 agent 干不完，想拆成多个角色",
+      "aboutZh": "一个元技能，可根据领域自动设计智能体团队、定义专职代理，并生成它们所需的技能。"
     },
     {
       "fullName": "Vincentwei1021/video-shotcraft",
@@ -11618,7 +11773,12 @@
       ],
       "skillCount": 1,
       "truncatedTree": false,
-      "installHint": "npx skills add Vincentwei1021/video-shotcraft"
+      "installHint": "npx skills add Vincentwei1021/video-shotcraft",
+      "fn": "content",
+      "taglineZh": "把网页变成电影感的产品宣传片",
+      "taglineEn": "Turns a webpage into a cinematic product video",
+      "useWhen": "要做一个产品演示视频",
+      "aboutZh": "用 Remotion 制作电影感产品视频的技能，内置一百五十多张镜头配方卡与可直接使用的模板。"
     },
     {
       "fullName": "google-labs-code/stitch-skills",
@@ -11658,7 +11818,12 @@
       ],
       "skillCount": 16,
       "truncatedTree": false,
-      "installHint": "npx skills add google-labs-code/stitch-skills"
+      "installHint": "npx skills add google-labs-code/stitch-skills",
+      "fn": "design",
+      "taglineZh": "把设计稿变成能跑的前端代码",
+      "taglineEn": "Turns design mockups into working frontend code",
+      "useWhen": "有设计稿要实现",
+      "aboutZh": "Google 官方技能库，配合 Stitch MCP 服务器使用，遵循 Agent Skills 开放标准，兼容主流编码智能体。"
     },
     {
       "fullName": "jnMetaCode/superpowers-zh",
@@ -11719,7 +11884,12 @@
       ],
       "skillCount": 20,
       "truncatedTree": false,
-      "installHint": "npx skills add jnMetaCode/superpowers-zh"
+      "installHint": "npx skills add jnMetaCode/superpowers-zh",
+      "fn": "coding",
+      "taglineZh": "superpowers 全中文版，另加原创中文技能",
+      "taglineEn": "Full Chinese port of superpowers plus original Chinese skills",
+      "useWhen": "想要 superpowers 但不想看英文",
+      "aboutZh": "superpowers 的完整中文化增强版，并加入原创中文技能，让二十多款 AI 编程工具真正落地干活。"
     },
     {
       "fullName": "modelcontextprotocol/registry",
@@ -11745,7 +11915,12 @@
       "skillDirs": [],
       "skillCount": 0,
       "truncatedTree": false,
-      "installHint": "git clone https://github.com/modelcontextprotocol/registry"
+      "installHint": "git clone https://github.com/modelcontextprotocol/registry",
+      "fn": "spec",
+      "taglineZh": "MCP 服务器官方注册表，统一发现与查询",
+      "taglineEn": "The official MCP server registry",
+      "useWhen": "想找现成的 MCP 服务器",
+      "aboutZh": "社区驱动的 MCP 服务器注册表服务，提供统一的服务器发现与元数据查询接口。"
     },
     {
       "fullName": "trailofbits/skills",
@@ -11856,7 +12031,12 @@
       ],
       "skillCount": 85,
       "truncatedTree": false,
-      "installHint": "npx skills add trailofbits/skills"
+      "installHint": "npx skills add trailofbits/skills",
+      "fn": "security",
+      "taglineZh": "顶级安全公司的找漏洞与审代码套路",
+      "taglineEn": "Vulnerability research and code audit playbooks from Trail of Bits",
+      "useWhen": "要审计代码安全性",
+      "aboutZh": "安全公司 Trail of Bits 开源的安全技能集，面向漏洞研究、代码审计与安全评估工作流。"
     },
     {
       "fullName": "Gentleman-Programming/gentle-ai",
@@ -11934,7 +12114,12 @@
       ],
       "skillCount": 37,
       "truncatedTree": false,
-      "installHint": "git clone https://github.com/Gentleman-Programming/gentle-ai"
+      "installHint": "git clone https://github.com/Gentleman-Programming/gentle-ai",
+      "fn": "coding",
+      "taglineZh": "给 AI 工具一次性配好记忆、规范与技能",
+      "taglineEn": "One-shot setup of memory, specs and skills across your AI tools",
+      "useWhen": "新机器或新项目要从零配一遍",
+      "aboutZh": "为已有 AI 编程工具统一配置持久记忆、规格驱动开发、精选技能与 MCP 服务器，不锁定任何平台。"
     },
     {
       "fullName": "anbeime/skill",
@@ -12059,7 +12244,12 @@
       ],
       "skillCount": 84,
       "truncatedTree": false,
-      "installHint": "npx skills add anbeime/skill"
+      "installHint": "npx skills add anbeime/skill",
+      "fn": "collections",
+      "taglineZh": "中文技能商店：文档、创作、编程",
+      "taglineEn": "A Chinese skill store covering documents, content and coding",
+      "useWhen": "想找中文化的技能包",
+      "aboutZh": "中文技能商店，收录文档处理、内容创作、编程开发等原创技能包，并自动整理 GitHub 上的技能项目。"
     },
     {
       "fullName": "tech-leads-club/agent-skills",
@@ -12183,7 +12373,12 @@
       ],
       "skillCount": 92,
       "truncatedTree": false,
-      "installHint": "npx skills add tech-leads-club/agent-skills"
+      "installHint": "npx skills add tech-leads-club/agent-skills",
+      "fn": "tooling",
+      "taglineZh": "经过安全校验的技能注册表，装得放心",
+      "taglineEn": "A security-vetted skill registry",
+      "useWhen": "担心装的技能有后门",
+      "aboutZh": "经过安全校验的专业智能体技能注册表，为 Claude Code、Cursor、Copilot 等工具提供可信扩展。"
     },
     {
       "fullName": "browser-act/skills",
@@ -12331,7 +12526,12 @@
       ],
       "skillCount": 103,
       "truncatedTree": false,
-      "installHint": "npx skills add browser-act/skills"
+      "installHint": "npx skills add browser-act/skills",
+      "fn": "cloud",
+      "taglineZh": "让 AI 稳定操控浏览器：绕反爬、并行、隔离",
+      "taglineEn": "Reliable browser automation that survives anti-bot defences",
+      "useWhen": "要抓数据或跑网页自动化",
+      "aboutZh": "为 AI 智能体打造的浏览器自动化命令行工具与技能，可突破反爬限制、并行执行任务并隔离多账号会话。"
     },
     {
       "fullName": "libukai/awesome-agent-skills",
@@ -12360,7 +12560,12 @@
       "skillDirs": [],
       "skillCount": 0,
       "truncatedTree": false,
-      "installHint": "git clone https://github.com/libukai/awesome-agent-skills"
+      "installHint": "git clone https://github.com/libukai/awesome-agent-skills",
+      "fn": "collections",
+      "taglineZh": "中文整理的智能体技能清单",
+      "taglineEn": "A Chinese-curated list of agent skills",
+      "useWhen": "想快速了解生态里有什么",
+      "aboutZh": "中文整理的智能体技能资源清单，汇总 Claude Code、OpenClaw 等平台的技能与工具，适合中文开发者。"
     },
     {
       "fullName": "xingkongliang/skills-manager",
@@ -12385,7 +12590,12 @@
       ],
       "skillCount": 1,
       "truncatedTree": false,
-      "installHint": "git clone https://github.com/xingkongliang/skills-manager"
+      "installHint": "git clone https://github.com/xingkongliang/skills-manager",
+      "fn": "tooling",
+      "taglineZh": "桌面端统一管理几十种工具的技能",
+      "taglineEn": "Desktop manager for skills across dozens of tools",
+      "useWhen": "技能散落在多个目录里",
+      "aboutZh": "轻量级桌面应用，可在五十多款编码工具之间统一管理、同步和整理 AI 智能体技能。"
     },
     {
       "fullName": "microsoft/skill-recorder",
@@ -12419,7 +12629,12 @@
       "skillDirs": [],
       "skillCount": 0,
       "truncatedTree": false,
-      "installHint": "git clone https://github.com/microsoft/skill-recorder"
+      "installHint": "git clone https://github.com/microsoft/skill-recorder",
+      "fn": "docs",
+      "taglineZh": "录下你的屏幕操作，自动变成可复用技能",
+      "taglineEn": "Records your screen actions and turns them into a reusable skill",
+      "useWhen": "有个重复流程想教会 AI",
+      "aboutZh": "微软桌面录制工具，把屏幕操作借助 Copilot CLI 还原为意图与步骤，并生成可复用的技能或自动化。"
     },
     {
       "fullName": "gotalab/cc-sdd",
@@ -12593,7 +12808,12 @@
       ],
       "skillCount": 137,
       "truncatedTree": false,
-      "installHint": "git clone https://github.com/gotalab/cc-sdd"
+      "installHint": "git clone https://github.com/gotalab/cc-sdd",
+      "fn": "coding",
+      "taglineZh": "把一份需求文档变成能自己跑完的实现",
+      "taglineEn": "Turns an approved spec into long-running autonomous implementation",
+      "useWhen": "想先写规格，再让 AI 自主实现",
+      "aboutZh": "把获批的规格文档转成可长期自主执行的实现，是一套极简且可裁剪的规格驱动开发技能框架。"
     },
     {
       "fullName": "NVIDIA/skills",
@@ -12988,7 +13208,12 @@
       ],
       "skillCount": 356,
       "truncatedTree": false,
-      "installHint": "npx skills add NVIDIA/skills"
+      "installHint": "npx skills add NVIDIA/skills",
+      "fn": "cloud",
+      "taglineZh": "英伟达官方技能：机器人、仿真与 CUDA",
+      "taglineEn": "NVIDIA skills for robotics, simulation and CUDA",
+      "useWhen": "做机器人、仿真或 GPU 开发",
+      "aboutZh": "NVIDIA 官方智能体技能集，覆盖物理 AI、机器人、仿真、CUDA 与 RAG 等端到端工作流。"
     },
     {
       "fullName": "microsoft/skills",
@@ -13218,7 +13443,12 @@
       ],
       "skillCount": 198,
       "truncatedTree": false,
-      "installHint": "npx skills add microsoft/skills"
+      "installHint": "npx skills add microsoft/skills",
+      "fn": "cloud",
+      "taglineZh": "微软官方技能：Azure、Foundry 与 .NET",
+      "taglineEn": "Microsoft skills for Azure, Foundry and .NET",
+      "useWhen": "在 Azure 上开发",
+      "aboutZh": "微软官方技能与 MCP 服务器合集，为 Azure、Foundry 等 SDK 提供让编码智能体落地的基础知识。"
     },
     {
       "fullName": "cloudflare/skills",
@@ -13261,7 +13491,12 @@
       ],
       "skillCount": 14,
       "truncatedTree": false,
-      "installHint": "npx skills add cloudflare/skills"
+      "installHint": "npx skills add cloudflare/skills",
+      "fn": "cloud",
+      "taglineZh": "在 Cloudflare 上写对 Worker、D1 和 R2",
+      "taglineEn": "Write correct Workers, D1 and R2 code for Cloudflare",
+      "useWhen": "部署到 Cloudflare",
+      "aboutZh": "Cloudflare 官方技能集，教智能体在其平台上正确构建和部署 Worker、D1、R2 等应用，减少踩坑。"
     },
     {
       "fullName": "addyosmani/web-quality-skills",
@@ -13300,7 +13535,12 @@
       ],
       "skillCount": 6,
       "truncatedTree": false,
-      "installHint": "npx skills add addyosmani/web-quality-skills"
+      "installHint": "npx skills add addyosmani/web-quality-skills",
+      "fn": "design",
+      "taglineZh": "照着 Lighthouse 指标把网站调到更快",
+      "taglineEn": "Improves site performance against Lighthouse and Core Web Vitals",
+      "useWhen": "网站慢、想优化性能",
+      "aboutZh": "围绕 Lighthouse 与核心网页指标优化的智能体技能，帮助团队持续提升网站性能与质量。"
     },
     {
       "fullName": "antonbabenko/terraform-skill",
@@ -13336,7 +13576,12 @@
       ],
       "skillCount": 1,
       "truncatedTree": false,
-      "installHint": "npx skills add antonbabenko/terraform-skill"
+      "installHint": "npx skills add antonbabenko/terraform-skill",
+      "fn": "cloud",
+      "taglineZh": "写对 Terraform 与 OpenTofu 配置",
+      "taglineEn": "Write correct Terraform and OpenTofu configuration",
+      "useWhen": "管理云基础设施",
+      "aboutZh": "面向 AI 智能体的 Terraform 与 OpenTofu 技能，由社区知名作者维护，涵盖模块设计、自动化测试、CI/CD 与生产环境实践。"
     },
     {
       "fullName": "qufei1993/skills-hub",
@@ -13371,7 +13616,12 @@
       "skillDirs": [],
       "skillCount": 0,
       "truncatedTree": false,
-      "installHint": "git clone https://github.com/qufei1993/skills-hub"
+      "installHint": "git clone https://github.com/qufei1993/skills-hub",
+      "fn": "tooling",
+      "taglineZh": "技能集中管理，装一次到处能用",
+      "taglineEn": "Central skill management — install once, use everywhere",
+      "useWhen": "想让所有工具共用同一份技能",
+      "aboutZh": "跨平台桌面应用，把智能体技能集中管理并同步到多款工具的全局技能目录，一次安装处处可用。"
     },
     {
       "fullName": "codeaholicguy/ai-devkit",
@@ -13443,7 +13693,12 @@
       ],
       "skillCount": 28,
       "truncatedTree": false,
-      "installHint": "git clone https://github.com/codeaholicguy/ai-devkit"
+      "installHint": "git clone https://github.com/codeaholicguy/ai-devkit",
+      "fn": "coding",
+      "taglineZh": "一个控制台管住所有 AI 工具的技能与配置",
+      "taglineEn": "One control plane for skills and config across AI tools",
+      "useWhen": "用了好几个 AI 工具，配置太散",
+      "aboutZh": "为 AI 编程智能体提供统一控制面，集中管理技能、配置与工作流，降低多工具切换成本。"
     },
     {
       "fullName": "rohitg00/skillkit",
@@ -13494,7 +13749,12 @@
       ],
       "skillCount": 17,
       "truncatedTree": false,
-      "installHint": "git clone https://github.com/rohitg00/skillkit"
+      "installHint": "git clone https://github.com/rohitg00/skillkit",
+      "fn": "tooling",
+      "taglineZh": "让同一份技能在 40+ 工具间通用",
+      "taglineEn": "Makes one skill work across 40+ tools",
+      "useWhen": "工具换着用，不想重复装",
+      "aboutZh": "让技能在 Claude Code、Cursor、Codex、Copilot 等四十多款工具之间便携安装、互相翻译与共享，一份技能到处可用。"
     },
     {
       "fullName": "MoizIbnYousaf/ai-agent-skills",
@@ -13545,7 +13805,12 @@
       ],
       "skillCount": 17,
       "truncatedTree": false,
-      "installHint": "git clone https://github.com/MoizIbnYousaf/ai-agent-skills"
+      "installHint": "git clone https://github.com/MoizIbnYousaf/ai-agent-skills",
+      "fn": "tooling",
+      "taglineZh": "一条命令把技能部署到十多种运行时",
+      "taglineEn": "Deploys a skill to a dozen runtimes with one command",
+      "useWhen": "要批量部署到多种 agent",
+      "aboutZh": "通用的技能安装器与包管理器，一条命令即可把技能部署到十二种以上运行时。"
     },
     {
       "fullName": "jiweiyeah/Skills-Manager",
@@ -13584,7 +13849,12 @@
       ],
       "skillCount": 1,
       "truncatedTree": false,
-      "installHint": "git clone https://github.com/jiweiyeah/Skills-Manager"
+      "installHint": "git clone https://github.com/jiweiyeah/Skills-Manager",
+      "fn": "tooling",
+      "taglineZh": "用软链接把一份技能同步到 32 种工具",
+      "taglineEn": "Symlinks one skill into 32 tools",
+      "useWhen": "想保持单一真源",
+      "aboutZh": "免费开源的桌面技能管理器，通过符号链接把一份技能同步到三十二款编码工具，本地优先。"
     },
     {
       "fullName": "oracle/skills",
@@ -13622,7 +13892,12 @@
       ],
       "skillCount": 14,
       "truncatedTree": false,
-      "installHint": "npx skills add oracle/skills"
+      "installHint": "npx skills add oracle/skills",
+      "fn": "cloud",
+      "taglineZh": "Oracle 全栈：从数据库到云基础设施",
+      "taglineEn": "Oracle across database and cloud infrastructure",
+      "useWhen": "用 Oracle 技术栈",
+      "aboutZh": "Oracle 官方开源技能集，为开发者、管理员和智能体提供整个 Oracle 技术栈的实用指导。"
     },
     {
       "fullName": "EverMind-AI/SkillCorpus",
@@ -13666,7 +13941,12 @@
       "skillDirs": [],
       "skillCount": 0,
       "truncatedTree": false,
-      "installHint": "git clone https://github.com/EverMind-AI/SkillCorpus"
+      "installHint": "git clone https://github.com/EverMind-AI/SkillCorpus",
+      "fn": "tooling",
+      "taglineZh": "把散落的 SKILL.md 变成可检索的语料库",
+      "taglineEn": "Turns scattered SKILL.md files into a searchable corpus",
+      "useWhen": "技能太多，找不到想要的",
+      "aboutZh": "把零散的 SKILL.md 整理成可检索的智能体技能语料库，并附带检索与评测工具。"
     },
     {
       "fullName": "sno-ai/mda",
@@ -13714,7 +13994,12 @@
       ],
       "skillCount": 8,
       "truncatedTree": false,
-      "installHint": "git clone https://github.com/sno-ai/mda"
+      "installHint": "git clone https://github.com/sno-ai/mda",
+      "fn": "spec",
+      "taglineZh": "一份 Markdown 源码编译成多种技能格式",
+      "taglineEn": "Compiles one Markdown source into multiple agent formats",
+      "useWhen": "同一份内容要适配多个平台",
+      "aboutZh": "面向智能体文档的 Markdown 超集规范，一份源码即可编译成 SKILL.md、AGENTS.md 等多种文件。"
     },
     {
       "fullName": "Kamalnrf/claude-plugins",
@@ -13743,7 +14028,12 @@
       ],
       "skillCount": 1,
       "truncatedTree": false,
-      "installHint": "git clone https://github.com/Kamalnrf/claude-plugins"
+      "installHint": "git clone https://github.com/Kamalnrf/claude-plugins",
+      "fn": "tooling",
+      "taglineZh": "发现并安装公开的 Claude 插件与技能",
+      "taglineEn": "Discover and install public Claude plugins and skills",
+      "useWhen": "想从命令行找插件",
+      "aboutZh": "轻量注册表，用于发现、安装和管理公开的 Claude 插件与智能体技能。"
     },
     {
       "fullName": "antfu/skills-npm",
@@ -13774,7 +14064,12 @@
       ],
       "skillCount": 7,
       "truncatedTree": false,
-      "installHint": "git clone https://github.com/antfu/skills-npm"
+      "installHint": "git clone https://github.com/antfu/skills-npm",
+      "fn": "tooling",
+      "taglineZh": "像装 npm 包一样安装 AI 技能",
+      "taglineEn": "Install agent skills the way you install npm packages",
+      "useWhen": "想用 npm 生态分发技能",
+      "aboutZh": "让开发者直接从 npm 安装智能体技能的工具，简化技能的分发与版本管理。"
     },
     {
       "fullName": "astronomer/agents",
@@ -13854,7 +14149,70 @@
       ],
       "skillCount": 35,
       "truncatedTree": false,
-      "installHint": "npx skills add astronomer/agents"
+      "installHint": "npx skills add astronomer/agents",
+      "fn": "research",
+      "taglineZh": "用自然语言搭起并运维数据管道",
+      "taglineEn": "Build and operate data pipelines in natural language",
+      "useWhen": "做数据工程",
+      "aboutZh": "面向数据工程工作流的 AI 智能体工具与技能，帮助团队用自然语言构建和运维数据管道。"
     }
-  ]
+  ],
+  "fnLabels": {
+    "docs": {
+      "zh": "文档与办公",
+      "en": "Documents & Office",
+      "icon": "FileText"
+    },
+    "design": {
+      "zh": "设计与前端",
+      "en": "Design & Frontend",
+      "icon": "Palette"
+    },
+    "coding": {
+      "zh": "编程与开发",
+      "en": "Coding",
+      "icon": "Code"
+    },
+    "research": {
+      "zh": "科研与数据",
+      "en": "Research & Data",
+      "icon": "FlaskConical"
+    },
+    "security": {
+      "zh": "安全与合规",
+      "en": "Security",
+      "icon": "ShieldCheck"
+    },
+    "cloud": {
+      "zh": "云与自动化",
+      "en": "Cloud & Automation",
+      "icon": "Cloud"
+    },
+    "content": {
+      "zh": "内容与创意",
+      "en": "Content & Media",
+      "icon": "Clapperboard"
+    },
+    "tooling": {
+      "zh": "技能管理",
+      "en": "Skill Tooling",
+      "icon": "Wrench"
+    },
+    "collections": {
+      "zh": "技能合集",
+      "en": "Collections",
+      "icon": "Library"
+    },
+    "spec": {
+      "zh": "规范与标准",
+      "en": "Specs",
+      "icon": "BookMarked"
+    }
+  },
+  "blurbStyle": {
+    "formula": "[动词] + [对象] + [产出]；或 让/把 + [对象] + [告别/变成] + [痛点]",
+    "budgetChars": "13–30",
+    "writtenAt": "2026-09-15T06:11:43.935Z",
+    "corpus": "docs/research/corpus-own.md"
+  }
 }

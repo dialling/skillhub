@@ -111,9 +111,10 @@ export function DetailPanel(): React.JSX.Element | null {
   if (!detail) return null
   const meta = detail.meta
   const [c1, c2] = gradientFor(detail.fullName)
-  const descriptionZh = meta?.descriptionZh
+  const descriptionZh = meta?.aboutZh || meta?.descriptionZh
   const descriptionEn = meta?.descriptionEn
   const shownZh = translated || descriptionZh
+  const tagline = lang === 'zh' ? meta?.taglineZh : meta?.taglineEn
 
   const isCJK = (s?: string): boolean => !!s && /[\u4e00-\u9fa5]/.test(s)
 
@@ -204,6 +205,12 @@ export function DetailPanel(): React.JSX.Element | null {
               )}
               {meta?.archived && <span className="chip">archived</span>}
             </div>
+            {tagline && <div className="hero-tagline">{tagline}</div>}
+            {meta?.useWhen && (
+              <div className="hero-usewhen">
+                {t('store.useWhen')}：{meta.useWhen}
+              </div>
+            )}
             <div className="hero-tags">
               {(meta?.topics || []).slice(0, 8).map((tag) => (
                 <span key={tag} className="chip mono">

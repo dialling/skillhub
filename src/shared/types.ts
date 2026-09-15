@@ -2,6 +2,7 @@
  * Shared type contracts between the Electron main process and the renderer.
  */
 
+/** Provenance label: who made it / what kind of repo it is (secondary axis). */
 export type Category = 'spec' | 'official' | 'collection' | 'tooling' | 'framework' | 'domain'
 
 export const CATEGORY_LABELS: Record<Category, { zh: string; en: string }> = {
@@ -13,6 +14,52 @@ export const CATEGORY_LABELS: Record<Category, { zh: string; en: string }> = {
   domain: { zh: '垂直领域', en: 'Domain' }
 }
 
+/**
+ * Primary browse axis: what the user wants to DO, not what kind of repo it is.
+ * Borrowed from how the strongest directories file their entries
+ * ("Every tool is filed by primary function" — agentskillshub.top).
+ */
+export type FnCategory =
+  | 'docs'
+  | 'design'
+  | 'coding'
+  | 'research'
+  | 'security'
+  | 'cloud'
+  | 'content'
+  | 'tooling'
+  | 'collections'
+  | 'spec'
+
+export const FN_LABELS: Record<FnCategory, { zh: string; en: string }> = {
+  docs: { zh: '文档与办公', en: 'Documents & Office' },
+  design: { zh: '设计与前端', en: 'Design & Frontend' },
+  coding: { zh: '编程与开发', en: 'Coding' },
+  research: { zh: '科研与数据', en: 'Research & Data' },
+  security: { zh: '安全与合规', en: 'Security' },
+  cloud: { zh: '云与自动化', en: 'Cloud & Automation' },
+  content: { zh: '内容与创意', en: 'Content & Media' },
+  tooling: { zh: '技能管理', en: 'Skill Tooling' },
+  collections: { zh: '技能合集', en: 'Collections' },
+  spec: { zh: '规范与标准', en: 'Specs' }
+}
+
+/**
+ * A cross-cutting "what are you trying to do?" entry, the equivalent of the
+ * scenario pages that answer "what's the best tool for X?".
+ */
+export interface Scenario {
+  id: string
+  titleZh: string
+  titleEn: string
+  descZh: string
+  descEn: string
+  /** repos pinned into this scenario */
+  repos: string[]
+  /** extra repos matched by these lowercase keywords in name/tagline/topics */
+  keywords: string[]
+}
+
 /** A GitHub repository that can act as a skill source (or a tooling repo). */
 export interface RepoMeta {
   fullName: string
@@ -20,6 +67,15 @@ export interface RepoMeta {
   name: string
   descriptionEn: string
   descriptionZh?: string
+  /** the store's primary browse axis: what you want to do */
+  fn?: FnCategory
+  /** ≤30-char "one glance" line shown on the card */
+  taglineZh?: string
+  taglineEn?: string
+  /** the situation that should make you reach for this */
+  useWhen?: string
+  /** the older, longer repo-centric blurb, kept for the detail page */
+  aboutZh?: string
   stars: number
   forks?: number
   openIssues?: number

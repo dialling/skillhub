@@ -10,6 +10,7 @@ import type {
   LibraryItem,
   RateLimit,
   RepoMeta,
+  Scenario,
   SearchResult,
   Settings,
   SkillEntry,
@@ -48,6 +49,9 @@ export interface SkillHubApi {
   catalog: {
     curated(): Promise<{ repos: RepoMeta[]; generatedAt: string | null }>
     sections(): Promise<{ featured: RepoMeta[]; byCategory: Record<string, RepoMeta[]>; top: RepoMeta[] }>
+    byFunction(): Promise<Record<string, RepoMeta[]>>
+    scenarios(): Promise<Scenario[]>
+    scenarioRepos(id: string): Promise<RepoMeta[]>
     refresh(limit?: number): Promise<{ updated: number; failed: number }>
   }
   library: {

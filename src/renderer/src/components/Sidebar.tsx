@@ -7,11 +7,12 @@ import {
   CheckCircle2,
   Circle,
   Bot,
+  Sparkles,
   TrendingUp,
   Info,
   Compass
 } from 'lucide-react'
-import { CATEGORY_LABELS, type Category } from '@shared/types'
+import { FN_LABELS, type FnCategory } from '@shared/types'
 import { useStore } from '../store'
 import { api } from '../api'
 
@@ -55,11 +56,15 @@ function StoreSidebar(): React.JSX.Element {
   const loadGrowth = useStore((s) => s.loadGrowth)
   const toast = useStore((s) => s.toast)
   const setAddLocal = useStore((s) => s.setAddLocal)
+  const scenarios = useStore((s) => s.scenarios)
+  const activeScenario = useStore((s) => s.activeScenario)
+  const openScenario = useStore((s) => s.openScenario)
 
+  // Functional categories: what the user wants to do, not what kind of repo it is.
   const counts = useMemo(() => {
     const map: Record<string, number> = {}
     for (const r of catalog) {
-      const c = r.category || 'collection'
+      const c = r.fn || 'coding'
       map[c] = (map[c] || 0) + 1
     }
     return map
@@ -77,24 +82,40 @@ function StoreSidebar(): React.JSX.Element {
     }
   }
 
-  const entries = Object.keys(CATEGORY_LABELS) as Category[]
+  const entries = (Object.keys(FN_LABELS) as FnCategory[]).filter((c) => counts[c])
 
   return (
     <aside className="sidebar">
-      <SideSection title={t('store.browseCategory')}>
-        <button className={`side-item ${!category ? 'active' : ''}`} onClick={() => setCategory(null)}>
+      <SideSection title={t('store.scenarios')}>
+        <button className={`side-item ${!activeScenario ? 'active' : ''}`} onClick={() => void openScenario(null)}>
           <Compass size={14} />
           {t('common.all')}
           <span className="count">{catalog.length}</span>
         </button>
+        {scenarios.map((sc) => (
+          <button
+            key={sc.id}
+            className={`side-item ${activeScenario === sc.id ? 'active' : ''}`}
+            onClick={() => void openScenario(activeScenario === sc.id ? null : sc.id)}
+            title={lang === 'zh' ? sc.descZh : sc.descEn}
+          >
+            <Sparkles size={14} />
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {lang === 'zh' ? sc.titleZh : sc.titleEn}
+            </span>
+          </button>
+        ))}
+      </SideSection>
+
+      <SideSection title={t('store.byFunction')}>
         {entries.map((c) => (
           <button
             key={c}
             className={`side-item ${category === c ? 'active' : ''}`}
             onClick={() => setCategory(category === c ? null : c)}
           >
-            <span className="dot" style={{ background: catColor(c) }} />
-            {lang === 'zh' ? CATEGORY_LABELS[c].zh : CATEGORY_LABELS[c].en}
+            <span className="dot" style={{ background: fnColor(c) }} />
+            {lang === 'zh' ? FN_LABELS[c].zh : FN_LABELS[c].en}
             <span className="count">{counts[c] || 0}</span>
           </button>
         ))}
@@ -127,20 +148,29 @@ function StoreSidebar(): React.JSX.Element {
   )
 }
 
-function catColor(c: Category): string {
+/** One colour per functional category, so the sidebar reads at a glance. */
+export function fnColor(c: FnCategory): string {
   switch (c) {
-    case 'spec':
-      return '#22d3ee'
-    case 'official':
+    case 'docs':
       return '#2f81f7'
-    case 'collection':
-      return '#8b5cf6'
-    case 'tooling':
-      return '#3fb950'
-    case 'framework':
-      return '#d29922'
-    default:
+    case 'design':
       return '#f778ba'
+    case 'coding':
+      return '#3fb950'
+    case 'research':
+      return '#22d3ee'
+    case 'security':
+      return '#f85149'
+    case 'cloud':
+      return '#a371f7'
+    case 'content':
+      return '#d29922'
+    case 'tooling':
+      return '#58a6ff'
+    case 'collections':
+      return '#8b949e'
+    default:
+      return '#6b7d99'
   }
 }
 

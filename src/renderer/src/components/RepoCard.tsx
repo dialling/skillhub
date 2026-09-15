@@ -1,8 +1,9 @@
 import { Star, Download, Check, Plus, ExternalLink, GitFork, Layers } from 'lucide-react'
 import type { RepoMeta } from '@shared/types'
-import { fmtStars, gradientFor } from '../api'
+import { fmtRelative, fmtStars, gradientFor } from '../api'
 import { useStore } from '../store'
-import { CATEGORY_LABELS } from '@shared/types'
+import { CATEGORY_LABELS, FN_LABELS, type FnCategory } from '@shared/types'
+import { fnColor } from './Sidebar'
 
 export function RepoArt({
   repo,
@@ -59,18 +60,29 @@ export function RepoCard({
     ? item.skills.reduce((n, sk) => n + (installMap[sk.id]?.length || 0), 0)
     : 0
 
-  const desc =
-    lang === 'zh' ? repo.descriptionZh || repo.descriptionEn : repo.descriptionEn || repo.descriptionZh || ''
+  // The store card leads with the rewritten "one glance" line; the long
+  // repo-centric blurb is only shown in the detail page.
+  const tagline =
+    lang === 'zh' ? repo.taglineZh || repo.descriptionZh || repo.descriptionEn : repo.taglineEn || repo.descriptionEn || ''
+  const fn = repo.fn as FnCategory | undefined
   const category = repo.category ? CATEGORY_LABELS[repo.category] : null
   const skillCount = repo.skillCount ?? repo.skillDirs?.length ?? 0
+  const freshness = repo.pushedAt ? fmtRelative(Date.parse(repo.pushedAt), 'zh') : ''
 
   return (
     <div className="card" style={style} onClick={() => void openDetail(repo.fullName)} role="button" tabIndex={0}>
       <RepoArt repo={repo} height={dense ? 72 : 84} />
       <div className="card-body">
-        <div className={`card-desc ${lang === 'zh' ? 'zh' : ''}`}>{desc || t('common.unknown')}</div>
+        <div className={`card-desc card-tagline ${lang === 'zh' ? 'zh' : ''}`}>
+          {tagline || t('common.unknown')}
+        </div>
 
         <div className="card-tags">
+          {fn && (
+            <span className="chip fn-chip" style={{ color: fnColor(fn), borderColor: `${fnColor(fn)}55` }}>
+              {lang === 'zh' ? FN_LABELS[fn].zh : FN_LABELS[fn].en}
+            </span>
+          )}
           {category && <span className="chip">{lang === 'zh' ? category.zh : category.en}</span>}
           {skillCount > 0 && (
             <span className="chip mono">
@@ -90,10 +102,9 @@ export function RepoCard({
             <Star size={11} />
             {fmtStars(repo.stars)}
           </span>
-          {!!repo.forks && (
-            <span className="stat">
-              <GitFork size={11} />
-              {fmtStars(repo.forks)}
+          {freshness && (
+            <span className="stat" title={repo.pushedAt}>
+              {freshness}
             </span>
           )}
           {installedCount > 0 && (
@@ -150,7 +161,9 @@ export function RepoRow({ repo }: { repo: RepoMeta }): React.JSX.Element {
       <div className="meta">
         <div className="name">{repo.fullName}</div>
         <div className="sub">
-          {lang === 'zh' ? repo.descriptionZh || repo.descriptionEn : repo.descriptionEn}
+          {lang === 'zh'
+            ? repo.taglineZh || repo.descriptionZh || repo.descriptionEn
+            : repo.taglineEn || repo.descriptionEn}
         </div>
       </div>
       <span className="stat strong">

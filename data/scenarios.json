@@ -1,0 +1,151 @@
+{
+  "generatedAt": "2026-09-15T00:00:00.000Z",
+  "note": "场景页回答「我要做 X，该装什么」。参照 agentskillshub.top 的 Popular Scenarios 与 skills.sh 的 Topics：分类回答「这是什么领域」，场景回答「我现在要干什么」。",
+  "scenarios": [
+    {
+      "id": "slides",
+      "titleZh": "做一份好看的演示文稿",
+      "titleEn": "Make a polished slide deck",
+      "descZh": "生成 HTML / PPTX 幻灯片，自带排版与配色，不再套模板",
+      "descEn": "Generate HTML or PPTX decks with real typography instead of a template",
+      "repos": ["op7418/guizang-ppt-skill", "anthropics/skills", "alirezarezvani/claude-skills"],
+      "keywords": ["ppt", "slide", "deck", "演示", "幻灯", "presentation"]
+    },
+    {
+      "id": "paper",
+      "titleZh": "写论文、做科研",
+      "titleEn": "Write a paper or do research",
+      "descZh": "从选题调研、文献综述到同行评审，走完学术全流程",
+      "descEn": "Literature review through peer review — the full academic loop",
+      "repos": ["Imbad0202/academic-research-skills", "K-Dense-AI/scientific-agent-skills"],
+      "keywords": ["academic", "paper", "research", "科研", "论文", "文献"]
+    },
+    {
+      "id": "audit",
+      "titleZh": "审代码、找漏洞",
+      "titleEn": "Audit code and find vulnerabilities",
+      "descZh": "把安全公司的审查套路交给 AI，找出漏洞并给修复建议",
+      "descEn": "Give the agent a security firm's audit playbook",
+      "repos": ["trailofbits/skills", "mukul975/Anthropic-Cybersecurity-Skills", "NVIDIA/SkillSpector"],
+      "keywords": ["security", "audit", "vulnerability", "安全", "审计", "漏洞"]
+    },
+    {
+      "id": "anti-slop",
+      "titleZh": "让 AI 的前端不再「一眼假」",
+      "titleEn": "Stop AI UI from looking templated",
+      "descZh": "治千篇一律的蓝紫渐变、系统字体和玻璃拟态",
+      "descEn": "Fixes the identical gradients, default fonts and glassmorphism",
+      "repos": [
+        "nextlevelbuilder/ui-ux-pro-max-skill",
+        "vercel-labs/agent-skills",
+        "addyosmani/web-quality-skills",
+        "google-labs-code/stitch-skills"
+      ],
+      "keywords": ["frontend", "design", "ui", "ux", "web", "前端", "设计"]
+    },
+    {
+      "id": "browser",
+      "titleZh": "让 AI 真正上网操作",
+      "titleEn": "Let the agent actually use the web",
+      "descZh": "稳定操控浏览器：绕过反爬、并行抓取、环境隔离",
+      "descEn": "Reliable browser control: anti-bot, parallel runs, isolation",
+      "repos": ["browser-act/skills"],
+      "keywords": ["browser", "scrape", "crawl", "浏览器", "爬虫", "抓取"]
+    },
+    {
+      "id": "longtask",
+      "titleZh": "长任务不丢上下文",
+      "titleEn": "Keep long tasks on track",
+      "descZh": "把计划落盘成文件，上下文爆了也能接着干",
+      "descEn": "Persist the plan to disk so a context reset doesn't lose the thread",
+      "repos": [
+        "OthmanAdi/planning-with-files",
+        "obra/superpowers",
+        "gotalab/cc-sdd",
+        "Gentleman-Programming/gentle-ai"
+      ],
+      "keywords": ["plan", "context", "memory", "计划", "记忆", "上下文"]
+    },
+    {
+      "id": "office",
+      "titleZh": "处理 PDF / Word / Excel",
+      "titleEn": "Work with PDF, Word and Excel",
+      "descZh": "读取、生成、批量修改办公文档，保留原有排版",
+      "descEn": "Read, generate and edit office documents without wrecking the layout",
+      "repos": ["anthropics/skills", "googleworkspace/cli", "microsoft/skill-recorder"],
+      "keywords": ["pdf", "docx", "xlsx", "office", "文档", "excel", "word"]
+    },
+    {
+      "id": "dataops",
+      "titleZh": "搭数据管道",
+      "titleEn": "Build data pipelines",
+      "descZh": "用自然语言写、调度并运维数据工程工作流",
+      "descEn": "Write, schedule and operate data workflows in natural language",
+      "repos": ["astronomer/agents"],
+      "keywords": ["data", "pipeline", "etl", "airflow", "数据", "管道"]
+    },
+    {
+      "id": "skillmgmt",
+      "titleZh": "管理我的技能目录",
+      "titleEn": "Manage my skill directories",
+      "descZh": "在几十种 AI 工具之间统一安装、同步、清理技能",
+      "descEn": "Install, sync and clean skills across dozens of AI tools",
+      "repos": [
+        "vercel-labs/skills",
+        "xingkongliang/skills-manager",
+        "qufei1993/skills-hub",
+        "jiweiyeah/Skills-Manager",
+        "rohitg00/skillkit",
+        "antfu/skills-npm"
+      ],
+      "keywords": ["manager", "install", "sync", "管理", "安装", "同步"]
+    },
+    {
+      "id": "teach",
+      "titleZh": "让 AI 学会我自己的文档",
+      "titleEn": "Teach the agent my own docs",
+      "descZh": "把文档站、仓库或 PDF 自动转成可调用技能",
+      "descEn": "Turn a docs site, repo or PDF into an installable skill",
+      "repos": ["yusufkaraaslan/Skill_Seekers", "agentskills/agentskills"],
+      "keywords": ["docs", "knowledge", "文档", "知识库", "教程"]
+    },
+    {
+      "id": "video",
+      "titleZh": "做产品视频与配图",
+      "titleEn": "Make product videos and visuals",
+      "descZh": "把网页或脚本变成带运镜和节奏的电影感宣传片",
+      "descEn": "Turn a page or script into a cinematic promo with real camera moves",
+      "repos": ["Vincentwei1021/video-shotcraft", "anthropics/skills"],
+      "keywords": ["video", "motion", "remotion", "视频", "动画", "宣传片"]
+    },
+    {
+      "id": "infra",
+      "titleZh": "写云基础设施代码",
+      "titleEn": "Write cloud infrastructure code",
+      "descZh": "Terraform、Workers、Azure、Oracle 都按厂商最佳实践写",
+      "descEn": "Terraform, Workers, Azure and Oracle written the vendor-correct way",
+      "repos": [
+        "antonbabenko/terraform-skill",
+        "cloudflare/skills",
+        "microsoft/skills",
+        "oracle/skills",
+        "google/skills"
+      ],
+      "keywords": ["terraform", "cloud", "infra", "kubernetes", "云", "基础设施"]
+    },
+    {
+      "id": "chinese",
+      "titleZh": "中文优先的技能包",
+      "titleEn": "Chinese-first skill packs",
+      "descZh": "中文文档、中文技能与中文化的最佳实践",
+      "descEn": "Chinese docs, Chinese skills and localised best practices",
+      "repos": [
+        "anbeime/skill",
+        "jnMetaCode/superpowers-zh",
+        "libukai/awesome-agent-skills",
+        "KKKKhazix/khazix-skills"
+      ],
+      "keywords": ["中文", "chinese", "zh"]
+    }
+  ]
+}

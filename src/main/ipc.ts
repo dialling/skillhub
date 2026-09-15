@@ -28,10 +28,13 @@ import {
   viewer
 } from './core/github'
 import {
+  catalogByFunction,
   catalogGeneratedAt,
   catalogSections,
   curatedCatalog,
-  refreshCuratedStars
+  refreshCuratedStars,
+  scenarioRepos,
+  scenarios
 } from './core/catalog'
 import { addLocalDir, addRepo, fetchRemoteSkillMeta, getItem, libraryItems, readSkillFile, removeItem, setProgressSink, syncItem } from './core/library'
 import {
@@ -198,6 +201,9 @@ export function registerIpc(send: Broadcast): void {
     return { repos, generatedAt: catalogGeneratedAt() }
   })
   handle('catalog:sections', () => catalogSections())
+  handle('catalog:byFunction', () => catalogByFunction())
+  handle('catalog:scenarios', () => scenarios())
+  handle('catalog:scenarioRepos', (id: string) => scenarioRepos(id))
   handle('catalog:refresh', async (limit?: number) => refreshCuratedStars(limit))
 
   /* ----------------------------------------------------------------- library */

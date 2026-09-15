@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs'
-import type { Category, CuratedCatalog, RepoMeta, SkillEntry } from '../../shared/types'
-import { curatedCatalogPath } from './paths'
+import type { Category, CuratedCatalog, FnCategory, RepoMeta, Scenario, SkillEntry } from '../../shared/types'
+import { curatedCatalogPath, scenariosPath } from './paths'
 import { cache, settings, snapshotStars } from './db'
 import { getRepo, cleanTopics } from './github'
 
@@ -67,6 +67,68 @@ export async function refreshCuratedStars(limit = 60): Promise<{ updated: number
   catalogCache = null
   settings.set({ curatedUpdatedAt: Date.now() })
   return { updated, failed }
+}
+
+/** Primary browse axis: the functional category assigned by the catalog rewrite. */
+export function fnOf(repo: RepoMeta): FnCategory {
+  if (repo.fn) return repo.fn
+  // Fall back to the provenance category for repos that predate the rewrite.
+  const c = repo.category
+  if (c === 'spec') return 'spec'
+  if (c === 'tooling') return 'tooling'
+  if (c === 'collection') return 'collections'
+  if (c === 'official') return 'coding'
+  return 'coding'
+}
+
+/** Group the catalog by functional category for the sidebar and browse grid. */
+export async function catalogByFunction(): Promise<Record<string, RepoMeta[]>> {
+  const repos = await curatedCatalog()
+  const out: Record<string, RepoMeta[]> = {}
+  for (const r of repos) {
+    const fn = fnOf(r)
+    ;(out[fn] ||= []).push(r)
+  }
+  for (const key of Object.keys(out)) out[key].sort((a, b) => b.stars - a.stars)
+  return out
+}
+
+let scenarioCache: { at: number; list: Scenario[] } | null = null
+
+export function scenarios(): Scenario[] {
+  if (scenarioCache && Date.now() - scenarioCache.at < 5 * 60_000) return scenarioCache.list
+  try {
+    const p = scenariosPath()
+    if (existsSync(p)) {
+      const parsed = JSON.parse(readFileSync(p, 'utf8'))
+      if (Array.isArray(parsed?.scenarios)) {
+        scenarioCache = { at: Date.now(), list: parsed.scenarios as Scenario[] }
+        return scenarioCache.list
+      }
+    }
+  } catch (err) {
+    console.error('[catalog] failed to read scenarios', err)
+  }
+  scenarioCache = { at: Date.now(), list: [] }
+  return []
+}
+
+/** Resolve a scenario to the repos it recommends, pinned entries first. */
+export async function scenarioRepos(id: string): Promise<RepoMeta[]> {
+  const scenario = scenarios().find((s) => s.id === id)
+  if (!scenario) return []
+  const repos = await curatedCatalog()
+  const byName = new Map(repos.map((r) => [r.fullName, r]))
+  const pinned = scenario.repos.map((n) => byName.get(n)).filter(Boolean) as RepoMeta[]
+  const seen = new Set(pinned.map((r) => r.fullName))
+  const extra = repos.filter((r) => {
+    if (seen.has(r.fullName)) return false
+    const hay = `${r.fullName} ${r.name} ${r.taglineZh || ''} ${r.taglineEn || ''} ${r.descriptionZh || ''} ${
+      r.descriptionEn || ''
+    } ${(r.topics || []).join(' ')}`.toLowerCase()
+    return scenario.keywords.some((k) => hay.includes(k.toLowerCase()))
+  })
+  return [...pinned, ...extra.sort((a, b) => b.stars - a.stars)].slice(0, 24)
 }
 
 export function categoryOf(repo: RepoMeta): Category {

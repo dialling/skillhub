@@ -2344,3 +2344,132 @@ button.status-item:hover {
   margin-left: auto;
   flex: none;
 }
+
+
+/* ============================================================================
+   Functional categories & scenarios
+   The browse axis is "what do you want to do", so both need to read instantly.
+   ========================================================================== */
+
+.card-tagline {
+  font-size: 13px;
+  font-weight: 560;
+  line-height: 1.45;
+  -webkit-line-clamp: 3;
+  min-height: 0;
+}
+.card-desc.card-tagline.zh {
+  color: var(--text-0);
+}
+.fn-chip {
+  font-weight: 600;
+}
+
+.hero-tagline {
+  font-size: 14.5px;
+  color: var(--text-0);
+  margin-top: 7px;
+  font-weight: 550;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+}
+.hero-usewhen {
+  font-size: 12px;
+  color: var(--text-1);
+  margin-top: 4px;
+}
+
+.scenario-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(252px, 1fr));
+  gap: 10px;
+}
+.scenario-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 13px 15px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: linear-gradient(150deg, var(--bg-3), var(--bg-2));
+  cursor: pointer;
+  text-align: left;
+  overflow: hidden;
+  transition: border-color 0.16s, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.16s;
+}
+.scenario-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--accent-hi), var(--violet));
+  opacity: 0.75;
+}
+.scenario-card:hover {
+  border-color: var(--border-3);
+  background: var(--bg-4);
+  transform: translateY(-2px);
+}
+.scenario-card .sc-title {
+  font-size: 13.5px;
+  font-weight: 640;
+  color: var(--text-0);
+}
+.scenario-card .sc-desc {
+  font-size: 11.5px;
+  color: var(--text-2);
+  line-height: 1.55;
+}
+.scenario-card .sc-go {
+  position: absolute;
+  right: 11px;
+  top: 12px;
+  color: var(--text-3);
+  transition: transform 0.18s, color 0.18s;
+}
+.scenario-card:hover .sc-go {
+  color: var(--accent-hi);
+  transform: translateX(3px);
+}
+
+.fn-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(178px, 1fr));
+  gap: 9px;
+}
+.fn-tile {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 13px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--bg-3), var(--bg-2));
+  cursor: pointer;
+  transition: border-color 0.14s, background 0.14s, transform 0.18s;
+}
+.fn-tile:hover {
+  border-color: var(--border-3);
+  background: var(--bg-4);
+  transform: translateY(-2px);
+}
+.fn-tile .fn-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+  box-shadow: 0 0 10px currentColor;
+}
+.fn-tile .fn-name {
+  font-size: 12.5px;
+  font-weight: 580;
+  color: var(--text-0);
+}
+.fn-tile .fn-count {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-3);
+}
