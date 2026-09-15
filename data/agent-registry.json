@@ -1,0 +1,363 @@
+{
+  "generatedAt": "2026-09-15T03:50:38Z",
+  "notes": "Every path below was read from a vendor-owned source: official documentation, or (where a vendor docs site blocked automated fetching) the vendor's own published source code in its public repository. Verification caveats: (1) developers.openai.com/codex/skills and cursor.com help pages returned HTTP 403/partial content to the fetcher, so Codex directories were verified from openai/codex source (codex-rs/ext/skills/src/host_roots.rs and codex-rs/ext/skills/src/lib.rs) and Cursor from its .md docs endpoints; (2) Aider is deliberately OMITTED: no official Aider documentation mentions SKILL.md, and a code search of Aider-AI/aider found no SKILL.md handling, so its skills support is unverified; (3) Continue.dev is included with confidence medium: no Continue docs page documents skills yet, the paths come from Continue's own source (core/config/markdown/loadMarkdownSkills.ts -> .continue/skills workspace+global, plus workspace .claude/skills); (4) Trae's global path differs by edition - the international build uses ~/.trae/skills, the China edition (docs.trae.cn) uses ~/.trae-cn/skills; (5) supportsSymlink is true ONLY where a vendor documents or demonstrably implements symlinked skill folders (Claude Code, Zed, Warp, OpenCode, Qwen Code); false means 'not documented', NOT 'known to be unsupported' (Continue's loader in particular filters readdir entries with isDirectory(), so symlinks there are genuinely not followed); (6) DeepSeek Harness paths were read from the shipped implementation (@deepseek-ai/dsh-skill-filesystem) inside the DSH Desktop app bundle - vendor source, not a public docs page; (7) OpenAI Codex reads ~/.agents/skills as an additional user root and .agents/skills in each ancestor directory, and its ~/.codex/skills root is marked 'deprecated but kept for backward compatibility' in codex source, so ~/.agents/skills is the forward-looking global root for Codex; (8) Agents whose only documented location is a shared/portable directory (Goose, Zed, Amp, the .agents standard) list that directory as their global/project skills dir, since it is where an installer must place skills for them to be discovered.",
+  "agents": [
+    {
+      "id": "claude-code",
+      "name": "Claude Code",
+      "vendor": "Anthropic",
+      "color": "#D97757",
+      "globalSkillsDir": "~/.claude/skills",
+      "projectSkillsDir": ".claude/skills",
+      "detect": {
+        "dirs": ["~/.claude"],
+        "files": ["~/.claude/settings.json"],
+        "binaries": ["claude"]
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": true,
+      "confidence": "high",
+      "sourceUrl": "https://code.claude.com/docs/en/skills"
+    },
+    {
+      "id": "codex",
+      "name": "OpenAI Codex CLI",
+      "vendor": "OpenAI",
+      "color": "#10A37F",
+      "globalSkillsDir": "~/.codex/skills",
+      "projectSkillsDir": ".codex/skills",
+      "detect": {
+        "dirs": ["~/.codex"],
+        "files": ["~/.codex/config.toml"],
+        "binaries": ["codex"]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://github.com/openai/codex/blob/main/codex-rs/ext/skills/src/host_roots.rs"
+    },
+    {
+      "id": "cursor",
+      "name": "Cursor",
+      "vendor": "Anysphere",
+      "color": "#111111",
+      "globalSkillsDir": "~/.cursor/skills",
+      "projectSkillsDir": ".cursor/skills",
+      "detect": {
+        "dirs": ["~/.cursor"],
+        "files": ["~/.cursor/cli-config.json"],
+        "binaries": ["cursor", "cursor-agent"]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://cursor.com/docs/skills"
+    },
+    {
+      "id": "gemini-cli",
+      "name": "Gemini CLI",
+      "vendor": "Google",
+      "color": "#4285F4",
+      "globalSkillsDir": "~/.gemini/skills",
+      "projectSkillsDir": ".gemini/skills",
+      "detect": {
+        "dirs": ["~/.gemini"],
+        "files": ["~/.gemini/settings.json"],
+        "binaries": ["gemini"]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/skills.md"
+    },
+    {
+      "id": "github-copilot",
+      "name": "GitHub Copilot",
+      "vendor": "GitHub",
+      "color": "#24292F",
+      "globalSkillsDir": "~/.copilot/skills",
+      "projectSkillsDir": ".github/skills",
+      "detect": {
+        "dirs": ["~/.copilot"],
+        "files": ["~/.copilot/config.json"],
+        "binaries": ["copilot"]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/add-skills"
+    },
+    {
+      "id": "windsurf",
+      "name": "Windsurf",
+      "vendor": "Cognition (Windsurf / Devin Desktop)",
+      "color": "#09B6A2",
+      "globalSkillsDir": "~/.codeium/windsurf/skills",
+      "projectSkillsDir": ".windsurf/skills",
+      "detect": {
+        "dirs": ["~/.codeium/windsurf"],
+        "files": [],
+        "binaries": ["windsurf"]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://docs.devin.ai/desktop/cascade/skills"
+    },
+    {
+      "id": "cline",
+      "name": "Cline",
+      "vendor": "Cline Bot Inc.",
+      "color": "#F26B3A",
+      "globalSkillsDir": "~/.cline/skills",
+      "projectSkillsDir": ".cline/skills",
+      "detect": {
+        "dirs": ["~/.cline"],
+        "files": [],
+        "binaries": ["cline"]
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://docs.cline.bot/customization/skills"
+    },
+    {
+      "id": "opencode",
+      "name": "OpenCode",
+      "vendor": "SST",
+      "color": "#03B000",
+      "globalSkillsDir": "~/.config/opencode/skills",
+      "projectSkillsDir": ".opencode/skills",
+      "detect": {
+        "dirs": ["~/.config/opencode"],
+        "files": ["~/.config/opencode/opencode.json"],
+        "binaries": ["opencode"]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": true,
+      "confidence": "high",
+      "sourceUrl": "https://opencode.ai/docs/skills"
+    },
+    {
+      "id": "roo-code",
+      "name": "Roo Code",
+      "vendor": "Roo Code Inc.",
+      "color": "#22C55E",
+      "globalSkillsDir": "~/.roo/skills",
+      "projectSkillsDir": ".roo/skills",
+      "detect": {
+        "dirs": ["~/.roo"],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://roocodeinc.github.io/Roo-Code/advanced-usage/available-tools/skill/"
+    },
+    {
+      "id": "kilo-code",
+      "name": "Kilo Code",
+      "vendor": "Kilo Org",
+      "color": "#FFB020",
+      "globalSkillsDir": "~/.kilo/skills",
+      "projectSkillsDir": ".kilo/skills",
+      "detect": {
+        "dirs": ["~/.kilo"],
+        "files": [],
+        "binaries": ["kilo"]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://github.com/Kilo-Org/kilocode/blob/main/packages/kilo-docs/pages/customize/skills.md"
+    },
+    {
+      "id": "qwen-code",
+      "name": "Qwen Code",
+      "vendor": "Alibaba",
+      "color": "#615CED",
+      "globalSkillsDir": "~/.qwen/skills",
+      "projectSkillsDir": ".qwen/skills",
+      "detect": {
+        "dirs": ["~/.qwen"],
+        "files": ["~/.qwen/settings.json"],
+        "binaries": ["qwen"]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": true,
+      "confidence": "high",
+      "sourceUrl": "https://github.com/QwenLM/qwen-code/blob/main/docs/users/features/skills.md"
+    },
+    {
+      "id": "amp",
+      "name": "Amp",
+      "vendor": "Sourcegraph",
+      "color": "#F6833B",
+      "globalSkillsDir": "~/.config/agents/skills",
+      "projectSkillsDir": ".agents/skills",
+      "detect": {
+        "dirs": ["~/.config/amp", "~/.config/agents"],
+        "files": [],
+        "binaries": ["amp"]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://ampcode.com/docs/customize/skills"
+    },
+    {
+      "id": "goose",
+      "name": "Goose",
+      "vendor": "Block (Agentic AI Foundation)",
+      "color": "#101010",
+      "globalSkillsDir": "~/.agents/skills",
+      "projectSkillsDir": ".agents/skills",
+      "detect": {
+        "dirs": ["~/.config/goose", "~/.agents"],
+        "files": ["~/.config/goose/config.yaml"],
+        "binaries": ["goose"]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://goose-docs.ai/docs/guides/context-engineering/using-skills/"
+    },
+    {
+      "id": "factory-droid",
+      "name": "Factory Droid",
+      "vendor": "Factory AI",
+      "color": "#D15010",
+      "globalSkillsDir": "~/.factory/skills",
+      "projectSkillsDir": ".factory/skills",
+      "detect": {
+        "dirs": ["~/.factory"],
+        "files": ["~/.factory/settings.json"],
+        "binaries": ["droid"]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://docs.factory.ai/harness/skills"
+    },
+    {
+      "id": "zed",
+      "name": "Zed",
+      "vendor": "Zed Industries",
+      "color": "#1F6FEB",
+      "globalSkillsDir": "~/.agents/skills",
+      "projectSkillsDir": ".agents/skills",
+      "detect": {
+        "dirs": ["~/.config/zed", "~/.agents"],
+        "files": ["~/.config/zed/settings.json"],
+        "binaries": ["zed"]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": true,
+      "confidence": "high",
+      "sourceUrl": "https://zed.dev/docs/ai/skills"
+    },
+    {
+      "id": "kiro",
+      "name": "Kiro",
+      "vendor": "Amazon Web Services",
+      "color": "#C6A0FF",
+      "globalSkillsDir": "~/.kiro/skills",
+      "projectSkillsDir": ".kiro/skills",
+      "detect": {
+        "dirs": ["~/.kiro"],
+        "files": ["~/.kiro/settings/cli.json"],
+        "binaries": ["kiro-cli"]
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://kiro.dev/docs/skills/"
+    },
+    {
+      "id": "trae",
+      "name": "Trae",
+      "vendor": "ByteDance",
+      "color": "#32F08C",
+      "globalSkillsDir": "~/.trae/skills",
+      "projectSkillsDir": ".trae/skills",
+      "detect": {
+        "dirs": ["~/.trae"],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://docs.trae.ai/ide/skills"
+    },
+    {
+      "id": "warp",
+      "name": "Warp",
+      "vendor": "Warp",
+      "color": "#01A0FF",
+      "globalSkillsDir": "~/.warp/skills",
+      "projectSkillsDir": ".warp/skills",
+      "detect": {
+        "dirs": ["~/.warp"],
+        "files": ["~/.warp/settings.toml"],
+        "binaries": []
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": true,
+      "confidence": "high",
+      "sourceUrl": "https://docs.warp.dev/agents/capabilities/skills"
+    },
+    {
+      "id": "continue",
+      "name": "Continue",
+      "vendor": "Continue Dev, Inc.",
+      "color": "#5C4DFF",
+      "globalSkillsDir": "~/.continue/skills",
+      "projectSkillsDir": ".continue/skills",
+      "detect": {
+        "dirs": ["~/.continue"],
+        "files": ["~/.continue/config.yaml"],
+        "binaries": ["cn"]
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "medium",
+      "sourceUrl": "https://github.com/continuedev/continue/blob/main/core/config/markdown/loadMarkdownSkills.ts"
+    },
+    {
+      "id": "dsh",
+      "name": "DeepSeek Harness",
+      "vendor": "DeepSeek",
+      "color": "#4D6BFE",
+      "globalSkillsDir": "~/.dsh/skills",
+      "projectSkillsDir": ".dsh/skills",
+      "detect": {
+        "dirs": ["~/.dsh"],
+        "files": ["~/.dsh/settings.yaml"],
+        "binaries": ["dsh"]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://github.com/dataelement/dsh-desktop"
+    },
+    {
+      "id": "agents-standard",
+      "name": "Agent Skills portable .agents convention",
+      "vendor": "Agent Skills open standard (agentskills.io)",
+      "color": "#6B7280",
+      "globalSkillsDir": "~/.agents/skills",
+      "projectSkillsDir": ".agents/skills",
+      "detect": {
+        "dirs": ["~/.agents"],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://agentskills.io/client-implementation/adding-skills-support"
+    }
+  ]
+}

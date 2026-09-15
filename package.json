@@ -1,0 +1,41 @@
+{
+  "name": "skillhub",
+  "version": "0.1.0",
+  "description": "Steam-style desktop manager for AI agent skills: search, collect and install SKILL.md folders into any agent.",
+  "main": "./out/main/index.js",
+  "author": "a27",
+  "license": "MIT",
+  "scripts": {
+    "dev": "node scripts/run.mjs electron-vite dev",
+    "build": "electron-vite build",
+    "start": "node scripts/run.mjs electron-vite preview",
+    "app": "node scripts/run.mjs --electron .",
+    "selftest": "npm run build && node out/main/selftest.js",
+    "cli": "node out/main/cli.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "agent-skills",
+    "SKILL.md",
+    "electron"
+  ],
+  "dependencies": {
+    "gray-matter": "^4.0.3",
+    "lucide-react": "^1.46.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@types/node": "^26.5.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "electron": "^44.3.0",
+    "electron-vite": "^5.0.0",
+    "typescript": "^7.0.2",
+    "vite": "^7.3.6"
+  }
+}

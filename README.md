@@ -1,0 +1,204 @@
+# SkillHub
+
+> 像 Steam 管理游戏一样管理 AI 智能体技能 — 搜索、入库、一键安装到任意 agent。
+
+SkillHub 是一个 macOS 桌面应用（Electron + React），把「登录 GitHub → 搜索技能 → 克隆到本地 → 装进对应 agent 的 skills 目录」这条链路图形化。
+界面是 **Steam 的浏览模型**（卡片墙、商店详情页、库、排行榜、个人资料）+ **VSCode 的骨架**（活动栏、侧边栏、命令面板、状态栏）。
+
+---
+
+## 快速开始
+
+```bash
+git clone https://github.com/dialling/skillhub.git
+cd skillhub
+npm install
+npm run build        # 构建 main / preload / renderer
+npm run app          # 启动桌面应用
+```
+
+开发模式（渲染层热更新）：
+
+```bash
+npm run dev
+```
+
+> **关于 `ELECTRON_RUN_AS_NODE`**：某些终端环境会全局导出 `ELECTRON_RUN_AS_NODE=1`，而 Electron 只检查该变量
+> **是否存在**（空值也算），此时它会以纯 Node 模式启动 —— 表现为 `require('electron')` 返回二进制路径字符串、
+> `app` 为 undefined。所有 npm 脚本都通过 `scripts/run.mjs` 显式删除该变量后再启动，`npm run app` 可直接使用。
+
+---
+
+## 功能
+
+### 商店（Discover）
+- **内置精选目录**：随应用分发的 60 个技能仓库，每个都有**中文简介 + 英文原简介**、分类、星数、技能数量。
+- **GitHub 实时搜索**：多个定向查询合并去重（`topic:agent-skills`、`topic:claude-skills`、`SKILL.md in:readme`…），
+  而不是把关键词直接丢给 GitHub 的相关性排序。
+- 按分类浏览：规范标准 / 官方出品 / 技能合集 / 管理工具 / 方法论框架 / 垂直领域。
+
+### 入库（Library）
+- 对仓库执行 `git clone --depth 1` 到 `~/.skillhub/library/<owner>__<repo>`。
+- 递归扫描整棵目录树，找出**每一个含 `SKILL.md` 的目录**（不只是顶层），解析 YAML frontmatter 得到名称与描述。
+- 支持 `git pull` 同步更新、移出库（同时清理本地文件与关联安装）。
+- 支持**导入本地目录**：把一个本地技能文件夹直接纳入库。
+- 私有仓库：公开克隆失败时自动用已登录凭据重试，成功后把 token 从 `.git/config` 的 remote 里抹掉。
+
+### 一键安装（Install）
+- 把库里的技能装进 agent 的 skills 目录，两种方式：
+  - **软链接（默认，推荐）**：单一真源，更新库即更新所有 agent；
+  - **复制**：与原仓库解耦，副本内写入 `.skillhub-install.json` 标记以便识别与清理。
+- **多 agent 适配**：内置 21 个 agent 的技能目录注册表（见下），自动探测本机装了哪些，默认勾选已启用的。
+- 命名冲突处理：目标已存在且不是 SkillHub 管理的，自动追加 owner 后缀；仍是冲突就跳过并如实报告，绝不覆盖别人的东西。
+- 多个 agent 共享同一物理目录时（例如 Zed / Goose / `.agents` 标准都读 `~/.agents/skills`），只做一次文件操作，但为每个 agent 保留安装记录。
+
+### 排行榜（Charts）
+- **总星数榜** 与 **增长榜（24 小时 / 7 天 / 30 天）**。
+- GitHub 没有星标历史接口，所以 SkillHub 按可靠性依次尝试三种数据源，并在每一行标注来源：
+  1. **本地每日快照**（最精确，免费）— 应用每天记录一次星数，累积几天后增长数据完全精确；
+  2. **星标接口** `/repos/{o}/{r}/stargazers`（`star+json`，二分查找定位日期边界，结果精确）；
+  3. **活动事件流** `/repos/{o}/{r}/events` 中的 `WatchEvent`（真实数据；热门仓库的事件流有上限，此时显示 `≥` 表示下界）。
+- **无法测量的仓库不会以「+0」假装有数据**，而是直接不列出。
+
+### 个人资料（Profile）
+- GitHub 登录（Personal Access Token 或直接复用 `gh` CLI 凭据），显示头像、昵称、仓库数、关注者。
+- 本地统计：入库仓库数、已安装技能数、启用 agent 数、占用空间。
+- 最近活动时间线、我的 Star 列表。
+
+### 智能体（Agents）
+- 21 个 agent 的**经核实**技能目录注册表（`data/agent-registry.json`），每条都带 `confidence` 与 `sourceUrl`，
+  UI 上可直接点开查看依据；非高置信度的条目会显示置信度角标。
+- 展示每个目录里已有的技能、哪些是 SkillHub 装的（软链接指向库 / 含标记文件）、哪些没有 `SKILL.md`。
+- 支持自定义目录（例如你自己的 agent）。
+
+| Agent | 全局技能目录 | 项目级目录 |
+|---|---|---|
+| Claude Code | `~/.claude/skills` | `.claude/skills` |
+| OpenAI Codex CLI | `~/.codex/skills` | `.codex/skills` |
+| Cursor | `~/.cursor/skills` | `.cursor/skills` |
+| Gemini CLI | `~/.gemini/skills` | `.gemini/skills` |
+| GitHub Copilot | `~/.copilot/skills` | `.github/skills` |
+| Windsurf | `~/.codeium/windsurf/skills` | `.windsurf/skills` |
+| Cline | `~/.cline/skills` | `.cline/skills` |
+| OpenCode | `~/.config/opencode/skills` | `.opencode/skills` |
+| Roo Code | `~/.roo/skills` | `.roo/skills` |
+| Kilo Code | `~/.kilo/skills` | `.kilo/skills` |
+| Qwen Code | `~/.qwen/skills` | `.qwen/skills` |
+| Amp | `~/.config/agents/skills` | `.agents/skills` |
+| Goose | `~/.agents/skills` | `.agents/skills` |
+| Factory Droid | `~/.factory/skills` | `.factory/skills` |
+| Zed | `~/.agents/skills` | `.agents/skills` |
+| Kiro | `~/.kiro/skills` | `.kiro/skills` |
+| Trae | `~/.trae/skills` | `.trae/skills` |
+| Warp | `~/.warp/skills` | `.warp/skills` |
+| Continue | `~/.continue/skills` | `.continue/skills` |
+| DeepSeek Harness | `~/.dsh/skills` | `.dsh/skills` |
+| Agent Skills 标准 | `~/.agents/skills` | `.agents/skills` |
+
+### 界面细节
+- **命令面板**：`⌘K` / `⌘P`，可跳转页面、切换语言、刷新，或直接搜索库/精选目录/GitHub。
+- **状态栏**：GitHub API 额度实时显示（每分钟轮询）、库统计、已启用 agent、已安装数、语言、版本。
+- **中英双语界面**：标题栏或状态栏一键切换，所有仓库简介同时提供中英文两个面板。
+- **实时进度**：克隆、同步、安装都有底部进度条与逐条进度事件。
+
+---
+
+## 命令行（同一套核心）
+
+桌面应用和 CLI 共用同一个状态目录 `~/.skillhub/state`，所以两边看到的库、安装记录完全一致。
+
+```bash
+node out/main/cli.js doctor                          # 环境自检
+node out/main/cli.js search "pdf document"           # 搜索
+node out/main/cli.js add obra/superpowers            # 入库
+node out/main/cli.js list                            # 库内容
+node out/main/cli.js agents                          # agent 与目录
+node out/main/cli.js install --all --agents dsh      # 一键安装全部技能到 DSH
+node out/main/cli.js install "obra/superpowers::skills/brainstorming" --agents cursor --copy
+node out/main/cli.js installed                       # 已安装技能
+node out/main/cli.js uninstall "obra/superpowers::skills/brainstorming"
+node out/main/cli.js growth 7                        # 7 天增长榜
+```
+
+---
+
+## 自检
+
+```bash
+npm run selftest
+```
+
+会真实跑完 29 项检查：GitHub 凭据 → 精选目录 → 搜索 → 技能树 → 增长数据源 → 排行榜 →
+`git clone` 入库 → 解析出本地 SKILL.md → 软链接安装到临时 agent 目录 → 透过链接读 SKILL.md →
+复制模式（含标记文件）→ 卸载 → 清理。全程使用临时目录，不碰你真实的 agent 目录。
+
+---
+
+## 架构
+
+```
+src/
+  shared/types.ts         主进程 / 渲染进程共用的类型契约
+  main/
+    index.ts              窗口、菜单、每日星标快照、raw 主机探测
+    ipc.ts                全部 IPC handler（统一 { ok, data } 信封）
+    cli.ts                命令行入口
+    selftest.ts           端到端自检
+    core/
+      paths.ts            路径解析（含 Electron 不可用时的降级）
+      store.ts            无依赖 JSON 存储：原子写入 + 防抖落盘
+      db.ts               集合定义：settings / library / installs / stars / activity / cache
+      github.ts           API 客户端、搜索、技能树、星标增长多源计算
+      agents.ts           agent 注册表、探测、目录扫描
+      library.ts          克隆 / 同步 / 移除 / 目录导入
+      skills.ts           SKILL.md 解析、递归技能发现
+      installer.ts        安装引擎（软链接 / 复制、冲突处理、共享目录去重）
+      catalog.ts          精选目录加载与星标刷新
+      leaderboard.ts      排行榜（快照优先，API 兜底）
+      translate.ts        可选 AI 翻译（任意 OpenAI 兼容接口）
+  preload/index.ts        contextBridge API
+  renderer/src/           React 界面
+data/
+  curated-catalog.json    60 个精选技能仓库（含中文简介）
+  agent-registry.json     21 个 agent 的技能目录（含出处与置信度）
+```
+
+### 存储位置
+
+| 内容 | 路径 |
+|---|---|
+| 库（git 克隆） | `~/.skillhub/library/` |
+| 应用状态（设置、库记录、安装记录、星标历史） | `~/.skillhub/state/` |
+| Electron 缓存 | `~/Library/Application Support/skillhub/` |
+
+状态用一个无依赖的 JSON 存储（原子写入 + 防抖），而不是原生 SQLite —— 数据量只有几千条记录，
+而 `better-sqlite3` 需要按 Electron ABI 重新编译，代价大于收益。
+
+---
+
+## 开发辅助参数
+
+```bash
+```bash
+# 直接打开某个页面 / 仓库 / 搜索词
+node scripts/run.mjs --electron . --view=charts
+node scripts/run.mjs --electron . --repo=obra/superpowers
+node scripts/run.mjs --electron . --q="pdf"
+
+# 渲染窗口并写出 PNG 后退出（用于无头验证界面）
+node scripts/run.mjs --electron . --view=agents --shot=/tmp/agents.png --shot-delay=8000
+
+# 打印每个阶段的耗时
+SKILLHUB_TRACE=1 node scripts/run.mjs --electron . --repo=obra/superpowers
+```
+
+---
+
+## 已知限制
+
+- **翻译**：中文简介对内置精选目录是预先写好的；对搜索到的新仓库，需要在
+  「设置 → AI 翻译」里填一个 OpenAI 兼容接口（如 DeepSeek）才能点「AI 翻译」。未配置时该面板如实提示。
+- **增长榜的 `≥`**：热门仓库的事件流只有最近约 300 条，`≥` 表示这是下界。累积几天本地快照后会自动变成精确值。
+- **打包分发**：目前是 `npm run app` 直接跑源码；还没接 electron-builder 出 `.dmg`。
+- **agent 目录**：注册表基于厂商文档/源码核实，但仍可能随 agent 版本变化；
+  非高置信度条目在 UI 上会标出，也可以用「添加自定义目录」覆盖。

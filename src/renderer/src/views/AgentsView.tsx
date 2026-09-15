@@ -1,0 +1,298 @@
+import { useEffect, useState } from 'react'
+import {
+  Bot,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  FolderOpen,
+  Plus,
+  RefreshCw,
+  Trash2,
+  AlertCircle,
+  Link2,
+  Copy,
+  FolderPlus,
+  X,
+  Info
+} from 'lucide-react'
+import { api } from '../api'
+import { useStore } from '../store'
+import type { AgentTarget } from '@shared/types'
+
+export function AgentsView(): React.JSX.Element {
+  const t = useStore((s) => s.t)
+  const agents = useStore((s) => s.agents)
+  const refreshAgents = useStore((s) => s.refreshAgents)
+  const toggleAgent = useStore((s) => s.toggleAgent)
+  const toast = useStore((s) => s.toast)
+  const [expanded, setExpanded] = useState<string | null>(null)
+  const [adding, setAdding] = useState(false)
+  const [name, setName] = useState('')
+  const [path, setPath] = useState('')
+
+  const active = agents.filter((a) => a.enabled).length
+
+  useEffect(() => {
+    void refreshAgents()
+  }, [refreshAgents])
+
+  const onAdd = async (): Promise<void> => {
+    if (!name.trim() || !path.trim()) return
+    try {
+      await api.agents.addCustom(name.trim(), path.trim())
+      await refreshAgents()
+      setName('')
+      setPath('')
+      setAdding(false)
+      toast('success', t('common.save'))
+    } catch (err: any) {
+      toast('error', t('toast.failed', { msg: err?.message || err }))
+    }
+  }
+
+  return (
+    <div className="view">
+      <div className="view-head">
+        <div>
+          <div className="view-title">
+            <Bot size={19} />
+            {t('agents.title')}
+          </div>
+          <div className="view-sub">{t('agents.subtitle')}</div>
+        </div>
+        <div className="view-head-actions">
+          <span className="chip green mono">
+            <Check size={10} />
+            {active}/{agents.length}
+          </span>
+          <button className="btn" onClick={() => void refreshAgents()}>
+            <RefreshCw size={13} />
+            {t('agents.autodetect')}
+          </button>
+          <button className="btn primary" onClick={() => setAdding((v) => !v)}>
+            <Plus size={13} />
+            {t('agents.addCustom')}
+          </button>
+        </div>
+      </div>
+
+      {adding && (
+        <div className="panel" style={{ marginBottom: 16 }}>
+          <div className="panel-head">
+            <FolderPlus size={13} />
+            {t('agents.addCustom')}
+            <button className="btn ghost sm right" style={{ marginLeft: 'auto' }} onClick={() => setAdding(false)}>
+              <X size={12} />
+            </button>
+          </div>
+          <div className="panel-body">
+            <div className="row" style={{ alignItems: 'flex-end', gap: 10 }}>
+              <div className="field" style={{ flex: '0 0 200px', marginBottom: 0 }}>
+                <label>{t('agents.customName')}</label>
+                <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="My Agent" />
+              </div>
+              <div className="field" style={{ flex: 1, marginBottom: 0 }}>
+                <label>{t('agents.customPath')}</label>
+                <input
+                  className="input"
+                  value={path}
+                  spellCheck={false}
+                  onChange={(e) => setPath(e.target.value)}
+                  placeholder="~/.myagent/skills"
+                  onKeyDown={(e) => e.key === 'Enter' && void onAdd()}
+                />
+              </div>
+              <button
+                className="btn"
+                onClick={async () => {
+                  const picked = await api.system.pickDirectory()
+                  if (picked) setPath(picked)
+                }}
+              >
+                <FolderOpen size={13} />
+                {t('agents.pickDir')}
+              </button>
+              <button className="btn primary" onClick={() => void onAdd()} disabled={!name.trim() || !path.trim()}>
+                {t('common.confirm')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: 'grid', gap: 10 }}>
+        {agents.map((agent) => (
+          <AgentCard
+            key={agent.id}
+            agent={agent}
+            expanded={expanded === agent.id}
+            onToggleExpand={() => setExpanded(expanded === agent.id ? null : agent.id)}
+            onToggleEnabled={(v) => void toggleAgent(agent.id, v)}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function AgentCard({
+  agent,
+  expanded,
+  onToggleExpand,
+  onToggleEnabled
+}: {
+  agent: AgentTarget
+  expanded: boolean
+  onToggleExpand: () => void
+  onToggleEnabled: (v: boolean) => void
+}): React.JSX.Element {
+  const t = useStore((s) => s.t)
+  const toast = useStore((s) => s.toast)
+  const refreshAgents = useStore((s) => s.refreshAgents)
+  const refreshInstalls = useStore((s) => s.refreshInstalls)
+  const installMap = useStore((s) => s.installMap)
+  const [entries, setEntries] = useState<Awaited<ReturnType<typeof api.agents.scan>> | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  const managed = Object.values(installMap).filter((l) => l.includes(agent.id)).length
+
+  useEffect(() => {
+    if (!expanded) return
+    setLoading(true)
+    api.agents
+      .scan(agent.id)
+      .then(setEntries)
+      .catch(() => setEntries([]))
+      .finally(() => setLoading(false))
+  }, [expanded, agent.id])
+
+  return (
+    <div className={`agent-card ${agent.enabled ? 'on' : ''}`}>
+      <div className="agent-head" onClick={onToggleExpand}>
+        <span className="dim">{expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}</span>
+        <div
+          className="agent-glyph"
+          style={{ background: `linear-gradient(135deg, ${agent.color || '#334155'}, rgba(0,0,0,.5))` }}
+        >
+          {agent.name.slice(0, 1).toUpperCase()}
+        </div>
+        <div className="agent-info">
+          <div className="agent-name">
+            {agent.name}
+            {agent.vendor && <span className="dim" style={{ fontSize: 11, fontWeight: 400 }}>{agent.vendor}</span>}
+            {agent.detected ? (
+              <span className="chip green mono">
+                <Check size={9} />
+                {t('agents.detected')}
+              </span>
+            ) : (
+              <span className="chip mono" style={{ color: 'var(--warn)', borderColor: 'rgba(210,153,34,.3)' }}>
+                <AlertCircle size={9} />
+                {t('agents.notDetected')}
+              </span>
+            )}
+            {agent.kind === 'custom' && <span className="chip violet mono">custom</span>}
+            {agent.confidence && agent.confidence !== 'high' && (
+              <span className="chip mono" style={{ color: 'var(--warn)', borderColor: 'rgba(210,153,34,.3)' }}>
+                {agent.confidence}
+              </span>
+            )}
+          </div>
+          <div className="agent-path">{agent.path}</div>
+        </div>
+
+        <div className="agent-meta" onClick={(e) => e.stopPropagation()}>
+          <span className="chip mono" title={t('agents.found', { n: agent.found || 0 })}>
+            {agent.found || 0}
+          </span>
+          {managed > 0 && (
+            <span className="chip green mono" title={t('agents.managed', { n: managed })}>
+              <Check size={9} />
+              {managed}
+            </span>
+          )}
+          {agent.sourceUrl && (
+            <button
+              className="btn ghost sm"
+              title={agent.sourceUrl}
+              onClick={() => void api.system.openExternal(agent.sourceUrl as string)}
+            >
+              <Info size={12} />
+            </button>
+          )}
+          <button className="btn ghost sm" title={t('common.openFolder')} onClick={() => void api.agents.reveal(agent.path)}>
+            <FolderOpen size={12} />
+          </button>
+          {agent.kind === 'custom' && (
+            <button
+              className="btn ghost sm danger"
+              onClick={async () => {
+                await api.agents.removeCustom(agent.id.replace('custom:', ''))
+                await refreshAgents()
+              }}
+            >
+              <Trash2 size={12} />
+            </button>
+          )}
+          <button
+            className={`switch ${agent.enabled ? 'on' : ''}`}
+            title={agent.enabled ? t('agents.enabled') : t('agents.disabled')}
+            onClick={() => onToggleEnabled(!agent.enabled)}
+          />
+        </div>
+      </div>
+
+      {expanded && (
+        <div className="agent-skills">
+          {loading ? (
+            <div className="flex" style={{ padding: 14, gap: 8 }}>
+              <span className="spinner" />
+              <span className="dim">{t('agents.scanning')}</span>
+            </div>
+          ) : !entries || entries.length === 0 ? (
+            <div className="dim" style={{ padding: 14, fontSize: 12 }}>
+              {t('agents.noSkills')}
+            </div>
+          ) : (
+            entries.map((entry) => (
+              <div className="agent-skill-item" key={entry.path}>
+                {entry.isSymlink ? (
+                  <Link2 size={12} style={{ color: entry.managed ? 'var(--ok)' : 'var(--text-3)', flex: 'none' }} />
+                ) : (
+                  <Copy size={12} style={{ color: entry.managed ? 'var(--ok)' : 'var(--text-3)', flex: 'none' }} />
+                )}
+                <span className="nm">{entry.name}</span>
+                {entry.managed && (
+                  <span className="chip green mono" style={{ height: 17 }}>
+                    SkillHub
+                  </span>
+                )}
+                {!entry.hasSkillFile && (
+                  <span className="chip mono" style={{ height: 17, color: 'var(--warn)' }}>
+                    no SKILL.md
+                  </span>
+                )}
+                <span className="p" title={entry.linkTarget || entry.path}>
+                  {entry.linkTarget ? `→ ${entry.linkTarget}` : entry.path}
+                </span>
+                <button
+                  className="btn ghost sm danger"
+                  title={t('agents.removeEntry')}
+                  onClick={async () => {
+                    await api.agents.removeRaw(entry.path)
+                    await Promise.all([refreshAgents(), refreshInstalls()])
+                    const next = await api.agents.scan(agent.id)
+                    setEntries(next)
+                    toast('success', t('toast.uninstalled'))
+                  }}
+                >
+                  <Trash2 size={11} />
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
