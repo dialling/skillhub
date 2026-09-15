@@ -7,8 +7,6 @@ import {
   CheckCircle2,
   Circle,
   Bot,
-  PanelLeftClose,
-  PanelLeftOpen,
   Sparkles,
   Target,
   TrendingUp,
@@ -18,35 +16,6 @@ import {
 import { FN_LABELS, type FnCategory } from '@shared/types'
 import { useStore } from '../store'
 import { api } from '../api'
-
-/** Every sidebar variant gets the same head, so the collapse control is always
- *  in the same place instead of being hidden at the bottom of the activity bar. */
-function SideHead({ title }: { title: string }): React.JSX.Element {
-  const toggleSidebar = useStore((s) => s.toggleSidebar)
-  const t = useStore((s) => s.t)
-  return (
-    <div className="sidebar-head">
-      <span className="sidebar-head-title">{title}</span>
-      <button className="sidebar-collapse" title={t('common.collapseSidebar')} onClick={toggleSidebar}>
-        <PanelLeftClose size={15} />
-      </button>
-    </div>
-  )
-}
-
-/** Shown in place of the sidebar when it is collapsed, so it can be reopened
- *  without hunting for the activity-bar toggle. */
-export function SidebarRail(): React.JSX.Element {
-  const toggleSidebar = useStore((s) => s.toggleSidebar)
-  const t = useStore((s) => s.t)
-  return (
-    <div className="sidebar-rail">
-      <button title={t('common.expandSidebar')} onClick={toggleSidebar}>
-        <PanelLeftOpen size={16} />
-      </button>
-    </div>
-  )
-}
 
 function SideSection({
   title,
@@ -118,7 +87,6 @@ function StoreSidebar(): React.JSX.Element {
 
   return (
     <aside className="sidebar">
-      <SideHead title={t('nav.store')} />
       <SideSection title={t('store.entry')}>
         <button className={`side-item ${!activeScenario && !category ? 'active' : ''}`} onClick={goToScenarios}>
           <Compass size={14} />
@@ -215,7 +183,6 @@ function LibrarySidebar(): React.JSX.Element {
 
   return (
     <aside className="sidebar">
-      <SideHead title={t('nav.library')} />
 <SideSection title={t('library.title')}>
         <button className={`side-item ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>
           <Package size={14} />
@@ -273,7 +240,6 @@ function ChartsSidebar(): React.JSX.Element {
 
   return (
     <aside className="sidebar">
-      <SideHead title={t('nav.charts')} />
 <SideSection title={t('charts.title')}>
         {windows.map((w) => (
           <button
@@ -320,7 +286,6 @@ function AgentsSidebar(): React.JSX.Element {
 
   return (
     <aside className="sidebar">
-      <SideHead title={t('nav.agents')} />
 <SideSection title={`${t('agents.autodetect')} · ${agents.length}`}>
         {agents.map((a) => (
           <button
@@ -353,7 +318,6 @@ function ProfileSidebar(): React.JSX.Element {
   const stats = useStore((s) => s.library)
   return (
     <aside className="sidebar">
-      <SideHead title={t('nav.profile')} />
 <SideSection title={t('profile.title')}>
         <div className="side-note">
           {settings?.user ? (
@@ -387,7 +351,6 @@ function SettingsSidebar(): React.JSX.Element {
   const t = useStore((s) => s.t)
   return (
     <aside className="sidebar">
-      <SideHead title={t('nav.settings')} />
 <SideSection title={t('settings.title')}>
         <div className="side-note">{t('settings.subtitle')}</div>
       </SideSection>

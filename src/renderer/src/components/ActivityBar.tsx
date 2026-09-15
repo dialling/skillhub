@@ -53,7 +53,11 @@ export function ActivityBar(): React.JSX.Element {
       >
         <Settings size={19} />
       </button>
-      <button className="act-item" title="Sidebar" onClick={toggleSidebar}>
+      <button
+        className="act-item"
+        title={sidebarOpen ? t('common.collapseSidebar') : t('common.expandSidebar')}
+        onClick={toggleSidebar}
+      >
         <PanelLeft size={18} />
       </button>
     </nav>
