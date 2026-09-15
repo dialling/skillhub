@@ -3,6 +3,7 @@ import type { LocalSkill, InstallTargetAdvice, InstallTargetCandidate } from '..
 import { expandPath, tildify, ensureDir } from './paths'
 import { library, settings } from './db'
 import { listAgents, resolveAgentDir, scanAgentDir } from './agents'
+import { pathEndsWith } from './platform'
 import { curatedCatalog } from './catalog'
 import { readSkillDir } from './skills'
 
@@ -168,7 +169,7 @@ export async function recommendInstallTarget(): Promise<InstallTargetAdvice> {
   if (populated.length) {
     // Prefer the portable directory when it is already in use, otherwise the
     // busiest one.
-    const universal = populated.find((c) => c.absPath.endsWith('/.agents/skills'))
+    const universal = populated.find((c) => pathEndsWith(c.absPath, '/.agents/skills'))
     const chosen = universal || populated[0]
     return {
       path: chosen.path,

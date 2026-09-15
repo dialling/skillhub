@@ -97,7 +97,14 @@ const api = {
     adopt: (repoFullName: string) => call<any>('discover:adopt', repoFullName)
   },
   system: {
-    boot: () => call<{ initialView: string | null; initialRepo: string | null; initialQuery: string | null; argv: string[] }>('system:boot'),
+    boot: () =>
+      call<{
+        platform: string
+        initialView: string | null
+        initialRepo: string | null
+        initialQuery: string | null
+        argv: string[]
+      }>('system:boot'),
     stats: () => call<any>('system:stats'),
     testTranslation: () => call<any>('system:testTranslation'),
     pickDirectory: () => call<string | null>('system:pickDirectory'),

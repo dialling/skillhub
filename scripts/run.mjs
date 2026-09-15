@@ -30,15 +30,27 @@ let args
 if (argv[0] === '--electron') {
   const resolved = require('electron')
   // Under plain Node this is the path to the binary; under Electron it is the
-  // module object, so fall back to the well-known location.
+  // module object, so fall back to the per-platform location.
   cmd =
     typeof resolved === 'string'
       ? resolved
-      : join(root, 'node_modules', 'electron', 'dist', 'Electron.app', 'Contents', 'MacOS', 'Electron')
+      : join(
+          root,
+          'node_modules',
+          'electron',
+          'dist',
+          process.platform === 'win32'
+            ? 'electron.exe'
+            : process.platform === 'darwin'
+              ? join('Electron.app', 'Contents', 'MacOS', 'Electron')
+              : 'electron'
+        )
   args = argv.slice(1)
 } else {
-  const local = join(root, 'node_modules', '.bin', argv[0])
-  cmd = existsSync(local) ? local : argv[0]
+  // .cmd shims on Windows, plain shims elsewhere
+  const names = process.platform === 'win32' ? [`${argv[0]}.cmd`, `${argv[0]}.exe`, argv[0]] : [argv[0]]
+  const local = names.map((n) => join(root, 'node_modules', '.bin', n)).find((p) => existsSync(p))
+  cmd = local || argv[0]
   args = argv.slice(1)
 }
 

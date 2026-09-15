@@ -10,12 +10,13 @@ import {
   unlinkSync,
   writeFileSync
 } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import type { InstallMode, InstallProgress, InstallRecord, InstallRequest, SkillEntry } from '../../shared/types'
 import { expandPath } from './paths'
 import { installs, library, logActivity, settings } from './db'
 import { agentDisplayName, resolveAgentDir } from './agents'
 import { m } from './msg'
+import { isInside, isWindows } from './platform'
 
 const MARKER = '.skillhub-install.json'
 
@@ -42,7 +43,7 @@ export function isManagedPath(p: string, libraryRoot: string): boolean {
     const st = lstatSync(p)
     if (st.isSymbolicLink()) {
       const target = expandPath(require('node:fs').readlinkSync(p))
-      return target.startsWith(libraryRoot)
+      return isInside(target, libraryRoot)
     }
     if (st.isDirectory() && existsSync(join(p, MARKER))) return true
   } catch {
@@ -184,7 +185,17 @@ export function installSkills(
         }
 
         if (mode === 'symlink') {
-          symlinkSync(source, target, 'dir')
+          // Windows can only create a symlink with Developer Mode or elevation,
+          // but a *junction* needs neither and works for directories.
+          if (isWindows) {
+            try {
+              symlinkSync(source, target, 'junction')
+            } catch {
+              cpSync(source, target, { recursive: true, dereference: true })
+            }
+          } else {
+            symlinkSync(source, target, 'dir')
+          }
         } else {
           cpSync(source, target, { recursive: true, dereference: true })
           writeFileSync(
@@ -291,8 +302,8 @@ export function removeRawPath(p: string): boolean {
   if (!p || !existsSync(p)) return false
   const libRoot = expandPath(settings.get().libraryDir)
   // Guard: only ever delete inside a known agent skills directory.
-  const dir = p.slice(0, p.lastIndexOf('/'))
-  if (!dir) return false
+  const dir = dirname(p)
+  if (!dir || dir === p) return false
   void libRoot
   try {
     if (isSymlink(p)) unlinkSync(p)

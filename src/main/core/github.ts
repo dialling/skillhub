@@ -4,6 +4,7 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 import type { GitHubUser, RateLimit, RepoMeta, SearchResult } from '../../shared/types'
 import { cache, settings, stars } from './db'
+import { isWindows, which } from './platform'
 
 const API = 'https://api.github.com'
 const UA = 'SkillHub/0.1 (+https://github.com/skillhub)'
@@ -12,15 +13,23 @@ let ghTokenCache: { value: string | null; at: number } | null = null
 
 /** Locate the `gh` binary even when launched from Finder with a minimal PATH. */
 function findGh(): string | null {
-  const candidates = [
-    'gh',
-    join(homedir(), '.local', 'bin', 'gh'),
-    '/opt/homebrew/bin/gh',
-    '/usr/local/bin/gh',
-    '/usr/bin/gh'
-  ]
+  // Prefer a resolved absolute path so a minimal PATH (Finder launch) still works.
+  const resolved = which(isWindows ? 'gh.exe' : 'gh')
+  if (resolved) return resolved
+  const candidates = isWindows
+    ? [
+        join(process.env.ProgramFiles || 'C:\\Program Files', 'GitHub CLI', 'gh.exe'),
+        join(process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)', 'GitHub CLI', 'gh.exe'),
+        join(process.env.LOCALAPPDATA || '', 'Programs', 'GitHub CLI', 'gh.exe')
+      ]
+    : [
+        join(homedir(), '.local', 'bin', 'gh'),
+        '/opt/homebrew/bin/gh',
+        '/usr/local/bin/gh',
+        '/usr/bin/gh'
+      ]
   for (const c of candidates) {
-    if (c === 'gh' || existsSync(c)) return c
+    if (c && existsSync(c)) return c
   }
   return null
 }

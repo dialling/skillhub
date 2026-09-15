@@ -1,0 +1,111 @@
+#!/usr/bin/env node
+/**
+ * Guards the code against re-acquiring macOS-only assumptions.
+ *
+ *   node scripts/crossplatform-audit.mjs
+ *
+ * Every rule below was a real defect that either crashed or silently misbehaved
+ * on Windows:
+ *   /bin/sh does not exist          → use which() in core/platform.ts
+ *   POSIX symlinks need elevation   → use a junction on Windows
+ *   a minimal PATH (Finder launch)  → resolve binaries, do not assume a shell
+ *   `\` vs `/`                      → use path.dirname / normalized comparison
+ *
+ * A rule may be waived per file, but only with a stated reason. Exit code is
+ * non-zero when anything is unwaived, so this gates a build like the i18n audit.
+ */
+import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { dirname, join, relative } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const root = join(dirname(fileURLToPath(import.meta.url)), '..')
+
+const RULES = [
+  {
+    id: 'posix-shell',
+    what: '依赖 /bin/sh —— Windows 没有，改用 platform.ts 的 which()',
+    test: (line) => /['"]\/bin\/sh['"]/.test(line),
+    waived: { 'src/main/core/platform.ts': '这是唯一允许调用 POSIX shell 的地方，which() 在此分平台' }
+  },
+  {
+    id: 'mac-only-binary-paths',
+    what: '硬编码 macOS 二进制目录 —— 应通过 which() 解析，或放入平台分支',
+    test: (line) => /['"]\/(opt\/homebrew|usr\/local\/bin|usr\/bin)\//.test(line),
+    waived: {
+      'src/main/core/platform.ts': 'loginShellDirs() 就是各平台 PATH 补充目录的定义处',
+      'src/main/core/github.ts': 'findGh() 的 macOS 分支，Windows 分支在同一个 isWindows 三元里'
+    }
+  },
+  {
+    id: 'posix-symlink',
+    what: "创建 POSIX 目录符号链接 —— Windows 需要管理员或开发者模式，应使用 'junction'",
+    test: (line) => /symlinkSync\([^)]*['"]dir['"]/.test(line),
+    // satisfied when the same file branches on Windows and falls back to a copy
+    requires: (source) => /isWindows/.test(source) && /junction/.test(source),
+    waived: {}
+  },
+  {
+    id: 'manual-path-split',
+    what: "手工用 '/' 切分文件系统路径 —— Windows 用 '\\'，应使用 path.dirname",
+    test: (line) => /\.slice\([^)]*lastIndexOf\(['"]\/['"]\)/.test(line),
+    waived: {
+      'src/main/core/github.ts': '切分的是 GitHub 文件树路径，该 API 始终使用 /，与本地文件系统无关'
+    }
+  },
+  {
+    id: 'hardcoded-electron-app',
+    what: '硬编码 Electron.app 路径 —— Windows 是 electron.exe，Linux 是 electron',
+    test: (line) => /['"]Electron\.app['"]/.test(line),
+    waived: {
+      'src/main/core/paths.ts': '只在 macOS 分支调用（pinDockIcon 先行 return），且用于取 .icns',
+      'scripts/run.mjs': '位于 process.platform 三元表达式的 darwin 分支内'
+    }
+  }
+]
+
+function walk(dir, out = []) {
+  for (const name of readdirSync(dir)) {
+    const full = join(dir, name)
+    if (statSync(full).isDirectory()) {
+      if (['node_modules', 'out', 'dist', 'release'].includes(name)) continue
+      walk(full, out)
+    } else if (/\.(ts|tsx|mjs|js)$/.test(name)) {
+      out.push(full)
+    }
+  }
+  return out
+}
+
+const findings = []
+let waivedCount = 0
+
+for (const file of [...walk(join(root, 'src')), ...walk(join(root, 'scripts'))]) {
+  const rel = relative(root, file)
+  const source = readFileSync(file, 'utf8')
+  source.split('\n').forEach((line, i) => {
+    // shebangs are correct as-is, and comments are not code
+    if (line.startsWith('#!')) return
+    const code = line.replace(/\/\/.*$/, '').replace(/^\s*\*.*$/, '').replace(/\/\*.*?\*\//g, '')
+    for (const rule of RULES) {
+      if (!rule.test(code)) continue
+      if (rule.requires && rule.requires(source)) {
+        waivedCount++
+        continue
+      }
+      if (rule.waived[rel]) {
+        waivedCount++
+        continue
+      }
+      findings.push({ rule: rule.id, what: rule.what, file: rel, line: i + 1, text: line.trim().slice(0, 100) })
+    }
+  })
+}
+
+if (!findings.length) {
+  console.log(`PASS — 未发现未处理的平台专属写法（已豁免 ${waivedCount} 处，均有书面理由）`)
+  process.exit(0)
+}
+
+console.log(`发现 ${findings.length} 处平台相关问题：\n`)
+for (const f of findings) console.log(`  ${f.file}:${f.line}\n    [${f.rule}] ${f.what}\n    ${f.text}\n`)
+process.exit(1)

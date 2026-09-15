@@ -7,6 +7,7 @@ import { cache, installs, library, logActivity, settings } from './db'
 import { getRepo, listSkillDirs, activeToken, getRawFile } from './github'
 import { buildLocalSkills, buildRemoteSkills, parseSkillMd } from './skills'
 import { m } from './msg'
+import { hasBinary } from './platform'
 
 export type ProgressSink = (p: JobProgress) => void
 
@@ -24,7 +25,7 @@ function emit(p: JobProgress): void {
 }
 
 export function gitAvailable(): boolean {
-  return existsSync('/usr/bin/git') || existsSync('/opt/homebrew/bin/git') || existsSync('/usr/local/bin/git')
+  return hasBinary('git')
 }
 
 function run(cmd: string, args: string[], opts: { cwd?: string; onLine?: (s: string) => void } = {}): Promise<void> {

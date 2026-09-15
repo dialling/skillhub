@@ -7,6 +7,7 @@ import { curatedCatalog } from './core/catalog'
 import { ensureEnabledAgents } from './core/agents'
 import { m } from './core/msg'
 import { electronDefaultIconPath } from './core/paths'
+import { isLinux, isMac } from './core/platform'
 import { probeRawHost } from './core/github'
 
 // When ELECTRON_RUN_AS_NODE is present in the environment the Electron binary

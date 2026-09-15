@@ -242,7 +242,9 @@ a:hover {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 0 12px 0 92px;
+  /* Left padding clears the traffic lights on macOS; other platforms get their
+     own inset (Windows controls sit on the right, Linux keeps a normal frame). */
+  padding: 0 12px;
   background: linear-gradient(180deg, rgba(var(--glass-rgb), 0.92), rgba(var(--art-fade-rgb), 0.92));
   border-bottom: 1px solid var(--border);
   -webkit-app-region: drag;
@@ -251,6 +253,17 @@ a:hover {
 
 .titlebar > * {
   -webkit-app-region: no-drag;
+}
+
+/* Reserved space for each platform's window controls. */
+html[data-platform='darwin'] .titlebar {
+  padding-left: 92px;
+}
+html[data-platform='win32'] .titlebar {
+  padding-right: 148px;
+}
+html:not([data-platform]) .titlebar {
+  padding-left: 92px;
 }
 
 .brand {

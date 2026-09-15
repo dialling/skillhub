@@ -1,9 +1,12 @@
 {
   "name": "skillhub",
   "version": "0.1.0",
-  "description": "Steam-style desktop manager for AI agent skills: search, collect and install SKILL.md folders into any agent.",
+  "description": "SkillHub — a desktop store and manager for AI agent skills (SKILL.md), for macOS, Windows and Linux.",
   "main": "./out/main/index.js",
-  "author": "a27",
+  "author": {
+    "name": "dialling",
+    "email": "297608115+dialling@users.noreply.github.com"
+  },
   "license": "MIT",
   "scripts": {
     "dev": "node scripts/run.mjs electron-vite dev",
@@ -14,7 +17,13 @@
     "cli": "node out/main/cli.js",
     "typecheck": "tsc --noEmit",
     "i18n": "node scripts/i18n-audit.mjs",
-    "verify": "npm run typecheck && npm run i18n && npm run build && node out/main/selftest.js"
+    "verify": "npm run typecheck && npm run i18n && npm run xplat && npm run build && node out/main/selftest.js",
+    "xplat": "node scripts/crossplatform-audit.mjs",
+    "dist": "npm run build && electron-builder",
+    "dist:mac": "npm run build && electron-builder --mac",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:linux": "npm run build && electron-builder --linux",
+    "dist:dir": "npm run build && electron-builder --dir"
   },
   "keywords": [
     "agent-skills",
@@ -36,8 +45,97 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^5.2.0",
     "electron": "^44.3.0",
+    "electron-builder": "^26.15.3",
     "electron-vite": "^5.0.0",
     "typescript": "^7.0.2",
     "vite": "^7.3.6"
+  },
+  "build": {
+    "appId": "com.dialling.skillhub",
+    "productName": "SkillHub",
+    "copyright": "Copyright © 2026 dialling",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "out/**/*",
+      "data/**/*",
+      "package.json",
+      "!**/*.map"
+    ],
+    "asar": true,
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "category": "public.app-category.developer-tools",
+      "darkModeSupport": true,
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false
+    },
+    "dmg": {
+      "title": "SkillHub ${version}"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "SkillHub",
+      "artifactName": "${productName}-${version}-${arch}-setup.${ext}"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "category": "Development",
+      "synopsis": "Store and manager for AI agent skills",
+      "description": "Browse, collect and install SKILL.md agent skills into any AI coding agent."
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-${arch}-portable.${ext}"
+    }
   }
 }

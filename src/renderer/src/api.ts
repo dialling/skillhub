@@ -132,6 +132,7 @@ export interface SkillHubApi {
   }
   system: {
     boot(): Promise<{
+      platform: string
       initialView: string | null
       initialRepo: string | null
       initialQuery: string | null

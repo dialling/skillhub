@@ -93,7 +93,9 @@ export function InstallTargetModal(): React.JSX.Element | null {
                         onClick={() => void pick(c.absPath)}
                       >
                         <span className="tr-label">
-                          {c.absPath.endsWith('/.agents/skills') ? t('target.universalLabel') : c.label}
+                          {c.absPath.replace(/\\/g, '/').endsWith('/.agents/skills')
+                            ? t('target.universalLabel')
+                            : c.label}
                         </span>
                         <span className="tr-path mono">{c.path}</span>
                         <span className="tr-count">

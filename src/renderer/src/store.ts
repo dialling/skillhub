@@ -43,6 +43,7 @@ interface State {
   rate: RateLimit | null
   tokenSource: string
   refreshing: boolean
+  platform: string
   library: LibraryItem[]
   agents: AgentTarget[]
   installMap: Record<string, string[]>
@@ -126,6 +127,7 @@ export const useStore = create<State>((set, get) => ({
   rate: null,
   tokenSource: 'none',
   refreshing: false,
+  platform: 'darwin',
   library: [],
   agents: [],
   installMap: {},
@@ -250,6 +252,8 @@ export const useStore = create<State>((set, get) => ({
     // Deep links: `skillhub --view=charts --repo=owner/name --q="term"`
     try {
       const boot = await api.system.boot()
+      set({ platform: boot.platform })
+      document.documentElement.dataset.platform = boot.platform
       const views: ViewKey[] = ['store', 'library', 'charts', 'agents', 'profile', 'settings']
       if (boot.initialView && views.includes(boot.initialView as ViewKey)) {
         set({ view: boot.initialView as ViewKey })

@@ -375,6 +375,7 @@ export function registerIpc(send: Broadcast): void {
   /* ------------------------------------------------------------------ system */
   handle('system:boot', () => ({
     // Deep-link support: `skillhub --view=charts --repo=obra/superpowers`
+    platform: process.platform,
     initialView: readArg('view'),
     initialRepo: readArg('repo'),
     initialQuery: readArg('q'),

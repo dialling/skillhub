@@ -1,4 +1,3 @@
-import { execFileSync } from 'node:child_process'
 import { existsSync, readdirSync, lstatSync, readlinkSync, readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
@@ -6,6 +5,7 @@ import type { AgentTarget } from '../../shared/types'
 import { curatedAgentRegistryPath, expandPath, tildify } from './paths'
 import { settings } from './db'
 import { m } from './msg'
+import { isAbsoluteOrHome, isInside, which } from './platform'
 
 /** Built-in fallback registry used only when data/agent-registry.json is absent. */
 interface RegistryEntry {
@@ -116,17 +116,7 @@ export function registryMeta(): { path: string; count: number; agents: RegistryE
 }
 
 function resolveBinary(name: string): string | null {
-  try {
-    const out = execFileSync('/bin/sh', ['-lc', `command -v ${name}`], {
-      encoding: 'utf8',
-      timeout: 3000,
-      stdio: ['ignore', 'pipe', 'ignore']
-    })
-    const p = out.trim().split('\n')[0]
-    return p || null
-  } catch {
-    return null
-  }
+  return which(name)
 }
 
 /**
@@ -143,8 +133,7 @@ function binaryIsForeign(binPath: string, ownId: string): boolean {
       other.globalSkillsDir ? other.globalSkillsDir.replace(/\/skills$/, '') : null
     ].filter(Boolean) as string[]
     for (const root of roots) {
-      const abs = expandPath(root)
-      if (abs.length > 1 && binPath.startsWith(abs + '/')) return true
+      if (isInside(binPath, expandPath(root))) return true
     }
   }
   return false
@@ -206,7 +195,7 @@ export function listAgents(): AgentTarget[] {
       kind = 'project'
       path = projectBase ? join(projectBase, entry.projectSkillsDir) : entry.projectSkillsDir
     }
-    const det = path.startsWith('~') || path.startsWith('/') ? detect(entry) : { detected: false }
+    const det = isAbsoluteOrHome(path) ? detect(entry) : { detected: false }
     const found = countSkills(path)
     out.push({
       id: entry.id,
@@ -358,7 +347,7 @@ export function scanAgentDir(agentId: string): DirEntry[] {
       path: full,
       isSymlink,
       linkTarget,
-      managed: real.startsWith(storeRoot),
+      managed: isInside(real, storeRoot),
       hasSkillFile: existsSync(join(real, 'SKILL.md')),
       mtimeMs
     })

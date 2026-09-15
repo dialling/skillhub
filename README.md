@@ -29,6 +29,27 @@ SkillHub 是一个 macOS 桌面应用（Electron + React），把「登录 GitHu
 
 ---
 
+## 平台支持
+
+| 平台 | 打包目标 | 状态 |
+|---|---|---|
+| **macOS** | `.dmg` / `.zip`（arm64 + x64） | 已打包并**实机启动验证通过** |
+| **Windows** | `.exe` 安装程序（NSIS）+ 免安装版 | 已打包，**未在 Windows 上运行验证**（本机没有 Windows） |
+| Linux | AppImage / deb | 未打包（electron-builder 在 macOS 上构建 Linux 目标不可靠，需要 Linux 主机或 Docker） |
+
+代码层面已按平台差异逐项处理（`npm run xplat` 会检查，详见下节）：
+
+- **二进制探测**：Windows 用 `where`，macOS/Linux 用 `/bin/sh -c 'command -v'`
+- **符号链接**：Windows 用 junction（不需要管理员或开发者模式），失败则回退为复制
+- **路径比较**：统一走 `platform.ts` 的 `isInside` / `normalizePath`，不再假设分隔符是 `/`
+- **窗口外观**：macOS 用 `hiddenInset` 内嵌红绿灯；Windows 用 `titleBarOverlay` 把系统按钮叠在右侧；
+  Linux 保留标准边框。标题栏留白也随之切换（`html[data-platform]`）
+- **应用身份**：打包后的 Bundle ID 是独立的 `com.dialling.skillhub`，
+  不再与 Electron 默认的 `com.github.Electron` 冲突
+
+**运行时外部依赖**：入库技能需要 `git` 在 PATH 上（Windows 需安装 Git for Windows）；
+`gh` 可选，仅用于复用已登录凭据，没有它也能用 Personal Access Token。
+
 ## 快速开始
 
 ```bash
@@ -307,6 +328,35 @@ npm run dev
 - **实时进度**：克隆、同步、安装都有底部进度条与逐条进度事件。
 
 ---
+
+## 打包分发
+
+```bash
+npm run dist:mac     # macOS：.dmg + .zip（arm64 与 x64 各一份）
+npm run dist:win     # Windows：NSIS 安装程序 + 免安装版（x64）
+npm run dist         # 按当前平台打包
+```
+
+产物在 `release/`（已在 .gitignore 中，体积 500 MB+ 不入库）。
+
+| 产物 | 体积 |
+|---|---|
+| `SkillHub-0.1.0-arm64.dmg` | 124.7 MB |
+| `SkillHub-0.1.0.dmg`（x64） | 128.7 MB |
+| `SkillHub-0.1.0-x64-setup.exe` | 108.2 MB |
+| `SkillHub-0.1.0-x64-portable.exe` | 108.0 MB |
+
+> **本机环境的坑**：这个 shell 里的 `node` 被 DSH 接管（`~/.local/.../harness/.desktop-bin/node`
+> 是一个 `ELECTRON_RUN_AS_NODE=1` 的包装脚本），会导致 electron-builder 的 yargs 把脚本路径
+> 当成参数而报 `Unknown argument`。打包时需用一个真正的 Node：
+> ```bash
+> /Users/a27/.local/share/pi-node/node-v22.23.2-darwin-arm64/bin/node \
+>   node_modules/electron-builder/cli.js --mac   # 或 --win
+> ```
+> 普通机器上 `npm run dist:mac` 直接可用。
+
+**尚未做的**：代码签名（macOS 需要 Developer ID 证书，Windows 需要代码签名证书）。
+未签名的包在 macOS 上首次打开需要右键 →「打开」，或 `xattr -dr com.apple.quarantine`。
 
 ## 命令行（同一套核心）
 
