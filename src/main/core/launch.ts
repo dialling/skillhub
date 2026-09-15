@@ -239,7 +239,24 @@ export function prepareLaunch(input: {
   })
 
   // 3. the prompt handed to the agent when the launcher supports one
-  const prompt = m('launch.prompt', { skill: skillName, folder: folderName })
+  /*
+    A web chat cannot read anything on this disk.
+
+    The terminal and app prompts can say "read its SKILL.md" because the agent
+    has the folder. A hosted chat has neither, so pasting that line into one asks
+    for a file it cannot open. For those, the skill's own text travels inside the
+    prompt — the same words the agent would have read — so the paste is
+    self-contained.
+  */
+  const skillMdPath = join(sourcePath, 'SKILL.md')
+  const prompt =
+    meta.kind === 'web'
+      ? m('launch.promptWeb', {
+          skill: skillName,
+          folder: folderName,
+          body: readSkillText(skillMdPath)
+        })
+      : m('launch.prompt', { skill: skillName, folder: folderName })
 
   const plan: LaunchPlan = {
     skillId,
@@ -350,6 +367,18 @@ function writeInstruction(input: {
  * of keeping launches out of the user's own directories. Returns how many skill
  * folders were removed.
  */
+/** A skill file's text, capped so a paste stays a reasonable size. */
+const MAX_SKILL_CHARS = 12000
+function readSkillText(path: string): string {
+  try {
+    const raw = readFileSync(path, 'utf8')
+    if (raw.length <= MAX_SKILL_CHARS) return raw.trim()
+    return `${raw.slice(0, MAX_SKILL_CHARS).trim()}${m('launch.skillTruncated')}`
+  } catch {
+    return m('launch.skillUnreadable')
+  }
+}
+
 export function clearSandbox(): number {
   const root = sandboxDir()
   let removed = 0

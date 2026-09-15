@@ -28,6 +28,7 @@ import { CATEGORY_LABELS, FN_LABELS, REPO_KIND_LABELS } from '../shared/types'
 import { addRepo, libraryItems, removeItem } from './core/library'
 import { installSkills, installedSkills, uninstall } from './core/installer'
 import { launchTargets, prepareLaunch } from './core/launch'
+import { loadRegistry } from './core/agents'
 import { buildRemoteSkills } from './core/skills'
 import { userDataDir } from './core/paths'
 import { leaderboard } from './core/leaderboard'
@@ -279,6 +280,23 @@ async function main(): Promise<number> {
     const targets = launchTargets().filter((t) => t.ready)
     const madeWorkspaces: string[] = []
     check('at least one agent is launchable', targets.length > 0, `${targets.length} ready`)
+
+    /*
+      Every agent with launch metadata must reach the launcher.
+
+      Hosted chats have no skills directory and were dropped by the agent list's
+      "no directory, not an agent" filter — all twelve web AI entries vanished
+      from the dialog even though their metadata was present. The two lists are
+      built from different places, so this compares them.
+    */
+    const declared = loadRegistry().filter((e) => e.launch)
+    const targetIds = new Set(launchTargets().map((t) => t.agentId))
+    const unreachable = declared.filter((e) => !targetIds.has(e.id))
+    check(
+      'every agent with launch metadata reaches the launcher',
+      unreachable.length === 0,
+      unreachable.length ? unreachable.map((e) => e.id).join(', ') : `${declared.length} entries`
+    )
 
     const appTarget = targets.find((t) => t.kind === 'app')
     const cliTarget = targets.find((t) => t.kind === 'cli')

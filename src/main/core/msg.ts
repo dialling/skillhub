@@ -88,6 +88,14 @@ const M: Record<string, [zh: string, en: string]> = {
     '请使用 {skill} 技能。先阅读它的 SKILL.md，然后按我的要求执行；素材和产出都放在 ./{folder}/ 目录下。',
     'Use the {skill} skill. Read its SKILL.md first, then do what I ask; keep inputs and outputs in ./{folder}/.'
   ],
+  // The hosted chat gets the skill's own text, because it has no access to the
+  // folder the skill lives in.
+  'launch.skillTruncated': ['\n\n…（技能文件过长，此处截断）', '\n\n…(skill file truncated)'],
+  'launch.skillUnreadable': ['（未能读取技能文件）', '(could not read the skill file)'],
+  'launch.promptWeb': [
+    '请按下面这份技能说明帮我做事。\n\n--- 技能：{skill} ---\n{body}\n--- 技能说明结束 ---\n\n接下来我会说明具体要求。素材与产出都放在 {folder}/。',
+    'Work from the skill description below.\n\n--- skill: {skill} ---\n{body}\n--- end of skill ---\n\nI will describe what I need next. Keep inputs and outputs in {folder}/.'
+  ],
   'launch.startedCli': ['已在终端启动 {agent}', 'Started {agent} in Terminal'],
   'launch.startedApp': ['已打开 {agent}，提示词已复制到剪贴板', 'Opened {agent}; the prompt is on your clipboard'],
   'launch.modeInteractive': ['交互式，可继续对话', 'interactive, keeps the session'],

@@ -195,9 +195,21 @@ export function listAgents(): AgentTarget[] {
     let path = entry.globalSkillsDir || null
     let kind: AgentTarget['kind'] = 'global'
     if (!path) {
-      if (!entry.projectSkillsDir) continue
-      kind = 'project'
-      path = projectBase ? join(projectBase, entry.projectSkillsDir) : entry.projectSkillsDir
+      if (!entry.projectSkillsDir) {
+        /*
+          A hosted chat has no skills directory anywhere — it is a launch target
+          and nothing else. Dropping it here removed every web AI from the launch
+          list, because "no directory to install into" was treated as "not an
+          agent at all". It still has to reach the launcher; it just cannot be an
+          install target, which the empty path and project kind already say.
+        */
+        if (!entry.launch) continue
+        kind = 'project'
+        path = ''
+      } else {
+        kind = 'project'
+        path = projectBase ? join(projectBase, entry.projectSkillsDir) : entry.projectSkillsDir
+      }
     }
     const det = isAbsoluteOrHome(path) ? detect(entry) : { detected: false }
     const found = countSkills(path)
@@ -264,6 +276,8 @@ export function projectTargets(projectDir: string): AgentTarget[] {
 
 /** Resolve the skills dir a skill should be installed into for an agent id. */
 export function resolveAgentDir(agentId: string): string | null {
+  // Launch-only agents (hosted chats) have no install directory; returning an
+  // empty string here would make the installer write to the current directory.
   if (agentId.startsWith('custom:')) {
     const c = settings.get().customAgents.find((x) => `custom:${x.id}` === agentId)
     return c ? expandPath(c.path) : null

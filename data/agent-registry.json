@@ -2200,6 +2200,294 @@
         "instructionFile": "AGENTS.md",
         "promptMode": "oneshot"
       }
+    },
+    {
+      "id": "web-chatgpt",
+      "name": "ChatGPT",
+      "vendor": "OpenAI",
+      "color": "#10A37F",
+      "globalSkillsDir": null,
+      "projectSkillsDir": null,
+      "detect": {
+        "dirs": [],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://chatgpt.com",
+      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。",
+      "launch": {
+        "kind": "web",
+        "url": "https://chatgpt.com",
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
+      }
+    },
+    {
+      "id": "web-claude",
+      "name": "Claude",
+      "vendor": "Anthropic",
+      "color": "#D97757",
+      "globalSkillsDir": null,
+      "projectSkillsDir": null,
+      "detect": {
+        "dirs": [],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://claude.ai/new",
+      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。",
+      "launch": {
+        "kind": "web",
+        "url": "https://claude.ai/new",
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
+      }
+    },
+    {
+      "id": "web-gemini",
+      "name": "Gemini",
+      "vendor": "Google",
+      "color": "#4285F4",
+      "globalSkillsDir": null,
+      "projectSkillsDir": null,
+      "detect": {
+        "dirs": [],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://gemini.google.com/app",
+      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。",
+      "launch": {
+        "kind": "web",
+        "url": "https://gemini.google.com/app",
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
+      }
+    },
+    {
+      "id": "web-deepseek",
+      "name": "DeepSeek",
+      "vendor": "DeepSeek",
+      "color": "#4D6BFE",
+      "globalSkillsDir": null,
+      "projectSkillsDir": null,
+      "detect": {
+        "dirs": [],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://chat.deepseek.com",
+      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。",
+      "launch": {
+        "kind": "web",
+        "url": "https://chat.deepseek.com",
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
+      }
+    },
+    {
+      "id": "web-kimi",
+      "name": "Kimi",
+      "vendor": "Moonshot AI",
+      "color": "#0F0F0F",
+      "globalSkillsDir": null,
+      "projectSkillsDir": null,
+      "detect": {
+        "dirs": [],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://www.kimi.com",
+      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。",
+      "launch": {
+        "kind": "web",
+        "url": "https://www.kimi.com",
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
+      }
+    },
+    {
+      "id": "web-qwen",
+      "name": "通义千问 Qwen Chat",
+      "vendor": "Alibaba",
+      "color": "#615CED",
+      "globalSkillsDir": null,
+      "projectSkillsDir": null,
+      "detect": {
+        "dirs": [],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://chat.qwen.ai",
+      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。",
+      "launch": {
+        "kind": "web",
+        "url": "https://chat.qwen.ai",
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
+      }
+    },
+    {
+      "id": "web-doubao",
+      "name": "豆包 Doubao",
+      "vendor": "ByteDance",
+      "color": "#3B5BFE",
+      "globalSkillsDir": null,
+      "projectSkillsDir": null,
+      "detect": {
+        "dirs": [],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://www.doubao.com/chat/",
+      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。",
+      "launch": {
+        "kind": "web",
+        "url": "https://www.doubao.com/chat/",
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
+      }
+    },
+    {
+      "id": "web-yuanbao",
+      "name": "腾讯元宝 Yuanbao",
+      "vendor": "Tencent",
+      "color": "#0A84FF",
+      "globalSkillsDir": null,
+      "projectSkillsDir": null,
+      "detect": {
+        "dirs": [],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://yuanbao.tencent.com/chat/",
+      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。",
+      "launch": {
+        "kind": "web",
+        "url": "https://yuanbao.tencent.com/chat/",
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
+      }
+    },
+    {
+      "id": "web-glm",
+      "name": "智谱清言 ChatGLM",
+      "vendor": "Zhipu AI",
+      "color": "#3859FF",
+      "globalSkillsDir": null,
+      "projectSkillsDir": null,
+      "detect": {
+        "dirs": [],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://chatglm.cn/main/alltoolsdetail",
+      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。",
+      "launch": {
+        "kind": "web",
+        "url": "https://chatglm.cn/main/alltoolsdetail",
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
+      }
+    },
+    {
+      "id": "web-minimax",
+      "name": "MiniMax 海螺",
+      "vendor": "MiniMax",
+      "color": "#FF6B35",
+      "globalSkillsDir": null,
+      "projectSkillsDir": null,
+      "detect": {
+        "dirs": [],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://chat.minimaxi.com",
+      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。",
+      "launch": {
+        "kind": "web",
+        "url": "https://chat.minimaxi.com",
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
+      }
+    },
+    {
+      "id": "web-copilot",
+      "name": "Microsoft Copilot",
+      "vendor": "Microsoft",
+      "color": "#0F6CBD",
+      "globalSkillsDir": null,
+      "projectSkillsDir": null,
+      "detect": {
+        "dirs": [],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://copilot.microsoft.com",
+      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。",
+      "launch": {
+        "kind": "web",
+        "url": "https://copilot.microsoft.com",
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
+      }
+    },
+    {
+      "id": "web-mistral",
+      "name": "Le Chat",
+      "vendor": "Mistral AI",
+      "color": "#FA520F",
+      "globalSkillsDir": null,
+      "projectSkillsDir": null,
+      "detect": {
+        "dirs": [],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://chat.mistral.ai/chat",
+      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。",
+      "launch": {
+        "kind": "web",
+        "url": "https://chat.mistral.ai/chat",
+        "instructionFile": "AGENTS.md",
+        "promptMode": "clipboard"
+      }
     }
   ],
   "launchAddedAt": "2026-09-15T15:16:14.424Z"
