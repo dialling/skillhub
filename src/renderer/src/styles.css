@@ -3562,3 +3562,19 @@ button.status-item:hover {
   background: rgba(var(--third-rgb), 0.1);
   flex: none;
 }
+
+/* Starring writes to the user's real GitHub account, so the on state is a solid
+   gold rather than another accent colour — it is a different kind of fact from
+   everything else on the card. */
+.star-btn.on {
+  color: var(--warn);
+  border-color: rgba(210, 153, 34, 0.4);
+  background: rgba(210, 153, 34, 0.1);
+}
+.star-btn.on:hover {
+  color: var(--warn);
+  background: rgba(210, 153, 34, 0.16);
+}
+.star-btn:disabled {
+  opacity: 0.6;
+}

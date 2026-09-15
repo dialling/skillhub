@@ -23,6 +23,7 @@ import {
 import { categoryLabel, type AgentTarget } from '@shared/types'
 import { api, fmtStars, fmtRelative, gradientFor } from '../api'
 import { useStore } from '../store'
+import { StarButton } from './StarButton'
 import { Markdown } from './Markdown'
 
 export function DetailPanel(): React.JSX.Element | null {
@@ -250,6 +251,7 @@ export function DetailPanel(): React.JSX.Element | null {
               <ExternalLink size={13} />
               GitHub
             </button>
+            <StarButton fullName={detail.fullName} showLabel />
             {inLibrary ? (
               <>
                 <button className="btn" disabled={busy} onClick={() => void syncItem(detail.fullName)}>

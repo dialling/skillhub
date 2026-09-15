@@ -78,6 +78,10 @@ interface State {
   skillShardLoading: string | null
   skillQuery: string
   skillHits: SkillIndexEntry[] | null
+  /** full names the signed-in user has starred on GitHub */
+  starred: string[]
+  starredLoaded: boolean
+  starring: string | null
   scenarios: Scenario[]
   activeScenario: string | null
   scenarioRepos: RepoMeta[]
@@ -116,6 +120,8 @@ interface State {
   loadSkillShard: (fn: string) => Promise<void>
   searchSkillIndex: (term: string) => Promise<void>
   setSkillQuery: (q: string) => void
+  loadStarred: (force?: boolean) => Promise<void>
+  toggleStar: (fullName: string) => Promise<void>
   setLibraryFilter: (f: 'all' | 'pending' | 'installed') => void
   setLibraryView: (v: 'grid' | 'list') => void
   setSelectedLibrary: (id: string) => void
@@ -188,6 +194,9 @@ export const useStore = create<State>((set, get) => ({
   skillShardLoading: null,
   skillQuery: '',
   skillHits: null,
+  starred: [],
+  starredLoaded: false,
+  starring: null,
   scenarios: [],
   activeScenario: null,
   scenarioRepos: [],
@@ -369,6 +378,60 @@ export const useStore = create<State>((set, get) => ({
     }
   },
 
+  /**
+   * The user's starred repositories, read once.
+   *
+   * Starring status could be asked per card, but that is one request for every
+   * repository on screen. The whole list is a handful of requests and then
+   * answers instantly everywhere, which is also the only way the state can be
+   * consistent across cards at the same moment.
+   */
+  async loadStarred(force = false) {
+    const s = get()
+    if (!s.settings?.user) {
+      set({ starred: [], starredLoaded: true })
+      return
+    }
+    if (!force && s.starredLoaded && s.starred.length) return
+    try {
+      const starred = await api.star.list(force)
+      set({ starred, starredLoaded: true })
+    } catch {
+      set({ starredLoaded: true })
+    }
+  },
+
+  async toggleStar(fullName) {
+    if (!get().settings?.user) {
+      get().toast('info', get().t('star.signInFirst'))
+      return
+    }
+    const on = !get().starred.includes(fullName)
+    set({ starring: fullName })
+    try {
+      const res = await api.star.set(fullName, on)
+      if (res.scopeProblem) {
+        get().toast('error', get().t('star.scopeProblem'))
+        return
+      }
+      set({
+        starred: on ? [...get().starred, fullName] : get().starred.filter((n) => n !== fullName)
+      })
+      // The count moved on GitHub; move it here too so the card agrees with the
+      // account instead of waiting for the next scheduled refresh.
+      set({
+        catalogRepos: get().catalogRepos.map((r) =>
+          r.fullName === fullName ? { ...r, stars: Math.max(0, (r.stars || 0) + (on ? 1 : -1)) } : r
+        )
+      })
+      get().toast('success', on ? get().t('star.starred') : get().t('star.unstarred'))
+    } catch (err: any) {
+      get().toast('error', get().t('toast.failed', { msg: err?.message || err }))
+    } finally {
+      set({ starring: null })
+    }
+  },
+
   setSkillQuery(q) {
     set({ skillQuery: q })
     if (!q.trim()) set({ skillHits: null })
@@ -418,6 +481,7 @@ export const useStore = create<State>((set, get) => ({
       get().loadInstallTarget()
     ])
     void get().scanLocal()
+    void get().loadStarred()
     // Record what already exists so nothing pre-existing badges as "new" —
     // only what shows up after this point does.
     const seen = await api.settings.get()

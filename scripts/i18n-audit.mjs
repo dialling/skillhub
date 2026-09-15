@@ -151,7 +151,10 @@ const SAME_IN_BOTH = new Set([
   'app.name',
   'card.viewRepo',
   'settings.github',
-  'profile.src.gh-cli'
+  'profile.src.gh-cli',
+  // GitHub keeps "Star" in English in its own Chinese interface; translating it
+  // would name a feature the user cannot find in the product it belongs to.
+  'star.star'
 ])
 
 const untranslated = []

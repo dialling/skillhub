@@ -121,6 +121,11 @@ export interface SkillHubApi {
     refresh(): Promise<GitHubUser | null>
     starred(): Promise<{ fullName: string; stars: number; avatarUrl?: string; descriptionEn?: string }[]>
   }
+  star: {
+    state(fullName: string): Promise<{ signedIn: boolean; starred: boolean; stars: number; scopeProblem: boolean }>
+    set(fullName: string, on: boolean): Promise<{ signedIn: boolean; starred: boolean; stars: number; scopeProblem: boolean }>
+    list(force?: boolean): Promise<string[]>
+  }
   skillsIndex: {
     index(): Promise<{ updatedAt: string; total: number; shards: Record<string, { count: number; bytes: number }> }>
     shard(fn: string): Promise<SkillIndexEntry[]>

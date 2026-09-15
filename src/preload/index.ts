@@ -86,6 +86,11 @@ const api = {
     refresh: () => call<any>('profile:refresh'),
     starred: () => call<any[]>('profile:starred')
   },
+  star: {
+    state: (fullName: string) => call<any>('star:state', fullName),
+    set: (fullName: string, on: boolean) => call<any>('star:set', fullName, on),
+    list: (force?: boolean) => call<string[]>('star:list', force)
+  },
   skillsIndex: {
     index: () => call<any>('skills:index'),
     shard: (fn: string) => call<any[]>('skills:shard', fn),

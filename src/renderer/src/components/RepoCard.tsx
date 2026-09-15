@@ -4,6 +4,7 @@ import { fmtRelative, fmtStars, gradientFor } from '../api'
 import { useStore } from '../store'
 import { AGENT_SKILL_LABELS, categoryLabel, FN_LABELS, REPO_KIND_LABELS, type FnCategory } from '@shared/types'
 import { fnColor } from './Sidebar'
+import { StarButton } from './StarButton'
 
 export function RepoCard({
   repo,
@@ -63,6 +64,7 @@ export function RepoCard({
           <Star size={11} />
           {fmtStars(repo.stars)}
         </span>
+        <StarButton fullName={repo.fullName} />
       </div>
 
       <div className="card-body">

@@ -68,6 +68,7 @@ import {
 import { installLocations, launchTargets, prepareLaunch, runLaunch } from './core/launch'
 import { liveStatus, refreshLiveData } from './core/live'
 import { searchSkillIndex, skillIndex, skillShard } from './core/skillsindex'
+import { listStarred, setStar, starState } from './core/starring'
 
 type Broadcast = (channel: string, payload: unknown) => void
 let broadcast: Broadcast = () => {}
@@ -390,6 +391,12 @@ export function registerIpc(send: Broadcast): void {
   // is involved and a fresh install still gets real history.
   handle('live:refresh', () => refreshLiveData())
   handle('live:status', () => liveStatus())
+
+  /* ------------------------------------------------------------- starring -- */
+  // Writes to the user's real GitHub account, not to a local list.
+  handle('star:state', (fullName: string) => starState(fullName))
+  handle('star:set', (fullName: string, on: boolean) => setStar(fullName, on))
+  handle('star:list', (force?: boolean) => listStarred(!!force).then((s) => [...s]))
 
   /* ------------------------------------------------------- skill index ----- */
   // The individual skills inside the catalog's repositories, published as

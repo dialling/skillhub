@@ -112,6 +112,11 @@ export async function ghFetch<T = any>(
     }
     throw new GitHubError(detail || `GitHub ${res.status} ${res.statusText}`, res.status)
   }
+  // Starring answers 204 with no body; calling .json() on that throws and would
+  // turn a successful write into a reported failure.
+  if (res.status === 204 || res.headers.get('content-length') === '0') {
+    return undefined as unknown as T
+  }
   if (init.raw) return (await res.text()) as unknown as T
   return (await res.json()) as T
 }
