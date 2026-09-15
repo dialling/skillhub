@@ -33,6 +33,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/publish-live-data.mjs
 
+      # Pulls the individual skills out of the catalog's repositories: sparse
+      # clones each one, reads every SKILL.md frontmatter, and writes per-category
+      # shards. ~10 minutes for 40 repositories; no API budget is used because
+      # sparse checkout fetches blobs over the git protocol rather than the API.
+      - name: Extract the skills inside the repositories
+        run: node scripts/extract-skills.mjs
+
       - name: Commit when something changed
         run: |
           git config user.name  "skillhub-data"
@@ -42,5 +49,5 @@ jobs:
             echo "没有变化，跳过提交"
             exit 0
           fi
-          git commit -m "data: refresh star counts and history ($(date -u +%Y-%m-%d))"
+          git commit -m "data: refresh star counts, history and skill index ($(date -u +%Y-%m-%d))"
           git push

@@ -20,6 +20,39 @@ import { stagger } from '../ui'
  * extraction pass, so opening a category fetches tens of kilobytes rather than
  * the whole index.
  */
+/**
+ * Interleave skills by repository.
+ *
+ * Sorting by stars alone put one repository's entire catalogue at the top: a
+ * collection with 864 auto-generated skills all share its star count, so the
+ * first screen was eighty near-identical rows from a single source and nothing
+ * else was reachable. Taking one from each repository in turn keeps the list
+ * varied while preserving the star ordering between repositories.
+ */
+function roundRobin(list: SkillIndexEntry[]): SkillIndexEntry[] {
+  const byRepo = new Map<string, SkillIndexEntry[]>()
+  for (const s of list) {
+    const bucket = byRepo.get(s.r)
+    if (bucket) bucket.push(s)
+    else byRepo.set(s.r, [s])
+  }
+  const queues = [...byRepo.entries()]
+    .sort((a, b) => (b[1][0]?.s || 0) - (a[1][0]?.s || 0))
+    .map(([, items]) => items)
+  const out: SkillIndexEntry[] = []
+  for (let i = 0; out.length < list.length; i++) {
+    let progressed = false
+    for (const q of queues) {
+      if (i < q.length) {
+        out.push(q[i])
+        progressed = true
+      }
+    }
+    if (!progressed) break
+  }
+  return out
+}
+
 export function SkillBrowser(): React.JSX.Element {
   const t = useStore((s) => s.t)
   const lang = useStore((s) => s.lang)
@@ -62,11 +95,8 @@ export function SkillBrowser(): React.JSX.Element {
 
   const rows: SkillIndexEntry[] = useMemo(() => {
     if (hits) return hits
-    if (fn === 'all') {
-      // No category chosen: show whatever has arrived, richest first.
-      return Object.values(shards).flat().sort((a, b) => b.s - a.s)
-    }
-    return shards[fn] || []
+    if (fn === 'all') return roundRobin(Object.values(shards).flat())
+    return (shards[fn] || []).slice()
   }, [hits, fn, shards])
 
   const inLibrary = (repo: string): boolean => library.some((i) => i.fullName === repo && i.status === 'ready')
