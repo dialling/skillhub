@@ -3121,7 +3121,10 @@ button.status-item:hover {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.55) 100%);
+  /* Darkens toward the right, where the action sits, so the button always has
+     a calm backdrop no matter which hue the repository's gradient lands on. */
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.14) 0%, rgba(0, 0, 0, 0.52) 100%),
+    radial-gradient(120% 160% at 100% 50%, rgba(0, 0, 0, 0.42) 0%, transparent 62%);
   pointer-events: none;
 }
 .lib-hero-inner {
@@ -3200,29 +3203,41 @@ button.status-item:hover {
   display: flex;
   gap: 5px;
 }
-/* Steam's play button: big, unmistakable, the obvious next action. */
+/*
+  The primary action on a banner whose colour is derived from the repository,
+  so it can be any hue. An accent-coloured button turned into a blue-on-blue
+  smudge the moment the gradient was blue — the previous gradient fill, gloss
+  highlight and heavy shadow made that worse. Inverting the text colours
+  guarantees contrast on every hue and flips automatically between light and
+  dark themes, because --text-0 and --bg-0 are opposites in both.
+*/
 .btn-play {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  height: 48px;
-  padding: 0 34px;
-  border-radius: var(--r-md);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  background: linear-gradient(180deg, var(--accent-hi) 0%, var(--accent) 55%, var(--accent-deep) 100%);
-  color: #fff;
-  font-size: 15px;
-  font-weight: 680;
-  letter-spacing: 0.3px;
+  gap: 8px;
+  height: 44px;
+  padding: 0 26px;
+  border-radius: 10px;
+  border: none;
+  background: var(--text-0);
+  color: var(--bg-0);
+  font-size: 14.5px;
+  font-weight: 660;
+  letter-spacing: 0.2px;
   cursor: pointer;
-  box-shadow: 0 10px 26px -8px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  transition: filter 0.14s, transform 0.14s;
+  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.55);
+  transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.14s, opacity 0.14s;
 }
 .btn-play:hover {
-  filter: brightness(1.12);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px -6px rgba(0, 0, 0, 0.6);
 }
 .btn-play:active {
-  transform: translateY(1px);
+  transform: translateY(0);
+  opacity: 0.9;
+}
+.btn-play svg {
+  flex: none;
 }
 .lh-hint {
   font-size: 11px;
