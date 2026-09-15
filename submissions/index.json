@@ -1,17 +1,6 @@
 {
-  "updatedAt": "2026-09-15T13:12:14.429Z",
+  "updatedAt": "2026-09-15T13:14:53.734Z",
   "submissions": [
-    {
-      "slug": "africa-dropship",
-      "name": "africa-dropship",
-      "description": "Runs the Africa e-commerce dropship workflow: market research and product selection, 1688 sourcing match, volumetric freight/profit pricing, listing copy and images, order fulfillment, and AI customer-service routing.",
-      "files": 9,
-      "bytes": 11413,
-      "skipped": 0,
-      "origin": "本机 ~/.cursor/skills（用户自建技能）",
-      "at": "2026-09-15T13:08:37.253Z",
-      "status": "pending"
-    },
     {
       "slug": "video-shotcraft-local",
       "name": "video-shotcraft-local",
@@ -21,6 +10,17 @@
       "skipped": 1432,
       "origin": "本机 ~/.dsh/skills",
       "at": "2026-09-15T13:12:13.997Z",
+      "status": "pending"
+    },
+    {
+      "slug": "africa-dropship",
+      "name": "africa-dropship",
+      "description": "Runs the Africa e-commerce dropship workflow: market research and product selection, 1688 sourcing match, volumetric freight/profit pricing, listing copy and images, order fulfillment, and AI customer-service routing.",
+      "files": 9,
+      "bytes": 11413,
+      "skipped": 0,
+      "origin": "本机",
+      "at": "2026-09-15T13:14:53.325Z",
       "status": "pending"
     }
   ]
