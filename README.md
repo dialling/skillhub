@@ -5,6 +5,23 @@
 SkillHub 是一个 macOS 桌面应用（Electron + React），把「登录 GitHub → 搜索技能 → 克隆到本地 → 装进对应 agent 的 skills 目录」这条链路图形化。
 界面是 **Steam 的浏览模型**（卡片墙、商店详情页、库、排行榜、个人资料）+ **VSCode 的骨架**（活动栏、侧边栏、命令面板、状态栏）。
 
+## 界面
+
+| 技能商店 | 仓库详情页 |
+|---|---|
+| ![商店](docs/screenshots/store.jpg) | ![详情](docs/screenshots/detail.jpg) |
+| 精选目录 + 实时搜索 + 本周热门（按真实星标增长排序） | 中英文双简介、技能文件列表、右侧一键安装栏 |
+
+| 排行榜 | 我的库 |
+|---|---|
+| ![排行榜](docs/screenshots/charts.jpg) | ![库](docs/screenshots/library.jpg) |
+| 总星数榜与 24h / 7d / 30d 增长榜，每行标注数据来源 | 已入库仓库，可批量安装到所有已启用的 agent |
+
+| 智能体 | 设置 |
+|---|---|
+| ![智能体](docs/screenshots/agents.jpg) | ![设置](docs/screenshots/settings.jpg) |
+| 21 个 agent 的技能目录，自动探测本机已装哪些 | 凭据、库目录、安装方式、AI 翻译 |
+
 ---
 
 ## 快速开始
