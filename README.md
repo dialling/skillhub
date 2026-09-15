@@ -73,8 +73,14 @@ npm run dev
 标准与逐字语料见 [`docs/blurb-formula.md`](docs/blurb-formula.md) 与
 [`docs/research/corpus-own.md`](docs/research/corpus-own.md)。
 
-- **内置精选目录**：随应用分发的 60 个技能仓库，每个都有「一眼看懂」的中文简介、英文简介、
-  功能分类、来源标签（官方 / 合集 / 工具）、星数与技能数量。
+- **内置精选目录**：随应用分发的 60 个技能仓库，共 **6,622 个去重后的技能**，每个仓库都有
+  「一眼看懂」的中文简介、英文简介、功能分类、来源标签（官方 / 合集 / 工具）、星数与技能数。
+
+  > **关于技能计数**：初次抓取按「含 SKILL.md 的目录」计数，得到 11,746 —— 但那是虚高的。
+  > 大型仓库会为不同 agent 把同一批技能重复打包（`sickn33/agentic-awesome-skills` 一个仓库
+  > 就贡献了 6,670 条，实际只有 2,119 个技能），也有仓库把模板脚手架也算进来
+  > （`gotalab/cc-sdd` 的 137 条里 136 条在 `templates/` 下，真技能只有 1 个）。
+  > `scripts/dedupe-catalog-skills.mjs` 按目录名去重并剔除脚手架，得出 6,622。虚高 44%。
 - **GitHub 实时搜索**：多个定向查询合并去重（`topic:agent-skills`、`topic:claude-skills`、`SKILL.md in:readme`…），
   而不是把关键词直接丢给 GitHub 的相关性排序。
 
