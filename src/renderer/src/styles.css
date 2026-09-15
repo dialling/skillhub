@@ -331,6 +331,7 @@ a:hover {
    ========================================================================== */
 
 .sidebar {
+  animation: fade-up 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
   background: var(--bg-2);
   border-right: 1px solid var(--border);
   overflow-y: auto;
@@ -409,17 +410,80 @@ a:hover {
    Content area
    ========================================================================== */
 
+/*
+  The pane owns the viewport area. `.content` scrolls inside it, and overlays are
+  positioned against the pane — an absolutely positioned child of a scroll
+  container scrolls away with the content, which would leave the bottom of the
+  previous page showing through.
+*/
+.content-pane {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .content {
+  flex: 1;
+  min-height: 0;
   min-width: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  position: relative;
 }
+
+/* ---------------------------------------------------------------------------
+   Motion
+   Fast, subtle, and always in service of orientation: entering content rises
+   into place, leaving content falls back. Everything is disabled for
+   prefers-reduced-motion.
+   ------------------------------------------------------------------------- */
 
 .view {
   padding: 22px 26px 60px;
   max-width: 1560px;
-  animation: fade-up 0.22s ease;
+  animation: view-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes view-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.996);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/*
+  Cards and rows arrive in a short cascade rather than all at once.
+  fill-mode is `backwards`, NOT `both`: `both`/`forwards` keeps applying the
+  final keyframe forever, which would pin `transform: none` and silently kill
+  the hover lift on every card. `backwards` covers the stagger delay (so nothing
+  flashes before its turn) and then releases the element back to normal styles.
+*/
+.grid > *,
+.trend-row,
+.board-row,
+.agent-card {
+  animation: item-in 0.34s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  animation-delay: calc(var(--i, 0) * var(--step, 22ms));
+}
+
+@keyframes item-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.fade-up {
+  animation: fade-up 0.24s ease both;
 }
 
 @keyframes fade-up {
@@ -430,6 +494,32 @@ a:hover {
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+/* Panel content crossfades when a detail tab changes. */
+.tab-panel {
+  animation: tab-in 0.26s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes tab-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
@@ -747,7 +837,7 @@ a:hover {
   background: linear-gradient(180deg, var(--bg-3), var(--bg-2));
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.16s ease, border-color 0.16s, box-shadow 0.16s;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.16s, box-shadow 0.2s;
   text-align: left;
   padding: 0;
 }
@@ -1016,17 +1106,36 @@ a:hover {
   background: var(--bg-0);
   display: flex;
   flex-direction: column;
-  animation: slide-in 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: detail-in 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-@keyframes slide-in {
+.detail.closing {
+  animation: detail-out 0.18s cubic-bezier(0.4, 0, 1, 1) both;
+  pointer-events: none;
+}
+@keyframes detail-in {
   from {
     opacity: 0;
-    transform: translateX(28px);
+    transform: translateX(38px) scale(0.994);
   }
   to {
     opacity: 1;
     transform: none;
   }
+}
+@keyframes detail-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(26px) scale(0.997);
+  }
+}
+
+/* The hero fades in slightly behind the panel for a sense of depth. */
+.detail-hero .hero-inner {
+  animation: fade-up 0.34s cubic-bezier(0.16, 1, 0.3, 1) 0.04s both;
 }
 
 .detail-hero {
@@ -2161,4 +2270,13 @@ button.status-item:hover {
 }
 .scroll-y {
   overflow-y: auto;
+}
+
+/* Filter bar above long lists (e.g. the agent registry) */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
 }

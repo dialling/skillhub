@@ -59,15 +59,22 @@ export default function App(): React.JSX.Element {
       <div className={`app-body ${sidebarOpen ? '' : 'no-sidebar'}`}>
         <ActivityBar />
         <Sidebar />
-        <main className="content">
-          {view === 'store' && <StoreView />}
-          {view === 'library' && <LibraryView />}
-          {view === 'charts' && <ChartsView />}
-          {view === 'agents' && <AgentsView />}
-          {view === 'profile' && <ProfileView />}
-          {view === 'settings' && <SettingsView />}
+        {/*
+          The detail panel must cover the viewport, not the scrollable content.
+          If it were absolutely positioned inside `.content` it would scroll away
+          with the list, leaving the bottom of the previous page visible.
+        */}
+        <div className="content-pane">
+          <main className="content" key={view}>
+            {view === 'store' && <StoreView />}
+            {view === 'library' && <LibraryView />}
+            {view === 'charts' && <ChartsView />}
+            {view === 'agents' && <AgentsView />}
+            {view === 'profile' && <ProfileView />}
+            {view === 'settings' && <SettingsView />}
+          </main>
           {detail && <DetailPanel />}
-        </main>
+        </div>
       </div>
       <StatusBar />
       <CommandPalette />

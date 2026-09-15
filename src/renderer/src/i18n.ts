@@ -165,6 +165,7 @@ const DICT: Dict = {
   'agents.scanning': ['正在扫描…', 'Scanning…'],
   'agents.removeEntry': ['删除该技能目录', 'Delete this skill folder'],
   'agents.autodetect': ['自动检测', 'Auto-detect'],
+  'agents.filterPlaceholder': ['筛选：名称、厂商或路径…', 'Filter by name, vendor or path…'],
 
   'profile.title': ['个人资料', 'Profile'],
   'profile.notLoggedIn': ['未登录 GitHub', 'Not signed in to GitHub'],

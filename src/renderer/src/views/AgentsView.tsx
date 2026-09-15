@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Bot,
   Check,
@@ -13,11 +13,14 @@ import {
   Copy,
   FolderPlus,
   X,
-  Info
+  Info,
+  Search
 } from 'lucide-react'
 import { api } from '../api'
 import { useStore } from '../store'
 import type { AgentTarget } from '@shared/types'
+
+type Scope = 'all' | 'detected' | 'enabled'
 
 export function AgentsView(): React.JSX.Element {
   const t = useStore((s) => s.t)
@@ -29,8 +32,33 @@ export function AgentsView(): React.JSX.Element {
   const [adding, setAdding] = useState(false)
   const [name, setName] = useState('')
   const [path, setPath] = useState('')
+  const [query, setQuery] = useState('')
+  const [scope, setScope] = useState<Scope>('all')
 
   const active = agents.filter((a) => a.enabled).length
+  const detected = agents.filter((a) => a.detected).length
+
+  // The registry covers 40+ agents, so keep the useful ones on screen: enabled
+  // first, then detected, then everything else in registry order.
+  const visible = useMemo(() => {
+    const term = query.trim().toLowerCase()
+    const rank = (a: AgentTarget): number => (a.enabled ? 0 : a.detected ? 1 : 2)
+    return agents
+      .filter((a) => {
+        if (scope === 'detected' && !a.detected) return false
+        if (scope === 'enabled' && !a.enabled) return false
+        if (!term) return true
+        return (
+          a.name.toLowerCase().includes(term) ||
+          (a.vendor || '').toLowerCase().includes(term) ||
+          a.path.toLowerCase().includes(term) ||
+          a.id.toLowerCase().includes(term)
+        )
+      })
+      .map((a, i) => ({ a, i }))
+      .sort((x, y) => rank(x.a) - rank(y.a) || x.i - y.i)
+      .map((x) => x.a)
+  }, [agents, query, scope])
 
   useEffect(() => {
     void refreshAgents()
@@ -61,9 +89,13 @@ export function AgentsView(): React.JSX.Element {
           <div className="view-sub">{t('agents.subtitle')}</div>
         </div>
         <div className="view-head-actions">
-          <span className="chip green mono">
+          <span className="chip green mono" title={t('agents.enabled')}>
             <Check size={10} />
-            {active}/{agents.length}
+            {active}
+          </span>
+          <span className="chip mono" title={t('agents.detected')}>
+            <Search size={10} />
+            {detected}/{agents.length}
           </span>
           <button className="btn" onClick={() => void refreshAgents()}>
             <RefreshCw size={13} />
@@ -74,6 +106,37 @@ export function AgentsView(): React.JSX.Element {
             {t('agents.addCustom')}
           </button>
         </div>
+      </div>
+
+      <div className="filter-bar">
+        <div className="searchbox" style={{ maxWidth: 320 }}>
+          <Search size={13} className="dim" />
+          <input
+            value={query}
+            spellCheck={false}
+            placeholder={t('agents.filterPlaceholder')}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          {query && (
+            <button className="btn ghost sm" style={{ height: 18, padding: '0 4px' }} onClick={() => setQuery('')}>
+              <X size={12} />
+            </button>
+          )}
+        </div>
+        <div className="seg">
+          <button className={scope === 'all' ? 'active' : ''} onClick={() => setScope('all')}>
+            {t('common.all')} {agents.length}
+          </button>
+          <button className={scope === 'detected' ? 'active' : ''} onClick={() => setScope('detected')}>
+            {t('agents.detected')} {detected}
+          </button>
+          <button className={scope === 'enabled' ? 'active' : ''} onClick={() => setScope('enabled')}>
+            {t('agents.enabled')} {active}
+          </button>
+        </div>
+        <span className="dim mono" style={{ marginLeft: 'auto', fontSize: 11 }}>
+          {visible.length} / {agents.length}
+        </span>
       </div>
 
       {adding && (
@@ -120,17 +183,28 @@ export function AgentsView(): React.JSX.Element {
         </div>
       )}
 
-      <div style={{ display: 'grid', gap: 10 }}>
-        {agents.map((agent) => (
-          <AgentCard
-            key={agent.id}
-            agent={agent}
-            expanded={expanded === agent.id}
-            onToggleExpand={() => setExpanded(expanded === agent.id ? null : agent.id)}
-            onToggleEnabled={(v) => void toggleAgent(agent.id, v)}
-          />
-        ))}
-      </div>
+      {visible.length === 0 ? (
+        <div className="empty">
+          <Search size={26} className="icon" />
+          <h3>{t('palette.noMatch')}</h3>
+          <button className="btn" onClick={() => { setQuery(''); setScope('all') }}>
+            {t('common.all')}
+          </button>
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gap: 10 }}>
+          {visible.map((agent, i) => (
+            <AgentCard
+              key={agent.id}
+              agent={agent}
+              style={{ ['--i' as never]: Math.min(i, 10) }}
+              expanded={expanded === agent.id}
+              onToggleExpand={() => setExpanded(expanded === agent.id ? null : agent.id)}
+              onToggleEnabled={(v) => void toggleAgent(agent.id, v)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -139,12 +213,14 @@ function AgentCard({
   agent,
   expanded,
   onToggleExpand,
-  onToggleEnabled
+  onToggleEnabled,
+  style
 }: {
   agent: AgentTarget
   expanded: boolean
   onToggleExpand: () => void
   onToggleEnabled: (v: boolean) => void
+  style?: React.CSSProperties
 }): React.JSX.Element {
   const t = useStore((s) => s.t)
   const toast = useStore((s) => s.toast)
@@ -167,7 +243,7 @@ function AgentCard({
   }, [expanded, agent.id])
 
   return (
-    <div className={`agent-card ${agent.enabled ? 'on' : ''}`}>
+    <div className={`agent-card ${agent.enabled ? 'on' : ''}`} style={style}>
       <div className="agent-head" onClick={onToggleExpand}>
         <span className="dim">{expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}</span>
         <div

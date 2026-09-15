@@ -35,7 +35,15 @@ export function RepoArt({
   )
 }
 
-export function RepoCard({ repo, dense }: { repo: RepoMeta; dense?: boolean }): React.JSX.Element {
+export function RepoCard({
+  repo,
+  dense,
+  style
+}: {
+  repo: RepoMeta
+  dense?: boolean
+  style?: React.CSSProperties
+}): React.JSX.Element {
   const t = useStore((s) => s.t)
   const lang = useStore((s) => s.lang)
   const openDetail = useStore((s) => s.openDetail)
@@ -57,7 +65,7 @@ export function RepoCard({ repo, dense }: { repo: RepoMeta; dense?: boolean }): 
   const skillCount = repo.skillCount ?? repo.skillDirs?.length ?? 0
 
   return (
-    <div className="card" onClick={() => void openDetail(repo.fullName)} role="button" tabIndex={0}>
+    <div className="card" style={style} onClick={() => void openDetail(repo.fullName)} role="button" tabIndex={0}>
       <RepoArt repo={repo} height={dense ? 72 : 84} />
       <div className="card-body">
         <div className={`card-desc ${lang === 'zh' ? 'zh' : ''}`}>{desc || t('common.unknown')}</div>

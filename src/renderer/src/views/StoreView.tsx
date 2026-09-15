@@ -4,6 +4,7 @@ import { CATEGORY_LABELS, type Category } from '@shared/types'
 import { useStore } from '../store'
 import { RepoCard, RepoRow } from '../components/RepoCard'
 import { sourceKey } from '../components/DetailPanel'
+import { stagger } from '../ui'
 import { fmtStars } from '../api'
 
 export function StoreView(): React.JSX.Element {
@@ -87,8 +88,8 @@ export function StoreView(): React.JSX.Element {
           </div>
         ) : (
           <div className="grid">
-            {results.map((repo) => (
-              <RepoCard key={repo.fullName} repo={repo} />
+            {results.map((repo, i) => (
+              <RepoCard key={repo.fullName} repo={repo} style={stagger(i)} />
             ))}
           </div>
         )}
@@ -135,8 +136,8 @@ export function StoreView(): React.JSX.Element {
             </div>
           </div>
           <div className="grid">
-            {filteredCatalog.map((repo) => (
-              <RepoCard key={repo.fullName} repo={repo} />
+            {filteredCatalog.map((repo, i) => (
+              <RepoCard key={repo.fullName} repo={repo} style={stagger(i)} />
             ))}
           </div>
         </div>
@@ -183,10 +184,11 @@ export function StoreView(): React.JSX.Element {
               </div>
             ) : (
               <div style={{ display: 'grid', gap: 8 }}>
-                {hot.map((row) => (
+                {hot.map((row, i) => (
                   <div
                     key={row.fullName}
                     className="trend-row"
+                    style={stagger(i, 30)}
                     onClick={() => void openDetail(row.fullName)}
                     role="button"
                   >

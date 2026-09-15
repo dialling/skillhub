@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ArrowLeft,
   Star,
@@ -47,6 +47,8 @@ export function DetailPanel(): React.JSX.Element | null {
   const [translated, setTranslated] = useState<string | null>(null)
   const [translating, setTranslating] = useState(false)
   const [skillPreview, setSkillPreview] = useState<{ name: string; body: string } | null>(null)
+  const [closing, setClosing] = useState(false)
+  const bodyRef = useRef<HTMLDivElement>(null)
 
   const repoFullName = detail?.fullName
   const item = library.find((i) => i.fullName === repoFullName)
@@ -56,6 +58,34 @@ export function DetailPanel(): React.JSX.Element | null {
     const local = library.find((i) => i.fullName === detail.fullName)
     return local && local.skills.length ? local.skills : detail.skills
   }, [detail, library])
+
+  /**
+   * Play the exit animation before unmounting. Without this the panel would
+   * vanish instantly and the motion would feel one-sided.
+   */
+  const requestClose = useCallback((): void => {
+    setClosing((already) => {
+      if (already) return already
+      window.setTimeout(() => closeDetail(), 190)
+      return true
+    })
+  }, [closeDetail])
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key !== 'Escape') return
+      if (skillPreview) setSkillPreview(null)
+      else requestClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [requestClose, skillPreview])
+
+  // A different repository should start reading from the top.
+  useEffect(() => {
+    setClosing(false)
+    bodyRef.current?.scrollTo({ top: 0 })
+  }, [repoFullName])
 
   // Reset per-repo UI state.
   useEffect(() => {
@@ -146,13 +176,13 @@ export function DetailPanel(): React.JSX.Element | null {
   const installedTotal = skills.reduce((n, s) => n + installedAgentsFor(s.id).length, 0)
 
   return (
-    <div className="detail">
+    <div className={`detail${closing ? ' closing' : ''}`}>
       <div
         className="detail-hero"
         style={{ background: `linear-gradient(120deg, ${c1} 0%, ${c2} 55%, rgba(6,8,13,0.9) 100%)` }}
       >
         <div className="hero-inner">
-          <button className="btn ghost sm" onClick={closeDetail} style={{ marginRight: -4 }}>
+          <button className="btn ghost sm" onClick={requestClose} style={{ marginRight: -4 }} title="Esc">
             <ArrowLeft size={15} />
           </button>
           {meta?.avatarUrl && <img className="hero-avatar" src={meta.avatarUrl} alt="" />}
@@ -270,7 +300,7 @@ export function DetailPanel(): React.JSX.Element | null {
         </button>
       </div>
 
-      <div className="detail-body">
+      <div className="detail-body" ref={bodyRef}>
         {detail.loading ? (
           <div className="flex" style={{ justifyContent: 'center', padding: 60 }}>
             <span className="spinner lg" />
@@ -285,7 +315,11 @@ export function DetailPanel(): React.JSX.Element | null {
           </div>
         ) : (
           <div className="detail-cols">
-            <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div
+              key={detail.tab}
+              className="tab-panel"
+              style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 16 }}
+            >
               {detail.tab === 'overview' && (
                 <>
                   <div className="panel">

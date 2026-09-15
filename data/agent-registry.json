@@ -10,9 +10,15 @@
       "globalSkillsDir": "~/.claude/skills",
       "projectSkillsDir": ".claude/skills",
       "detect": {
-        "dirs": ["~/.claude"],
-        "files": ["~/.claude/settings.json"],
-        "binaries": ["claude"]
+        "dirs": [
+          "~/.claude"
+        ],
+        "files": [
+          "~/.claude/settings.json"
+        ],
+        "binaries": [
+          "claude"
+        ]
       },
       "readsUniversalDir": false,
       "supportsSymlink": true,
@@ -27,9 +33,15 @@
       "globalSkillsDir": "~/.codex/skills",
       "projectSkillsDir": ".codex/skills",
       "detect": {
-        "dirs": ["~/.codex"],
-        "files": ["~/.codex/config.toml"],
-        "binaries": ["codex"]
+        "dirs": [
+          "~/.codex"
+        ],
+        "files": [
+          "~/.codex/config.toml"
+        ],
+        "binaries": [
+          "codex"
+        ]
       },
       "readsUniversalDir": true,
       "supportsSymlink": false,
@@ -44,9 +56,16 @@
       "globalSkillsDir": "~/.cursor/skills",
       "projectSkillsDir": ".cursor/skills",
       "detect": {
-        "dirs": ["~/.cursor"],
-        "files": ["~/.cursor/cli-config.json"],
-        "binaries": ["cursor", "cursor-agent"]
+        "dirs": [
+          "~/.cursor"
+        ],
+        "files": [
+          "~/.cursor/cli-config.json"
+        ],
+        "binaries": [
+          "cursor",
+          "cursor-agent"
+        ]
       },
       "readsUniversalDir": true,
       "supportsSymlink": false,
@@ -61,9 +80,15 @@
       "globalSkillsDir": "~/.gemini/skills",
       "projectSkillsDir": ".gemini/skills",
       "detect": {
-        "dirs": ["~/.gemini"],
-        "files": ["~/.gemini/settings.json"],
-        "binaries": ["gemini"]
+        "dirs": [
+          "~/.gemini"
+        ],
+        "files": [
+          "~/.gemini/settings.json"
+        ],
+        "binaries": [
+          "gemini"
+        ]
       },
       "readsUniversalDir": true,
       "supportsSymlink": false,
@@ -78,14 +103,21 @@
       "globalSkillsDir": "~/.copilot/skills",
       "projectSkillsDir": ".github/skills",
       "detect": {
-        "dirs": ["~/.copilot"],
-        "files": ["~/.copilot/config.json"],
-        "binaries": ["copilot"]
+        "dirs": [
+          "~/.copilot"
+        ],
+        "files": [
+          "~/.copilot/config.json"
+        ],
+        "binaries": [
+          "copilot"
+        ]
       },
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/add-skills"
+      "sourceUrl": "https://code.visualstudio.com/docs/copilot/customization/agent-skills",
+      "notes": "VS Code / Copilot docs list .github/skills, .claude/skills and .agents/skills (project) plus ~/.copilot/skills, ~/.claude/skills and ~/.agents/skills (personal)."
     },
     {
       "id": "windsurf",
@@ -95,9 +127,13 @@
       "globalSkillsDir": "~/.codeium/windsurf/skills",
       "projectSkillsDir": ".windsurf/skills",
       "detect": {
-        "dirs": ["~/.codeium/windsurf"],
+        "dirs": [
+          "~/.codeium/windsurf"
+        ],
         "files": [],
-        "binaries": ["windsurf"]
+        "binaries": [
+          "windsurf"
+        ]
       },
       "readsUniversalDir": true,
       "supportsSymlink": false,
@@ -112,9 +148,13 @@
       "globalSkillsDir": "~/.cline/skills",
       "projectSkillsDir": ".cline/skills",
       "detect": {
-        "dirs": ["~/.cline"],
+        "dirs": [
+          "~/.cline"
+        ],
         "files": [],
-        "binaries": ["cline"]
+        "binaries": [
+          "cline"
+        ]
       },
       "readsUniversalDir": false,
       "supportsSymlink": false,
@@ -129,9 +169,15 @@
       "globalSkillsDir": "~/.config/opencode/skills",
       "projectSkillsDir": ".opencode/skills",
       "detect": {
-        "dirs": ["~/.config/opencode"],
-        "files": ["~/.config/opencode/opencode.json"],
-        "binaries": ["opencode"]
+        "dirs": [
+          "~/.config/opencode"
+        ],
+        "files": [
+          "~/.config/opencode/opencode.json"
+        ],
+        "binaries": [
+          "opencode"
+        ]
       },
       "readsUniversalDir": true,
       "supportsSymlink": true,
@@ -146,7 +192,9 @@
       "globalSkillsDir": "~/.roo/skills",
       "projectSkillsDir": ".roo/skills",
       "detect": {
-        "dirs": ["~/.roo"],
+        "dirs": [
+          "~/.roo"
+        ],
         "files": [],
         "binaries": []
       },
@@ -163,9 +211,13 @@
       "globalSkillsDir": "~/.kilo/skills",
       "projectSkillsDir": ".kilo/skills",
       "detect": {
-        "dirs": ["~/.kilo"],
+        "dirs": [
+          "~/.kilo"
+        ],
         "files": [],
-        "binaries": ["kilo"]
+        "binaries": [
+          "kilo"
+        ]
       },
       "readsUniversalDir": true,
       "supportsSymlink": false,
@@ -180,9 +232,15 @@
       "globalSkillsDir": "~/.qwen/skills",
       "projectSkillsDir": ".qwen/skills",
       "detect": {
-        "dirs": ["~/.qwen"],
-        "files": ["~/.qwen/settings.json"],
-        "binaries": ["qwen"]
+        "dirs": [
+          "~/.qwen"
+        ],
+        "files": [
+          "~/.qwen/settings.json"
+        ],
+        "binaries": [
+          "qwen"
+        ]
       },
       "readsUniversalDir": true,
       "supportsSymlink": true,
@@ -197,9 +255,14 @@
       "globalSkillsDir": "~/.config/agents/skills",
       "projectSkillsDir": ".agents/skills",
       "detect": {
-        "dirs": ["~/.config/amp", "~/.config/agents"],
+        "dirs": [
+          "~/.config/amp",
+          "~/.config/agents"
+        ],
         "files": [],
-        "binaries": ["amp"]
+        "binaries": [
+          "amp"
+        ]
       },
       "readsUniversalDir": true,
       "supportsSymlink": false,
@@ -214,9 +277,16 @@
       "globalSkillsDir": "~/.agents/skills",
       "projectSkillsDir": ".agents/skills",
       "detect": {
-        "dirs": ["~/.config/goose", "~/.agents"],
-        "files": ["~/.config/goose/config.yaml"],
-        "binaries": ["goose"]
+        "dirs": [
+          "~/.config/goose",
+          "~/.agents"
+        ],
+        "files": [
+          "~/.config/goose/config.yaml"
+        ],
+        "binaries": [
+          "goose"
+        ]
       },
       "readsUniversalDir": true,
       "supportsSymlink": false,
@@ -231,9 +301,15 @@
       "globalSkillsDir": "~/.factory/skills",
       "projectSkillsDir": ".factory/skills",
       "detect": {
-        "dirs": ["~/.factory"],
-        "files": ["~/.factory/settings.json"],
-        "binaries": ["droid"]
+        "dirs": [
+          "~/.factory"
+        ],
+        "files": [
+          "~/.factory/settings.json"
+        ],
+        "binaries": [
+          "droid"
+        ]
       },
       "readsUniversalDir": true,
       "supportsSymlink": false,
@@ -248,9 +324,16 @@
       "globalSkillsDir": "~/.agents/skills",
       "projectSkillsDir": ".agents/skills",
       "detect": {
-        "dirs": ["~/.config/zed", "~/.agents"],
-        "files": ["~/.config/zed/settings.json"],
-        "binaries": ["zed"]
+        "dirs": [
+          "~/.config/zed",
+          "~/.agents"
+        ],
+        "files": [
+          "~/.config/zed/settings.json"
+        ],
+        "binaries": [
+          "zed"
+        ]
       },
       "readsUniversalDir": true,
       "supportsSymlink": true,
@@ -265,9 +348,15 @@
       "globalSkillsDir": "~/.kiro/skills",
       "projectSkillsDir": ".kiro/skills",
       "detect": {
-        "dirs": ["~/.kiro"],
-        "files": ["~/.kiro/settings/cli.json"],
-        "binaries": ["kiro-cli"]
+        "dirs": [
+          "~/.kiro"
+        ],
+        "files": [
+          "~/.kiro/settings/cli.json"
+        ],
+        "binaries": [
+          "kiro-cli"
+        ]
       },
       "readsUniversalDir": false,
       "supportsSymlink": false,
@@ -282,7 +371,9 @@
       "globalSkillsDir": "~/.trae/skills",
       "projectSkillsDir": ".trae/skills",
       "detect": {
-        "dirs": ["~/.trae"],
+        "dirs": [
+          "~/.trae"
+        ],
         "files": [],
         "binaries": []
       },
@@ -299,8 +390,12 @@
       "globalSkillsDir": "~/.warp/skills",
       "projectSkillsDir": ".warp/skills",
       "detect": {
-        "dirs": ["~/.warp"],
-        "files": ["~/.warp/settings.toml"],
+        "dirs": [
+          "~/.warp"
+        ],
+        "files": [
+          "~/.warp/settings.toml"
+        ],
         "binaries": []
       },
       "readsUniversalDir": true,
@@ -316,9 +411,15 @@
       "globalSkillsDir": "~/.continue/skills",
       "projectSkillsDir": ".continue/skills",
       "detect": {
-        "dirs": ["~/.continue"],
-        "files": ["~/.continue/config.yaml"],
-        "binaries": ["cn"]
+        "dirs": [
+          "~/.continue"
+        ],
+        "files": [
+          "~/.continue/config.yaml"
+        ],
+        "binaries": [
+          "cn"
+        ]
       },
       "readsUniversalDir": false,
       "supportsSymlink": false,
@@ -333,9 +434,15 @@
       "globalSkillsDir": "~/.dsh/skills",
       "projectSkillsDir": ".dsh/skills",
       "detect": {
-        "dirs": ["~/.dsh"],
-        "files": ["~/.dsh/settings.yaml"],
-        "binaries": ["dsh"]
+        "dirs": [
+          "~/.dsh"
+        ],
+        "files": [
+          "~/.dsh/settings.yaml"
+        ],
+        "binaries": [
+          "dsh"
+        ]
       },
       "readsUniversalDir": true,
       "supportsSymlink": false,
@@ -350,7 +457,9 @@
       "globalSkillsDir": "~/.agents/skills",
       "projectSkillsDir": ".agents/skills",
       "detect": {
-        "dirs": ["~/.agents"],
+        "dirs": [
+          "~/.agents"
+        ],
         "files": [],
         "binaries": []
       },

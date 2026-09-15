@@ -62,8 +62,10 @@ interface State {
   storeCategory: string | null
   libraryFilter: 'all' | 'pending' | 'installed'
   librarySort: 'recent' | 'stars' | 'name'
+  chartMode: 'stars' | 'growth'
 
   t: (key: string, vars?: Record<string, string | number>) => string
+  setChartMode: (m: 'stars' | 'growth') => void
   setStoreCategory: (c: string | null) => void
   setLibraryFilter: (f: 'all' | 'pending' | 'installed') => void
   setLibrarySort: (s: 'recent' | 'stars' | 'name') => void
@@ -127,8 +129,13 @@ export const useStore = create<State>((set, get) => ({
   storeCategory: null,
   libraryFilter: 'all',
   librarySort: 'recent',
+  chartMode: 'growth',
 
   t: makeT('zh'),
+
+  setChartMode(m) {
+    set({ chartMode: m })
+  },
 
   setStoreCategory(c) {
     set({ storeCategory: c })

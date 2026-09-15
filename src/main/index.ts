@@ -44,16 +44,32 @@ function createWindow(): void {
 
   mainWindow.on('ready-to-show', () => mainWindow?.show())
 
-  // Headless verification aid: `--shot=/tmp/x.png [--shot-delay=8000]` renders
-  // the window, writes a PNG and exits. Used to review the UI without a human.
+  // Headless verification aid:
+  //   --shot=<path.png> [--shot-delay=8000] [--eval="<js>"] [--shot-settle=1200]
+  // Renders the window, optionally drives it, writes a PNG and exits. This is
+  // how UI states that need interaction (a scrolled list, an open detail panel)
+  // get verified without a human in the loop.
   const shot = process.argv.find((a) => a.startsWith('--shot='))
   if (shot) {
     const target = shot.slice('--shot='.length)
     const delayArg = process.argv.find((a) => a.startsWith('--shot-delay='))
     const delay = delayArg ? Number(delayArg.split('=')[1]) || 6000 : 6000
+    const evalArg = process.argv.find((a) => a.startsWith('--eval='))
+    const evalScript = evalArg ? evalArg.slice('--eval='.length) : null
+    const settleArg = process.argv.find((a) => a.startsWith('--shot-settle='))
+    const settle = settleArg ? Number(settleArg.split('=')[1]) || 1200 : 1200
+
     mainWindow.webContents.once('did-finish-load', () => {
       setTimeout(async () => {
         try {
+          if (evalScript) {
+            const result = await mainWindow!.webContents.executeJavaScript(
+              `(async () => { ${evalScript} })()`,
+              true
+            )
+            if (result !== undefined) console.log('[SkillHub] eval →', JSON.stringify(result))
+            await new Promise((r) => setTimeout(r, settle))
+          }
           const image = await mainWindow!.webContents.capturePage()
           const { writeFileSync, mkdirSync } = await import('node:fs')
           const { dirname } = await import('node:path')

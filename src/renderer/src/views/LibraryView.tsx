@@ -16,6 +16,7 @@ import type { LibraryItem } from '@shared/types'
 import { fmtRelative, fmtStars, gradientFor } from '../api'
 import { useStore } from '../store'
 import { RepoArt } from '../components/RepoCard'
+import { stagger } from '../ui'
 
 export function LibraryView(): React.JSX.Element {
   const t = useStore((s) => s.t)
@@ -133,9 +134,10 @@ export function LibraryView(): React.JSX.Element {
         </div>
       ) : (
         <div className="grid">
-          {items.map((item) => (
+          {items.map((item, i) => (
             <LibraryCard
               key={item.id}
+              style={stagger(i)}
               item={item}
               onOpen={() => void openDetail(item.fullName)}
               onSync={() => void syncItem(item.id)}
@@ -160,7 +162,8 @@ function LibraryCard({
   onSync,
   onRemove,
   installedSkills,
-  lang
+  lang,
+  style
 }: {
   item: LibraryItem
   onOpen: () => void
@@ -168,6 +171,7 @@ function LibraryCard({
   onRemove: () => void
   installedSkills: number
   lang: 'zh' | 'en'
+  style?: React.CSSProperties
 }): React.JSX.Element {
   const t = useStore((s) => s.t)
   const job = useStore((s) => s.job)
@@ -188,7 +192,7 @@ function LibraryCard({
   }
 
   return (
-    <div className={`card${item.status === 'error' ? ' error' : ''}`} onClick={onOpen}>
+    <div className={`card${item.status === 'error' ? ' error' : ''}`} style={style} onClick={onOpen}>
       <RepoArt repo={{ ...item.meta, avatarUrl: item.meta.avatarUrl }} />
       <div className="card-body">
         {item.status === 'error' && (

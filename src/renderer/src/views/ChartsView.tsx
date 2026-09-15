@@ -14,8 +14,6 @@ function sourceSummary(rows: GrowthRow[]): [string, number][] {
   return [...counts.entries()].sort((a, b) => b[1] - a[1])
 }
 
-type Mode = 'stars' | 'growth'
-
 export function ChartsView(): React.JSX.Element {
   const t = useStore((s) => s.t)
   const lang = useStore((s) => s.lang)
@@ -25,7 +23,8 @@ export function ChartsView(): React.JSX.Element {
   const loadGrowth = useStore((s) => s.loadGrowth)
   const openDetail = useStore((s) => s.openDetail)
   const catalog = useStore((s) => s.catalogRepos)
-  const [mode, setMode] = useState<Mode>('growth')
+  const mode = useStore((s) => s.chartMode)
+  const setMode = useStore((s) => s.setChartMode)
   const [top, setTop] = useState<RepoMeta[] | null>(null)
   const [coverage, setCoverage] = useState<{ repos: number; days: number } | null>(null)
 
