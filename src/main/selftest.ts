@@ -84,6 +84,33 @@ async function main(): Promise<number> {
   )
   const badOpeners = tagged.filter((t) => /^(为|面向|一个|这是一个)/.test(t.tag))
   check('no tagline opens with 为/面向/一个', badOpeners.length === 0, `${badOpeners.length} offenders`)
+
+  // The long-form blurb shown on the detail page. Both languages are required
+  // at the moment a repo is added to the catalog — there is no runtime
+  // translation fallback any more, so a gap here is a visible empty section.
+  const about = catalog.map((r) => ({ repo: r, zh: r.aboutZh ?? '' }))
+  const withAboutZh = about.filter((a) => a.zh.trim().length >= 25)
+  const aboutZhMissing = about.filter((a) => a.zh.trim().length < 25).map((a) => a.repo.fullName)
+  const withAboutEn = catalog.filter((r) => (r.descriptionEn ?? '').trim().length >= 25)
+  // Name the offenders — "99/101" alone gives nobody anything to act on.
+  const aboutEnMissing = catalog
+    .filter((r) => (r.descriptionEn ?? '').trim().length < 25)
+    .map((r) => `${r.fullName} (${(r.descriptionEn ?? '').length})`)
+  check(
+    'every repo has a Chinese long description',
+    withAboutZh.length === catalog.length,
+    `${withAboutZh.length}/${catalog.length}${aboutZhMissing.length ? ' — ' + aboutZhMissing.join(', ') : ''}`
+  )
+  check(
+    'every repo has an English long description',
+    withAboutEn.length === catalog.length,
+    `${withAboutEn.length}/${catalog.length}${aboutEnMissing.length ? ' — ' + aboutEnMissing.join(', ') : ''}`
+  )
+  const shortAbout = about.filter((a) => a.zh && a.zh.trim().length < 25)
+  check('no Chinese description is a stub', shortAbout.length === 0, `${shortAbout.length} too short`)
+  // A description copied from the tagline means nobody actually wrote it.
+  const lazyAbout = about.filter((a) => a.zh && a.zh.trim() === (a.repo.taglineZh ?? '').trim())
+  check('no Chinese description just repeats the tagline', lazyAbout.length === 0, `${lazyAbout.length} offenders`)
   const withSkills = catalog.filter((r) => (r.skillDirs || []).length > 0)
   check('repos with SKILL.md dirs', withSkills.length > 0, `${withSkills.length}/${catalog.length}`)
 

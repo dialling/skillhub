@@ -47,8 +47,6 @@ export function DetailPanel(): React.JSX.Element | null {
   const [targets, setTargets] = useState<Set<string>>(new Set())
   const [mode, setMode] = useState<'symlink' | 'copy'>('symlink')
   const [busy, setBusy] = useState(false)
-  const [translated, setTranslated] = useState<string | null>(null)
-  const [translating, setTranslating] = useState(false)
   const [skillPreview, setSkillPreview] = useState<{ name: string; body: string } | null>(null)
   const [closing, setClosing] = useState(false)
   const [showAllAgents, setShowAllAgents] = useState(false)
@@ -99,7 +97,6 @@ export function DetailPanel(): React.JSX.Element | null {
   // Reset per-repo UI state.
   useEffect(() => {
     setSelected(new Set())
-    setTranslated(null)
     setSkillPreview(null)
     setMode(useStore.getState().settings?.installMode || 'symlink')
     setTargets(new Set(useStore.getState().agents.filter((a) => a.enabled).map((a) => a.id)))
@@ -120,26 +117,10 @@ export function DetailPanel(): React.JSX.Element | null {
   const [c1, c2] = gradientFor(detail.fullName)
   const descriptionZh = meta?.aboutZh || meta?.descriptionZh
   const descriptionEn = meta?.descriptionEn
-  const shownZh = translated || descriptionZh
+  const shownZh = descriptionZh
   const tagline = lang === 'zh' ? meta?.taglineZh : meta?.taglineEn
 
   const isCJK = (s?: string): boolean => !!s && /[\u4e00-\u9fa5]/.test(s)
-
-  const onTranslate = async (): Promise<void> => {
-    if (!descriptionEn) return
-    if (!settings?.translation?.enabled || !settings.translation.apiKey) {
-      toast('info', t('toast.translationNeeded'))
-      return
-    }
-    setTranslating(true)
-    try {
-      const zh = await api.github.translate(descriptionEn, `repo:${detail.fullName}`)
-      if (zh) setTranslated(zh)
-      else toast('error', t('detail.noTranslation'))
-    } finally {
-      setTranslating(false)
-    }
-  }
 
   const doAdd = async (): Promise<boolean> => {
     setBusy(true)
@@ -361,15 +342,6 @@ export function DetailPanel(): React.JSX.Element | null {
                         <Sparkles size={13} />
                         {lang === 'zh' ? t('detail.zhIntro') : t('detail.secondaryIntro')}
                         <div className="right">
-                          <button
-                            className="btn ghost sm"
-                            disabled={translating || !descriptionEn}
-                            onClick={() => void onTranslate()}
-                            title={t('detail.translate')}
-                          >
-                            {translating ? <span className="spinner" /> : <Languages size={12} />}
-                            {t('detail.translate')}
-                          </button>
                           {lang !== 'zh' && (
                             <button className="btn ghost sm" onClick={() => setShowSecondary(false)}>
                               <X size={12} />
@@ -384,7 +356,7 @@ export function DetailPanel(): React.JSX.Element | null {
                           ) : shownZh ? (
                             <em className="dim">{shownZh}</em>
                           ) : (
-                            <span className="dim">{t('detail.noTranslation')}</span>
+                            <span className="dim">{t('detail.noZhIntro')}</span>
                           )}
                         </div>
                       </div>

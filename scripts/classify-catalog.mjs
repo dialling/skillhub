@@ -24,6 +24,27 @@ import { fileURLToPath } from 'node:url'
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const file = join(root, 'data', 'curated-catalog.json')
 const dryRun = process.argv.includes('--dry-run')
+/**
+ * `--check` is the gate form: it verifies locally that every entry *has* been
+ * classified, without re-querying GitHub (202 API calls is too slow for
+ * `npm run verify`). Re-run the script itself to refresh the classification.
+ */
+const checkOnly = process.argv.includes('--check')
+
+if (checkOnly) {
+  const catalog = JSON.parse(readFileSync(file, 'utf8'))
+  const unclassified = catalog.repos.filter((r) => !r.repoKind || !r.repoFacts)
+  if (unclassified.length) {
+    console.error(`以下 ${unclassified.length} 个仓库尚未分类，请运行 node scripts/classify-catalog.mjs：`)
+    for (const r of unclassified) console.error(`  - ${r.fullName}`)
+    process.exit(1)
+  }
+  const kinds = {}
+  for (const r of catalog.repos) kinds[r.repoKind] = (kinds[r.repoKind] || 0) + 1
+  const parts = Object.entries(kinds).map(([k, n]) => `${k} ${n}`).join(' · ')
+  console.log(`PASS — ${catalog.repos.length} 个仓库均已分类（${parts}）`)
+  process.exit(0)
+}
 
 /** Files that mean "you build this", not "you install this". */
 const MANIFESTS = /^(package\.json|Cargo\.toml|pyproject\.toml|setup\.py|go\.mod|CMakeLists\.txt|Makefile|build\.gradle|pom\.xml|Gemfile|composer\.json|requirements\.txt|tsconfig\.json)$/i

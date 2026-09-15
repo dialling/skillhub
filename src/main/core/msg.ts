@@ -64,8 +64,6 @@ const M: Record<string, [zh: string, en: string]> = {
   'catalog.refreshDone': ['刷新星标完成', 'Star counts refreshed'],
   'catalog.loadFailed': ['读取内置目录失败', 'Failed to read the bundled catalog'],
 
-  'translate.notConfigured': ['未启用或缺少 API Key', 'Translation is disabled or the API key is missing'],
-  'translate.ok': ['连接正常', 'Connection OK'],
 
   'dialog.pickDirectory': ['选择目录', 'Choose a folder'],
 

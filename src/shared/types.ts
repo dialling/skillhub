@@ -261,20 +261,12 @@ export interface RateLimit {
   error?: string
 }
 
-export interface TranslationConfig {
-  enabled: boolean
-  baseUrl: string
-  apiKey: string
-  model: string
-}
-
 export interface Settings {
   lang: 'zh' | 'en'
   libraryDir: string
   installMode: InstallMode
   token: string
   user: GitHubUser | null
-  translation: TranslationConfig
   enabledAgents: string[]
   customAgents: { id: string; name: string; path: string }[]
   projectDir: string | null
@@ -323,7 +315,7 @@ export interface InstallProgress {
 }
 
 export interface JobProgress {
-  job: 'clone' | 'sync' | 'search' | 'translate' | 'growth'
+  job: 'clone' | 'sync' | 'search' | 'growth'
   id?: string
   phase: 'start' | 'progress' | 'done' | 'error'
   message: string

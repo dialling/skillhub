@@ -100,10 +100,8 @@ const DICT: Dict = {
   'detail.zhIntro': ['中文简介', 'Chinese'],
   'detail.secondaryIntro': ['中文原文', 'Original Chinese'],
   'detail.showSecondary': ['显示中文原文', 'Show Chinese'],
+  'detail.noZhIntro': ['该仓库暂无中文简介', 'No Chinese summary for this repository'],
   'detail.enIntro': ['English 简介', 'English'],
-  'detail.translate': ['AI 翻译', 'Translate'],
-  'detail.translating': ['翻译中…', 'Translating…'],
-  'detail.noTranslation': ['未配置翻译服务', 'Translation not configured'],
   'detail.skillCount': ['{n} 个技能', '{n} skills'],
   'detail.noSkills': ['该仓库未检测到 SKILL.md 技能目录', 'No SKILL.md directories detected in this repo'],
   'detail.libraryPath': ['本地路径', 'Local path'],
@@ -283,7 +281,7 @@ const DICT: Dict = {
   'profile.src.none': ['无', 'None'],
 
   'settings.title': ['设置', 'Settings'],
-  'settings.subtitle': ['凭据、路径、安装方式与翻译服务', 'Credentials, paths, install behaviour and translation'],
+  'settings.subtitle': ['凭据、路径与安装方式', 'Credentials, paths and install behaviour'],
   'settings.github': ['GitHub', 'GitHub'],
   'settings.account': ['GitHub 账号', 'GitHub account'],
   'settings.token': ['个人访问令牌', 'Personal Access Token'],
@@ -301,12 +299,6 @@ const DICT: Dict = {
   'settings.libraryHint': ['技能仓库的克隆位置', 'Where skill repositories are cloned'],
   'settings.installMode': ['默认安装方式', 'Default install mode'],
   'settings.installModeHint': ['软链接保持单一真源，复制则与原仓库解耦', 'Symlinks keep one source of truth; copies detach from the clone'],
-  'settings.translation': ['AI 翻译（可选）', 'AI translation (optional)'],
-  'settings.translationHint': ['配置任意 OpenAI 兼容接口，即可为英文简介生成中文翻译', 'Configure any OpenAI-compatible endpoint to translate English descriptions'],
-  'settings.baseUrl': ['接口地址', 'Base URL'],
-  'settings.apiKey': ['API 密钥', 'API Key'],
-  'settings.model': ['模型', 'Model'],
-  'settings.test': ['测试连接', 'Test connection'],
   'settings.testing': ['测试中…', 'Testing…'],
   'settings.catalog': ['精选目录', 'Curated catalog'],
   'settings.catalogHint': ['刷新内置目录的星标数据', 'Refresh star counts for the bundled catalog'],
@@ -380,8 +372,7 @@ const DICT: Dict = {
   'toast.failed': ['操作失败：{msg}', 'Failed: {msg}'],
   'toast.loginOk': ['已登录 @{login}', 'Signed in as @{login}'],
   'toast.copied': ['已复制到剪贴板', 'Copied to clipboard'],
-  'toast.settingsSaved': ['设置已更新', 'Settings updated'],
-  'toast.translationNeeded': ['请先在设置中配置翻译服务', 'Configure a translation provider in Settings first']
+  'toast.settingsSaved': ['设置已更新', 'Settings updated']
 }
 
 export function translate(

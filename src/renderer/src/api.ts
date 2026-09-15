@@ -48,8 +48,6 @@ export interface SkillHubApi {
       opts?: { withSkills?: boolean; withReadme?: boolean }
     ): Promise<{ meta: RepoMeta; skills: SkillEntry[]; readme: string | null }>
     skillFile(fullName: string, branch: string, path: string): Promise<string>
-    translate(text: string, key?: string): Promise<string | null>
-    translateBatch(items: { key: string; text: string }[]): Promise<Record<string, string>>
   }
   catalog: {
     curated(): Promise<{ repos: RepoMeta[]; generatedAt: string | null }>
@@ -154,7 +152,6 @@ export interface SkillHubApi {
       argv: string[]
     }>
     stats(): Promise<Record<string, any>>
-    testTranslation(): Promise<{ ok: boolean; message: string }>
     pickDirectory(): Promise<string | null>
     openPath(p: string): Promise<boolean>
     openExternal(url: string): Promise<boolean>

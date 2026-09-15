@@ -33,9 +33,6 @@ const api = {
     repoDetail: (fullName: string, opts?: any) => call<any>('github:repoDetail', fullName, opts || {}),
     skillFile: (fullName: string, branch: string, path: string) =>
       call<string>('github:skillFile', fullName, branch, path),
-    translate: (text: string, key?: string) => call<string | null>('github:translate', text, key),
-    translateBatch: (items: { key: string; text: string }[]) =>
-      call<Record<string, string>>('github:translateBatch', items)
   },
   catalog: {
     curated: () => call<any>('catalog:curated'),
@@ -119,7 +116,6 @@ const api = {
         argv: string[]
       }>('system:boot'),
     stats: () => call<any>('system:stats'),
-    testTranslation: () => call<any>('system:testTranslation'),
     pickDirectory: () => call<string | null>('system:pickDirectory'),
     openPath: (p: string) => call<boolean>('system:openPath', p),
     openExternal: (url: string) => call<boolean>('system:openExternal', url),

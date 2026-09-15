@@ -16,12 +16,6 @@ export const DEFAULT_SETTINGS: Settings = {
   installMode: 'symlink',
   token: '',
   user: null,
-  translation: {
-    enabled: false,
-    baseUrl: 'https://api.deepseek.com/v1',
-    apiKey: '',
-    model: 'deepseek-chat'
-  },
   enabledAgents: [],
   customAgents: [],
   projectDir: null,
@@ -52,7 +46,6 @@ export const stars = new JsonStore<{
 export const activity = new JsonStore<{ events: ActivityEvent[] }>('activity', { events: [] })
 export const cache = new JsonStore<{
   readme: Record<string, { at: number; text: string }>
-  translate: Record<string, { at: number; zh: string }>
   /**
    * Repos we know about. `origin` matters: search hits must not leak into the
    * growth leaderboard, which should describe the skill ecosystem the user is
@@ -60,7 +53,7 @@ export const cache = new JsonStore<{
    */
   repos: Record<string, { at: number; meta: RepoMeta; origin?: 'search' | 'detail' }>
   skillmeta: Record<string, { at: number; descriptionEn?: string; descriptionZh?: string }>
-}>('cache', { readme: {}, translate: {}, repos: {}, skillmeta: {} })
+}>('cache', { readme: {}, repos: {}, skillmeta: {} })
 
 for (const s of [settings, library, installs, stars, activity, cache]) registerStore(s)
 

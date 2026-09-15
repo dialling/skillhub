@@ -57,7 +57,6 @@ import {
   uninstallAll
 } from './core/installer'
 import { leaderboard, snapshotCoverage, topByStars, type GrowthWindow } from './core/leaderboard'
-import { testProvider, translate, translateBatch, translationAvailable } from './core/translate'
 import { expandPath, userDataDir as stateDir } from './core/paths'
 import { m } from './core/msg'
 import { buildRemoteSkills, parseSkillMd } from './core/skills'
@@ -210,11 +209,6 @@ export function registerIpc(send: Broadcast): void {
     const remote = await getRawFile(fullName, branch, rel)
     return remote || ''
   })
-  handle('github:translate', async (text: string, key?: string) => translate(text, key))
-  handle(
-    'github:translateBatch',
-    async (items: { key: string; text: string }[]) => translateBatch(items)
-  )
 
   /* ----------------------------------------------------------------- catalog */
   handle('catalog:curated', async () => {
@@ -412,11 +406,9 @@ export function registerIpc(send: Broadcast): void {
       libraryDir: settings.get().libraryDir,
       agents: listAgents().length,
       items: items.length,
-      translationAvailable: translationAvailable(),
       settingsPath: join(stateDir(), 'settings.json')
     }
   })
-  handle('system:testTranslation', () => testProvider())
   handle('system:pickDirectory', async () => {
     const res = await dialog.showOpenDialog({
       properties: ['openDirectory', 'createDirectory'],

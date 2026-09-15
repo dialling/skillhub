@@ -17,13 +17,14 @@
     "cli": "node out/main/cli.js",
     "typecheck": "tsc --noEmit",
     "i18n": "node scripts/i18n-audit.mjs",
-    "verify": "npm run typecheck && npm run i18n && npm run xplat && npm run build && node out/main/selftest.js",
+    "verify": "npm run typecheck && npm run i18n && npm run xplat && npm run catalog && npm run build && node out/main/selftest.js",
     "xplat": "node scripts/crossplatform-audit.mjs",
     "dist": "npm run build && electron-builder",
     "dist:mac": "npm run build && electron-builder --mac",
     "dist:win": "npm run build && electron-builder --win",
     "dist:linux": "npm run build && electron-builder --linux",
-    "dist:dir": "npm run build && electron-builder --dir"
+    "dist:dir": "npm run build && electron-builder --dir",
+    "catalog": "node scripts/fill-missing-blurbs.mjs --check && node scripts/classify-catalog.mjs --check"
   },
   "keywords": [
     "agent-skills",

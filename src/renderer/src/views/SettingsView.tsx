@@ -17,7 +17,6 @@ import {
   LogOut,
   Palette
 } from 'lucide-react'
-import type { TranslationConfig } from '@shared/types'
 import { THEMES, THEME_ORDER, type ThemeId } from '../theme'
 import { api, fmtBytes } from '../api'
 import { useStore } from '../store'
@@ -36,9 +35,6 @@ export function SettingsView(): React.JSX.Element {
 
   const [token, setToken] = useState(settings?.token || '')
   const [libraryDir, setLibraryDir] = useState(settings?.libraryDir || '')
-  const [baseUrl, setBaseUrl] = useState(settings?.translation.baseUrl || '')
-  const [apiKey, setApiKey] = useState(settings?.translation.apiKey || '')
-  const [model, setModel] = useState(settings?.translation.model || '')
   const [sys, setSys] = useState<Record<string, any> | null>(null)
   const [testing, setTesting] = useState(false)
   const [showToken, setShowToken] = useState(false)
@@ -57,22 +53,7 @@ export function SettingsView(): React.JSX.Element {
   useEffect(() => {
     setToken(settings?.token || '')
     setLibraryDir(settings?.libraryDir || '')
-    setBaseUrl(settings?.translation.baseUrl || '')
-    setApiKey(settings?.translation.apiKey || '')
-    setModel(settings?.translation.model || '')
   }, [settings])
-
-  const saveTranslation = async (patch: Partial<TranslationConfig>): Promise<void> => {
-    await updateSettings({
-      translation: {
-        ...(settings?.translation as any),
-        baseUrl,
-        apiKey,
-        model,
-        ...patch
-      }
-    })
-  }
 
   return (
     <div className="view" style={{ maxWidth: 980 }}>
@@ -343,68 +324,6 @@ export function SettingsView(): React.JSX.Element {
               </button>
             </div>
             <div className="hint">{t('settings.installModeHint')}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Translation ------------------------------------------------------ */}
-      <div className="panel" style={{ marginBottom: 16 }}>
-        <div className="panel-head">
-          <Languages size={13} />
-          {t('settings.translation')}
-          <div className="right">
-            <button
-              className={`switch ${settings?.translation.enabled ? 'on' : ''}`}
-              onClick={() => void saveTranslation({ enabled: !settings?.translation.enabled })}
-            />
-          </div>
-        </div>
-        <div className="panel-body">
-          <div className="hint" style={{ marginBottom: 14 }}>
-            {t('settings.translationHint')}
-          </div>
-          <div className="row" style={{ alignItems: 'flex-end', gap: 10 }}>
-            <div className="field" style={{ flex: 1, marginBottom: 0 }}>
-              <label>{t('settings.baseUrl')}</label>
-              <input className="input" value={baseUrl} spellCheck={false} onChange={(e) => setBaseUrl(e.target.value)} />
-            </div>
-            <div className="field" style={{ flex: 1, marginBottom: 0 }}>
-              <label>{t('settings.model')}</label>
-              <input className="input" value={model} spellCheck={false} onChange={(e) => setModel(e.target.value)} />
-            </div>
-          </div>
-          <div className="field" style={{ marginTop: 12 }}>
-            <label>{t('settings.apiKey')}</label>
-            <div className="row">
-              <input
-                className="input"
-                type="password"
-                value={apiKey}
-                spellCheck={false}
-                placeholder="sk-…"
-                onChange={(e) => setApiKey(e.target.value)}
-              />
-              <button
-                className="btn"
-                disabled={testing}
-                onClick={async () => {
-                  setTesting(true)
-                  try {
-                    await saveTranslation({})
-                    const res = await api.system.testTranslation()
-                    toast(res.ok ? 'success' : 'error', res.message)
-                  } finally {
-                    setTesting(false)
-                  }
-                }}
-              >
-                {testing ? <span className="spinner" /> : <FlaskConical size={13} />}
-                {t('settings.test')}
-              </button>
-              <button className="btn primary" onClick={() => void saveTranslation({})}>
-                {t('common.save')}
-              </button>
-            </div>
           </div>
         </div>
       </div>

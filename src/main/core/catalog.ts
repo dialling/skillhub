@@ -29,15 +29,22 @@ export async function curatedCatalog(): Promise<RepoMeta[]> {
   const repos = bundled.repos.map((r) => {
     const fresh = repoCache[r.fullName]
     if (!fresh) return { ...r, topics: cleanTopics(r.topics) }
-    // Live API metadata wins on facts (stars, pushedAt), but the bundled
-    // catalog owns the skill list: it has been through the cleaning pass, while
-    // anything cached from a raw tree crawl has not.
+    // Live API metadata wins on *facts* (stars, forks, pushedAt). Everything
+    // the bundled catalog authors must be restored afterwards, because
+    // `...fresh.meta` overwrites the whole object indiscriminately — and for a
+    // repository with no GitHub description the API value is empty, which
+    // silently blanked hand-written copy (JimLiu/baoyu-skills, MiniMax-AI/skills).
     const merged = {
       ...r,
       ...fresh.meta,
+      // cleaned by the skill-dir pass; a raw tree crawl is not
       skillDirs: r.skillDirs,
       skillCount: r.skillCount,
       skillDirsAll: r.skillDirsAll,
+      // classification output
+      repoKind: r.repoKind,
+      repoFacts: r.repoFacts,
+      // authored copy
       fn: r.fn,
       category: r.category,
       taglineZh: r.taglineZh,
@@ -45,6 +52,7 @@ export async function curatedCatalog(): Promise<RepoMeta[]> {
       useWhen: r.useWhen,
       useWhenEn: r.useWhenEn,
       aboutZh: r.aboutZh,
+      descriptionEn: r.descriptionEn || fresh.meta.descriptionEn,
       descriptionZh: r.descriptionZh || fresh.meta.descriptionZh
     }
     return { ...merged, topics: cleanTopics(merged.topics) }
