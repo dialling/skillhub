@@ -173,6 +173,8 @@ const DICT: Dict = {
   'launch.start': ['启动', 'Launch'],
   'activity.launched': ['启动 {skill} · {agent}', 'Launched {skill} · {agent}'],
   'library.discover': ['本机已发现', 'Found on this machine'],
+  'mySkills.title': ['我的技能', 'My skills'],
+  'mySkills.hint': ['这台电脑上已有的全部技能，按名称归并（同一个技能装到多个智能体只占一行）。{n} 个能在商店里找到来源。', 'Every skill on this machine, merged by name so one skill installed into several agents is a single row. {n} of them map to a source in the store.'],
   'library.discoverHint': ['这些技能已经装在你电脑上了，其中 {n} 个能在商店里找到对应来源。', 'These skills are already on your machine; {n} of them map to a source in the store.'],
   'library.discoverScan': ['重新扫描', 'Rescan'],
   'library.discoverEmpty': ['没有在本机的智能体目录里发现已有技能', 'No existing skills found in your agent directories'],

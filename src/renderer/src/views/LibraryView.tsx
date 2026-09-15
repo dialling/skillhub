@@ -15,7 +15,8 @@ import {
   Plus,
   ChevronDown,
   ChevronRight,
-  Rocket
+  Rocket,
+  Bot
 } from 'lucide-react'
 import type { LibraryItem } from '@shared/types'
 import { fmtRelative, fmtStars, gradientFor } from '../api'
@@ -120,9 +121,7 @@ export function LibraryView(): React.JSX.Element {
         </div>
       </div>
 
-      <InstalledSkillsPanel />
-
-      <DiscoveryPanel />
+      <MySkillsPanel />
 
       {library.length === 0 ? (
         <div className="empty">
@@ -166,102 +165,85 @@ export function LibraryView(): React.JSX.Element {
 }
 
 /**
- * Every installed skill, with a Launch button.
+ * Every skill on this machine, in one list.
  *
- * This is the payoff of the whole app: pick a skill, pick a workspace and an
- * agent, and start working — no manual folder shuffling.
+ * Previously this was two panels — "installed by SkillHub" and "found on this
+ * machine" — which meant the same skill could show up twice and the user had to
+ * know which panel owned which action. There is really only one question
+ * ("what skills do I have?") so there is one list: each row shows where it
+ * lives, whether the store knows its source, and can be launched either way.
  */
-function InstalledSkillsPanel(): React.JSX.Element | null {
-  const t = useStore((s) => s.t)
-  const library = useStore((s) => s.library)
-  const installMap = useStore((s) => s.installMap)
-  const agents = useStore((s) => s.agents)
-  const openLaunch = useStore((s) => s.openLaunch)
-  const uninstall = useStore((s) => s.uninstall)
-
-  const rows = useMemo(() => {
-    const out: { skill: (typeof library)[number]['skills'][number]; repo: string; agentIds: string[] }[] = []
-    for (const item of library) {
-      for (const skill of item.skills) {
-        const agentIds = installMap[skill.id] || []
-        if (agentIds.length) out.push({ skill, repo: item.fullName, agentIds })
-      }
-    }
-    return out.sort((a, b) => a.skill.name.localeCompare(b.skill.name))
-  }, [library, installMap])
-
-  if (!rows.length) return null
-
-  return (
-    <div className="panel" style={{ marginBottom: 18 }}>
-      <div className="panel-head">
-        <Rocket size={13} />
-        {t('library.installedSkills')}
-        <div className="right">
-          <span className="chip mono">{rows.length}</span>
-        </div>
-      </div>
-      <div className="panel-body">
-        <div className="dim" style={{ fontSize: 12, marginBottom: 12, lineHeight: 1.6 }}>
-          {t('library.installedSkillsHint')}
-        </div>
-        <div className="installed-grid">
-          {rows.map(({ skill, repo, agentIds }) => (
-            <div className="installed-card" key={skill.id}>
-              <div className="ic-main">
-                <div className="ic-name">{skill.name}</div>
-                <div className="ic-meta" title={repo}>
-                  {agentIds
-                    .map((id) => agents.find((a) => a.id === id)?.name || id)
-                    .join(t('common.listSeparator'))}
-                </div>
-              </div>
-              <button className="btn ghost sm danger" title={t('detail.uninstall')} onClick={() => void uninstall(skill.id, agentIds[0])}>
-                <Trash2 size={12} />
-              </button>
-              <button
-                className="btn primary sm"
-                onClick={() => void openLaunch({ from: 'library', skillId: skill.id })}
-              >
-                <Rocket size={12} />
-                {t('launch.action')}
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-/**
- * Skills that already exist in the machine's agent directories, matched back to
- * catalog entries so the user can add the source instead of hunting for it.
- */
-function DiscoveryPanel(): React.JSX.Element | null {
+function MySkillsPanel(): React.JSX.Element | null {
   const t = useStore((s) => s.t)
   const discovered = useStore((s) => s.discovered)
   const discovering = useStore((s) => s.discovering)
   const scanLocal = useStore((s) => s.scanLocal)
   const addToLibrary = useStore((s) => s.addToLibrary)
-  const library = useStore((s) => s.library)
+  const uninstall = useStore((s) => s.uninstall)
   const openLaunch = useStore((s) => s.openLaunch)
+  const library = useStore((s) => s.library)
+  const installMap = useStore((s) => s.installMap)
   const [open, setOpen] = useState(true)
 
-  const matched = discovered.filter((d) => d.matchedRepo)
-  const inLibrary = new Set(library.map((i) => i.fullName))
-  const adoptable = [...new Set(matched.map((d) => d.matchedRepo!))].filter((r) => !inLibrary.has(r))
-  const agents = [...new Set(discovered.map((d) => d.agentName))]
+  /** One row per skill name, collapsing the copies across agent directories. */
+  const rows = useMemo(() => {
+    const byName = new Map<
+      string,
+      {
+        name: string
+        realPath: string
+        agents: string[]
+        managed: boolean
+        matchedRepo: string | null
+        description?: string
+        hasSkillFile: boolean
+      }
+    >()
+    for (const d of discovered) {
+      const key = d.folder.toLowerCase()
+      const prev = byName.get(key)
+      if (prev) {
+        if (!prev.agents.includes(d.agentName)) prev.agents.push(d.agentName)
+        prev.managed = prev.managed || d.managed
+        prev.matchedRepo = prev.matchedRepo || d.matchedRepo
+        prev.hasSkillFile = prev.hasSkillFile || d.hasSkillFile
+        if (!prev.description) prev.description = d.description
+      } else {
+        byName.set(key, {
+          name: d.folder,
+          realPath: d.realPath,
+          agents: [d.agentName],
+          managed: d.managed,
+          matchedRepo: d.matchedRepo,
+          description: d.description,
+          hasSkillFile: d.hasSkillFile
+        })
+      }
+    }
+    return [...byName.values()].sort((a, b) => a.name.localeCompare(b.name))
+  }, [discovered])
+
+  /** Library skill ids by folder name, so a launch can use the managed copy. */
+  const libraryByName = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const item of library) for (const sk of item.skills) map.set(sk.name.toLowerCase(), sk.id)
+    return map
+  }, [library])
+
+  const inLibraryRepos = new Set(library.map((i) => i.fullName))
+  const adoptable = [...new Set(rows.map((r) => r.matchedRepo).filter(Boolean) as string[])].filter(
+    (r) => !inLibraryRepos.has(r)
+  )
 
   if (!discovered.length && !discovering) return null
 
   return (
     <div className="panel" style={{ marginBottom: 18 }}>
       <div className="panel-head">
-        <Search size={13} />
-        {t('library.discover')}
+        <Bot size={13} />
+        {t('mySkills.title')}
         <div className="right">
-          <span className="chip mono">{discovered.length}</span>
+          <span className="chip mono">{rows.length}</span>
           <button className="btn ghost sm" onClick={() => void scanLocal()} disabled={discovering}>
             {discovering ? <span className="spinner" /> : <RefreshCw size={12} />}
             {t('library.discoverScan')}
@@ -274,20 +256,19 @@ function DiscoveryPanel(): React.JSX.Element | null {
 
       {open && (
         <div className="panel-body">
-          {discovered.length === 0 ? (
+          {rows.length === 0 ? (
             <div className="dim" style={{ fontSize: 12 }}>
               {t('library.discoverEmpty')}
             </div>
           ) : (
             <>
               <div className="dim" style={{ fontSize: 12, marginBottom: 12, lineHeight: 1.6 }}>
-                {t('library.discoverHint', { n: matched.length })}
-                {agents.length > 0 && ` · ${t('library.discoverAgents')} ${agents.slice(0, 3).join(', ')}`}
+                {t('mySkills.hint', { n: rows.filter((r) => r.matchedRepo).length })}
               </div>
 
               {adoptable.length > 0 && (
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
-                  {adoptable.slice(0, 12).map((repo) => (
+                  {adoptable.slice(0, 10).map((repo) => (
                     <button key={repo} className="chip clickable" onClick={() => void addToLibrary(repo)}>
                       <Plus size={10} />
                       {repo}
@@ -296,40 +277,67 @@ function DiscoveryPanel(): React.JSX.Element | null {
                 </div>
               )}
 
-              <div className="discover-grid">
-                {discovered.slice(0, 18).map((d) => (
-                  <div className="discover-card" key={d.realPath}>
-                    <span className="dot" style={{ width: 7, height: 7, borderRadius: '50%', flex: 'none', background: d.matchedRepo ? 'var(--ok)' : 'var(--text-3)' }} />
-                    <div className="dc-main">
-                      <div className="dc-name">{d.folder}</div>
-                      <div className="dc-meta" title={d.path}>
-                        {d.matchedRepo || t('library.discoverUnmatched')} · {d.agentName}
-                        {d.managed ? ` · ${t('library.discoverManaged')}` : ''}
+              <div className="myskills">
+                {rows.map((r) => {
+                  const libId = libraryByName.get(r.name.toLowerCase())
+                  const agentIds = libId ? installMap[libId] || [] : []
+                  return (
+                    <div className="myskill-row" key={r.name}>
+                      <span
+                        className="ms-state"
+                        style={{ background: r.matchedRepo ? 'var(--ok)' : 'var(--text-3)' }}
+                        title={r.matchedRepo ? r.matchedRepo : t('library.discoverUnmatched')}
+                      />
+                      <div className="ms-main">
+                        <div className="ms-name">
+                          {r.name}
+                          {r.managed && <span className="chip green mono">{t('library.discoverManaged')}</span>}
+                        </div>
+                        <div className="ms-meta" title={r.realPath}>
+                          {r.agents.join(t('common.listSeparator'))}
+                          {r.matchedRepo ? ` · ${r.matchedRepo}` : ` · ${t('library.discoverUnmatched')}`}
+                        </div>
                       </div>
-                    </div>
-                    {d.matchedRepo && !inLibrary.has(d.matchedRepo) && (
-                      <button className="btn ghost sm" onClick={() => void addToLibrary(d.matchedRepo!)}>
-                        {t('library.discoverAdopt')}
+
+                      {r.matchedRepo && !inLibraryRepos.has(r.matchedRepo) && (
+                        <button
+                          className="btn ghost sm"
+                          title={t('library.discoverAdopt')}
+                          onClick={() => void addToLibrary(r.matchedRepo!)}
+                        >
+                          <Plus size={12} />
+                        </button>
+                      )}
+                      {agentIds.length > 0 && (
+                        <button
+                          className="btn ghost sm danger"
+                          title={t('detail.uninstall')}
+                          onClick={() => void uninstall(libId!, agentIds[0])}
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      )}
+                      <button
+                        className="btn primary sm"
+                        onClick={() =>
+                          void openLaunch(
+                            libId
+                              ? { from: 'library', skillId: libId }
+                              : {
+                                  from: 'local',
+                                  path: r.realPath,
+                                  name: r.name,
+                                  description: r.description
+                                }
+                          )
+                        }
+                      >
+                        <Rocket size={12} />
+                        {t('launch.action')}
                       </button>
-                    )}
-                    {/* A skill sitting in an agent directory is launchable even
-                        when the library knows nothing about it. */}
-                    <button
-                      className="btn sm"
-                      title={t('launch.action')}
-                      onClick={() =>
-                        void openLaunch({
-                          from: 'local',
-                          path: d.realPath,
-                          name: d.folder,
-                          description: d.description
-                        })
-                      }
-                    >
-                      <Rocket size={12} />
-                    </button>
-                  </div>
-                ))}
+                    </div>
+                  )
+                })}
               </div>
             </>
           )}

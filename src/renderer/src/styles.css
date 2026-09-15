@@ -3049,3 +3049,51 @@ button.status-item:hover {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Unified "my skills" list: one row per skill, collapsed across agents. */
+.myskills {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.myskill-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 11px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--bg-3), var(--bg-2));
+  transition: border-color 0.14s;
+}
+.myskill-row:hover {
+  border-color: var(--border-3);
+}
+.myskill-row .ms-state {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: none;
+}
+.myskill-row .ms-main {
+  min-width: 0;
+  flex: 1;
+}
+.myskill-row .ms-name {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-0);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.myskill-row .ms-meta {
+  font-size: 10.5px;
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
