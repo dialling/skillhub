@@ -135,17 +135,24 @@ export const THEMES: Record<ThemeId, Theme> = {
     zh: '深空蓝',
     en: 'Azure',
     scheme: 'dark',
-    swatch: ['#2f81f7', '#22d3ee', '#8b5cf6'],
+    swatch: ['#3272d9', '#22d3ee', '#8b5cf6'],
     vars: {
       ...surfaceVars(DARK_NEUTRAL),
       ...accentVars({
-        accent: '#2f81f7',
-        accentHi: '#58a6ff',
-        accentDeep: '#1f6fe0',
-        accentRgb: '47, 129, 247',
+        // Deeper and much less saturated than the GitHub blue this started as
+        // (215° 93% 58% → 217° 69% 52%). Two reasons, and the second is the
+        // real one: the vivid version read as neon against the dark surfaces
+        // rather than as a considered accent, and white text on it only
+        // reached 3.75:1 — below AA. Deepening lifts that to 4.62:1.
+        // `--accent` is never used for text (that is always `--accent-hi`), so
+        // the depth costs nothing in legibility.
+        accent: '#3272d9',
+        accentHi: '#5c9df5',
+        accentDeep: '#234f9c',
+        accentRgb: '50, 114, 217',
         second: '#22d3ee',
         third: '#8b5cf6',
-        ambient1: 'rgba(47, 129, 247, 0.11)',
+        ambient1: 'rgba(50, 114, 217, 0.13)',
         ambient2: 'rgba(139, 92, 246, 0.09)'
       })
     }
