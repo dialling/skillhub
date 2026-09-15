@@ -54,7 +54,6 @@ function surfaceVars(s: SurfaceSpec): Record<string, string> {
     '--bg-2': s.bg[2],
     '--bg-3': s.bg[3],
     '--bg-4': s.bg[4],
-    '--bg-5': s.bg[5],
     '--text-0': s.text[0],
     '--text-1': s.text[1],
     '--text-2': s.text[2],
@@ -69,7 +68,6 @@ function surfaceVars(s: SurfaceSpec): Record<string, string> {
     // Derived from the surface ramp so panels can fade toward "darker surface"
     // without hardcoding a dark colour that breaks light schemes.
     '--bg0-rgb': hexToRgb(s.bg[0]),
-    '--bg2-rgb': hexToRgb(s.bg[2]),
     '--field-rgb': s.field,
     '--art-fade-rgb': s.artFade,
     '--scrim-rgb': s.scrim,
@@ -86,7 +84,6 @@ function surfaceVars(s: SurfaceSpec): Record<string, string> {
 interface AccentSpec {
   accent: string
   accentHi: string
-  accentDeep: string
   accentRgb: string
   second: string
   third: string
@@ -105,7 +102,6 @@ function accentVars(a: AccentSpec): Record<string, string> {
     // colour by assumption.
     '--on-accent': a.onAccent || '#ffffff',
     '--accent-hi': a.accentHi,
-    '--accent-deep': a.accentDeep,
     '--accent-rgb': a.accentRgb,
     '--accent-dim': `rgba(${a.accentRgb}, 0.16)`,
     '--accent-soft': `rgba(${a.accentRgb}, 0.09)`,
@@ -154,7 +150,6 @@ export const THEMES: Record<ThemeId, Theme> = {
         // the depth costs nothing in legibility.
         accent: '#3d5fd9',
         accentHi: '#7793f7',
-        accentDeep: '#27409a',
         accentRgb: '61, 95, 217',
         second: '#22d3ee',
         third: '#8b5cf6',
@@ -189,7 +184,6 @@ export const THEMES: Record<ThemeId, Theme> = {
         // readable, which darkening could only trade one for the other.
         accent: '#4c9aff',
         accentHi: '#7ab8ff',
-        accentDeep: '#2b7ae0',
         accentRgb: '76, 154, 255',
         onAccent: '#08101f',
         second: '#00d4c8',
@@ -225,7 +219,6 @@ export const THEMES: Record<ThemeId, Theme> = {
         // readable, which darkening could only trade one for the other.
         accent: '#9aa4b2',
         accentHi: '#cfd6df',
-        accentDeep: '#6b7482',
         accentRgb: '154, 164, 178',
         onAccent: '#12161c',
         second: '#8b949e',
@@ -261,7 +254,6 @@ export const THEMES: Record<ThemeId, Theme> = {
         // readable, which darkening could only trade one for the other.
         accent: '#2ea043',
         accentHi: '#56d364',
-        accentDeep: '#1f7a33',
         accentRgb: '46, 160, 67',
         onAccent: '#04140a',
         second: '#7ee787',
@@ -297,7 +289,6 @@ export const THEMES: Record<ThemeId, Theme> = {
         // readable, which darkening could only trade one for the other.
         accent: '#8b5cf6',
         accentHi: '#a78bfa',
-        accentDeep: '#6d3fe0',
         accentRgb: '139, 92, 246',
         onAccent: '#0a0418',
         second: '#d946ef',
@@ -329,7 +320,6 @@ export const THEMES: Record<ThemeId, Theme> = {
       ...accentVars({
         accent: '#d29922',
         accentHi: '#e8b845',
-        accentDeep: '#a8781a',
         accentRgb: '210, 153, 34',
         onAccent: '#1a1408',
         second: '#e08c4a',
@@ -361,7 +351,6 @@ export const THEMES: Record<ThemeId, Theme> = {
       ...accentVars({
         accent: '#1f6feb',
         accentHi: '#3b82f6',
-        accentDeep: '#1858bd',
         accentRgb: '31, 111, 235',
         second: '#0891b2',
         third: '#7c3aed',
@@ -408,7 +397,6 @@ export const THEMES: Record<ThemeId, Theme> = {
       ...accentVars({
         accent: '#0f766e',
         accentHi: '#14958a',
-        accentDeep: '#0b5d57',
         accentRgb: '15, 118, 110',
         second: '#b45309',
         third: '#7c2d12',
