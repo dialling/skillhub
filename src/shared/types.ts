@@ -3,10 +3,12 @@
  */
 
 /** Provenance label: who made it / what kind of repo it is (secondary axis). */
-export type Category = 'spec' | 'official' | 'collection' | 'tooling' | 'framework' | 'domain'
+export type Category = 'spec' | 'official' | 'collection' | 'tooling' | 'framework' | 'domain' | 'community' | 'vendor'
 
 export const CATEGORY_LABELS: Record<Category, { zh: string; en: string }> = {
   spec: { zh: '规范标准', en: 'Spec' },
+  community: { zh: '社区', en: 'Community' },
+  vendor: { zh: '厂商出品', en: 'Vendor' },
   official: { zh: '官方出品', en: 'Official' },
   collection: { zh: '技能合集', en: 'Collection' },
   tooling: { zh: '管理工具', en: 'Tooling' },
@@ -74,6 +76,20 @@ export const REPO_KIND_LABELS: Record<RepoKind, { zh: string; en: string }> = {
 }
 
 /** A GitHub repository that can act as a skill source (or a tooling repo). */
+/**
+ * Category labels, without the assumption that the value is known.
+ *
+ * A catalog is data, and data arrives from outside this build: a category added
+ * to a published catalog but not to this enum used to make `CATEGORY_LABELS[x].zh`
+ * throw, which took the entire window down to a blank page. An unrecognised
+ * value is a missing label, not a crash.
+ */
+export function categoryLabel(cat: string | undefined, lang: 'zh' | 'en'): string | null {
+  if (!cat) return null
+  const entry = (CATEGORY_LABELS as Record<string, { zh: string; en: string }>)[cat]
+  return entry ? entry[lang] : cat
+}
+
 export interface RepoMeta {
   fullName: string
   owner: string

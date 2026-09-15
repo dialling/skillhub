@@ -20,7 +20,7 @@ import {
   X,
   Info
 } from 'lucide-react'
-import { CATEGORY_LABELS, type AgentTarget } from '@shared/types'
+import { categoryLabel, type AgentTarget } from '@shared/types'
 import { api, fmtStars, fmtRelative, gradientFor } from '../api'
 import { useStore } from '../store'
 import { Markdown } from './Markdown'
@@ -179,7 +179,7 @@ export function DetailPanel(): React.JSX.Element | null {
               {meta?.name || detail.fullName.split('/')[1]}
               {meta?.category && (
                 <span className="chip">
-                  {lang === 'zh' ? CATEGORY_LABELS[meta.category].zh : CATEGORY_LABELS[meta.category].en}
+                  {categoryLabel(meta.category, lang)}
                 </span>
               )}
               {inLibrary && (

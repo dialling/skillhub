@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Trophy, TrendingUp, Star, RefreshCw, Info, Database } from 'lucide-react'
 import type { RepoMeta } from '@shared/types'
-import { CATEGORY_LABELS } from '@shared/types'
+import { categoryLabel } from '@shared/types'
 import { api, fmtStars } from '../api'
 import { useStore } from '../store'
 import { sourceKey } from '../components/DetailPanel'
@@ -162,7 +162,7 @@ export function ChartsView(): React.JSX.Element {
                   <div className="n">{row.name}</div>
                   <div className="o">
                     {row.owner}
-                    {row.category ? ` · ${lang === 'zh' ? CATEGORY_LABELS[row.category].zh : CATEGORY_LABELS[row.category].en}` : ''}
+                    {categoryLabel(row.category, lang) ? ` · ${categoryLabel(row.category, lang)}` : ''}
                   </div>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -192,7 +192,7 @@ export function ChartsView(): React.JSX.Element {
                   <div className="n">{repo.name}</div>
                   <div className="o">
                     {repo.owner}
-                    {repo.category ? ` · ${lang === 'zh' ? CATEGORY_LABELS[repo.category].zh : CATEGORY_LABELS[repo.category].en}` : ''}
+                    {categoryLabel(repo.category, lang) ? ` · ${categoryLabel(repo.category, lang)}` : ''}
                   </div>
                 </div>
                 <div className="board-bar">

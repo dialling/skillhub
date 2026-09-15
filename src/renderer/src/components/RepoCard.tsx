@@ -2,7 +2,7 @@ import { Star, Check, Plus, ExternalLink, Layers } from 'lucide-react'
 import type { RepoMeta } from '@shared/types'
 import { fmtRelative, fmtStars, gradientFor } from '../api'
 import { useStore } from '../store'
-import { CATEGORY_LABELS, FN_LABELS, REPO_KIND_LABELS, type FnCategory } from '@shared/types'
+import { categoryLabel, FN_LABELS, REPO_KIND_LABELS, type FnCategory } from '@shared/types'
 import { fnColor } from './Sidebar'
 
 export function RepoCard({
@@ -36,7 +36,7 @@ export function RepoCard({
   const tagline =
     lang === 'zh' ? repo.taglineZh || repo.descriptionZh || repo.descriptionEn : repo.taglineEn || repo.descriptionEn || ''
   const fn = repo.fn as FnCategory | undefined
-  const category = repo.category ? CATEGORY_LABELS[repo.category] : null
+  const categoryText = categoryLabel(repo.category, lang)
   const skillCount = repo.skillCount ?? repo.skillDirs?.length ?? 0
   const freshness = repo.pushedAt ? fmtRelative(Date.parse(repo.pushedAt), lang) : ''
 
@@ -80,7 +80,7 @@ export function RepoCard({
               trust marker (skills.sh has a whole Official nav for it); labels
               like 垂直领域 / 技能合集 just restate what the card already shows. */}
           {repo.category === 'official' && (
-            <span className="chip green">{lang === 'zh' ? category!.zh : category!.en}</span>
+            <span className="chip green">{categoryText}</span>
           )}
           {skillCount > 0 && (
             <span className="chip mono">

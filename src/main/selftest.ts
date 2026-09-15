@@ -24,6 +24,7 @@ import {
   viewer
 } from './core/github'
 import { curatedCatalog } from './core/catalog'
+import { CATEGORY_LABELS, FN_LABELS, REPO_KIND_LABELS } from '../shared/types'
 import { addRepo, libraryItems, removeItem } from './core/library'
 import { installSkills, installedSkills, uninstall } from './core/installer'
 import { buildRemoteSkills } from './core/skills'
@@ -150,6 +151,34 @@ async function main(): Promise<number> {
   // A description copied from the tagline means nobody actually wrote it.
   const lazyAbout = about.filter((a) => a.zh && a.zh.trim() === (a.repo.taglineZh ?? '').trim())
   check('no Chinese description just repeats the tagline', lazyAbout.length === 0, `${lazyAbout.length} offenders`)
+  /*
+    Every value the data uses must exist in the label tables.
+    `CATEGORY_LABELS[x].zh` on an unknown category threw, and because the
+    leaderboard renders it without a guard the whole window went blank — a data
+    mistake in one catalog entry took down the entire UI. Checking the data here
+    is what stops that class of failure, not another try/catch at the call site.
+  */
+  const badCategories = catalog.filter((r) => r.category && !(r.category in CATEGORY_LABELS))
+  check(
+    'every category in the catalog has a label',
+    badCategories.length === 0,
+    badCategories.length
+      ? [...new Set(badCategories.map((r) => `${r.category} (${r.fullName})`))].join(', ')
+      : `${new Set(catalog.map((r) => r.category)).size} distinct`
+  )
+  const badFn = catalog.filter((r) => r.fn && !(r.fn in FN_LABELS))
+  check(
+    'every functional category in the catalog has a label',
+    badFn.length === 0,
+    badFn.length ? [...new Set(badFn.map((r) => r.fn))].join(', ') : 'ok'
+  )
+  const badKind = catalog.filter((r) => r.repoKind && !(r.repoKind in REPO_KIND_LABELS))
+  check(
+    'every repo kind in the catalog has a label',
+    badKind.length === 0,
+    badKind.length ? [...new Set(badKind.map((r) => r.repoKind))].join(', ') : 'ok'
+  )
+
   const withSkills = catalog.filter((r) => (r.skillDirs || []).length > 0)
   check('repos with SKILL.md dirs', withSkills.length > 0, `${withSkills.length}/${catalog.length}`)
 
