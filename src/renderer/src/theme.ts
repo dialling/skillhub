@@ -169,7 +169,7 @@ export const THEMES: Record<ThemeId, Theme> = {
     zh: '纯黑 OLED',
     en: 'Obsidian',
     scheme: 'dark',
-    swatch: ['#0067ed', '#00d4c8', '#7c5cff'],
+    swatch: ['#4c9aff', '#00d4c8', '#7c5cff'],
     vars: {
       ...surfaceVars({
         bg: ['#000000', '#030304', '#08080a', '#101013', '#18181c', '#222227'],
@@ -183,19 +183,18 @@ export const THEMES: Record<ThemeId, Theme> = {
         scrim: '0, 0, 0'
       }),
       ...accentVars({
-        // White text on a filled button needs 4.5:1. These accents were light
-        // enough that white text landed between 2.5:1 and 4.2:1 — legible
-        // enough to ship unnoticed, bad enough to strain on the grey one. Each
-        // accent is darkened along its own hue until white clears 5:1.
-        // `accentHi` is deliberately untouched: it carries all the text and
-        // icons at 7:1 or better, so no legibility was traded away.
-        accent: '#0067ed',
+        // Restored to the palette's original brightness. The contrast problem
+        // these had is solved by `onAccent` below instead of by darkening the
+        // colour — the accent keeps its character and the button text stays
+        // readable, which darkening could only trade one for the other.
+        accent: '#4c9aff',
         accentHi: '#7ab8ff',
-        accentDeep: '#004cb0',
-        accentRgb: '0, 103, 237',
+        accentDeep: '#2b7ae0',
+        accentRgb: '76, 154, 255',
+        onAccent: '#08101f',
         second: '#00d4c8',
         third: '#7c5cff',
-        ambient1: 'rgba(0, 103, 237, 0.13)',
+        ambient1: 'rgba(76, 154, 255, 0.10)',
         ambient2: 'rgba(124, 92, 255, 0.08)'
       })
     }
@@ -220,19 +219,18 @@ export const THEMES: Record<ThemeId, Theme> = {
         scrim: '8, 9, 10'
       }),
       ...accentVars({
-        // White text on a filled button needs 4.5:1. These accents were light
-        // enough that white text landed between 2.5:1 and 4.2:1 — legible
-        // enough to ship unnoticed, bad enough to strain on the grey one. Each
-        // accent is darkened along its own hue until white clears 5:1.
-        // `accentHi` is deliberately untouched: it carries all the text and
-        // icons at 7:1 or better, so no legibility was traded away.
-        accent: '#637083',
+        // Restored to the palette's original brightness. The contrast problem
+        // these had is solved by `onAccent` below instead of by darkening the
+        // colour — the accent keeps its character and the button text stays
+        // readable, which darkening could only trade one for the other.
+        accent: '#9aa4b2',
         accentHi: '#cfd6df',
-        accentDeep: '#495260',
-        accentRgb: '99, 112, 131',
+        accentDeep: '#6b7482',
+        accentRgb: '154, 164, 178',
+        onAccent: '#12161c',
         second: '#8b949e',
         third: '#6e7681',
-        ambient1: 'rgba(99, 112, 131, 0.13)',
+        ambient1: 'rgba(154, 164, 178, 0.09)',
         ambient2: 'rgba(110, 118, 129, 0.06)'
       })
     }
@@ -257,19 +255,18 @@ export const THEMES: Record<ThemeId, Theme> = {
         scrim: '3, 7, 5'
       }),
       ...accentVars({
-        // White text on a filled button needs 4.5:1. These accents were light
-        // enough that white text landed between 2.5:1 and 4.2:1 — legible
-        // enough to ship unnoticed, bad enough to strain on the grey one. Each
-        // accent is darkened along its own hue until white clears 5:1.
-        // `accentHi` is deliberately untouched: it carries all the text and
-        // icons at 7:1 or better, so no legibility was traded away.
-        accent: '#247e35',
+        // Restored to the palette's original brightness. The contrast problem
+        // these had is solved by `onAccent` below instead of by darkening the
+        // colour — the accent keeps its character and the button text stays
+        // readable, which darkening could only trade one for the other.
+        accent: '#2ea043',
         accentHi: '#56d364',
-        accentDeep: '#164e21',
-        accentRgb: '36, 126, 53',
+        accentDeep: '#1f7a33',
+        accentRgb: '46, 160, 67',
+        onAccent: '#04140a',
         second: '#7ee787',
         third: '#1f9e8f',
-        ambient1: 'rgba(36, 126, 53, 0.13)',
+        ambient1: 'rgba(46, 160, 67, 0.13)',
         ambient2: 'rgba(31, 158, 143, 0.07)'
       })
     }
@@ -294,19 +291,18 @@ export const THEMES: Record<ThemeId, Theme> = {
         scrim: '4, 3, 9'
       }),
       ...accentVars({
-        // White text on a filled button needs 4.5:1. These accents were light
-        // enough that white text landed between 2.5:1 and 4.2:1 — legible
-        // enough to ship unnoticed, bad enough to strain on the grey one. Each
-        // accent is darkened along its own hue until white clears 5:1.
-        // `accentHi` is deliberately untouched: it carries all the text and
-        // icons at 7:1 or better, so no legibility was traded away.
-        accent: '#7d49f5',
+        // Restored to the palette's original brightness. The contrast problem
+        // these had is solved by `onAccent` below instead of by darkening the
+        // colour — the accent keeps its character and the button text stays
+        // readable, which darkening could only trade one for the other.
+        accent: '#8b5cf6',
         accentHi: '#a78bfa',
-        accentDeep: '#540ff2',
-        accentRgb: '125, 73, 245',
+        accentDeep: '#6d3fe0',
+        accentRgb: '139, 92, 246',
+        onAccent: '#0a0418',
         second: '#d946ef',
         third: '#6366f1',
-        ambient1: 'rgba(125, 73, 245, 0.13)',
+        ambient1: 'rgba(139, 92, 246, 0.14)',
         ambient2: 'rgba(217, 70, 239, 0.08)'
       })
     }

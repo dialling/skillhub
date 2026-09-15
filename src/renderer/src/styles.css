@@ -722,14 +722,20 @@ html:not([data-platform]) .titlebar {
   cursor: not-allowed;
   transform: none;
 }
+/*
+  Flat, not a gradient to --accent-deep. Several palettes now fill with a light
+  accent and a dark label (see --on-accent), and a gradient darkens toward the
+  bottom until that label stops being readable — measured 3.4:1 at the deep end
+  against 6.7:1 at the flat fill. A solid fill keeps the contrast knowable.
+*/
 .btn.primary {
-  background: linear-gradient(180deg, var(--accent) 0%, var(--accent-deep) 100%);
+  background: var(--accent);
   border-color: rgba(var(--accent-rgb), 0.45);
   color: var(--on-accent);
   box-shadow: 0 2px 12px -2px var(--accent-dim);
 }
 .btn.primary:hover {
-  background: linear-gradient(180deg, var(--accent-hi) 0%, var(--accent) 100%);
+  background: var(--accent-hi);
 }
 .btn.ok {
   background: linear-gradient(180deg, var(--ok), var(--ok-deep));
