@@ -2,6 +2,8 @@ import { create } from 'zustand'
 import { api } from './api'
 import type {
   AgentTarget,
+  InstallTargetAdvice,
+  LocalSkill,
   Scenario,
   GrowthRow,
   InstallProgress,
@@ -40,6 +42,7 @@ interface State {
   settings: Settings | null
   rate: RateLimit | null
   tokenSource: string
+  refreshing: boolean
   library: LibraryItem[]
   agents: AgentTarget[]
   installMap: Record<string, string[]>
@@ -69,9 +72,17 @@ interface State {
   libraryFilter: 'all' | 'pending' | 'installed'
   librarySort: 'recent' | 'stars' | 'name'
   chartMode: 'stars' | 'growth'
+  discovered: LocalSkill[]
+  discovering: boolean
+  installTarget: InstallTargetAdvice | null
+  showTargetModal: boolean
 
   t: (key: string, vars?: Record<string, string | number | undefined>) => string
   setChartMode: (m: 'stars' | 'growth') => void
+  scanLocal: () => Promise<void>
+  loadInstallTarget: () => Promise<void>
+  applyInstallTarget: (path: string) => Promise<void>
+  setShowTargetModal: (open: boolean) => void
   loadScenarios: () => Promise<void>
   openScenario: (id: string | null) => Promise<void>
   goToScenarios: () => void
@@ -114,6 +125,7 @@ export const useStore = create<State>((set, get) => ({
   settings: null,
   rate: null,
   tokenSource: 'none',
+  refreshing: false,
   library: [],
   agents: [],
   installMap: {},
@@ -143,11 +155,48 @@ export const useStore = create<State>((set, get) => ({
   libraryFilter: 'all',
   librarySort: 'recent',
   chartMode: 'growth',
+  discovered: [],
+  discovering: false,
+  installTarget: null,
+  showTargetModal: false,
 
   t: makeT('zh'),
 
   setChartMode(m) {
     set({ chartMode: m })
+  },
+
+  /** Find skills that are already on this machine and match them to the store. */
+  async scanLocal() {
+    set({ discovering: true })
+    try {
+      const discovered = await api.discover.localSkills()
+      set({ discovered })
+    } catch {
+      /* scanning is advisory */
+    } finally {
+      set({ discovering: false })
+    }
+  },
+
+  async loadInstallTarget() {
+    try {
+      const installTarget = await api.discover.installTarget()
+      set({ installTarget })
+    } catch {
+      /* ignore */
+    }
+  },
+
+  async applyInstallTarget(path) {
+    const installTarget = await api.discover.setInstallTarget(path)
+    const settings = await api.settings.get()
+    set({ installTarget, settings, showTargetModal: false })
+    get().toast('success', get().t('target.saved', { path: installTarget.path }))
+  },
+
+  setShowTargetModal(open) {
+    set({ showTargetModal: open })
   },
 
   async loadScenarios() {
@@ -194,8 +243,10 @@ export const useStore = create<State>((set, get) => ({
       get().refreshInstalls(),
       get().refreshRate(),
       get().loadCatalog(),
-      get().loadScenarios()
+      get().loadScenarios(),
+      get().loadInstallTarget()
     ])
+    void get().scanLocal()
     // Deep links: `skillhub --view=charts --repo=owner/name --q="term"`
     try {
       const boot = await api.system.boot()
@@ -333,6 +384,7 @@ export const useStore = create<State>((set, get) => ({
   },
 
   async refreshRate(force = false) {
+    set({ refreshing: true })
     try {
       const rate = await api.github.rate(force)
       set({ rate })
@@ -350,6 +402,8 @@ export const useStore = create<State>((set, get) => ({
       }
     } catch {
       /* ignore */
+    } finally {
+      set({ refreshing: false })
     }
   },
 
@@ -410,6 +464,12 @@ export const useStore = create<State>((set, get) => ({
         return null
       }
       if (!silent) get().toast('success', get().t('toast.added', { name: fullName }))
+      // First time round, show where new skills will actually land and let the
+      // user redirect it before they install anything.
+      if (!get().settings?.installRoot) {
+        await get().loadInstallTarget()
+        set({ showTargetModal: true })
+      }
       return item
     } catch (err: any) {
       get().toast('error', get().t('toast.failed', { msg: err?.message || err }))

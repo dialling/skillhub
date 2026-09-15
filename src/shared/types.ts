@@ -259,6 +259,8 @@ export interface Settings {
   sidebarOpen?: boolean
   /** interface colour scheme id (see src/renderer/src/theme.ts) */
   theme?: string
+  /** where newly added skills are materialised; auto-detected when unset */
+  installRoot?: string
   curatedUpdatedAt?: number
   firstRunDone?: boolean
 }
@@ -317,6 +319,46 @@ export interface DiskStats {
  * sentence: they are persisted, so a translated string would freeze in whatever
  * language happened to be active when it was written.
  */
+/** A skill folder already present on this machine, matched back to the catalog. */
+export interface LocalSkill {
+  name: string
+  /** the folder name on disk, which is what the catalog index matches on */
+  folder: string
+  /** the path inside the agent directory (may be a symlink) */
+  path: string
+  /** what the symlink resolves to, or the same as `path` */
+  realPath: string
+  agentId: string
+  agentName: string
+  /** installed by SkillHub (symlink into the library, or carries our marker) */
+  managed: boolean
+  hasSkillFile: boolean
+  description?: string
+  /** the repo is already in the local library */
+  inLibrary: boolean
+  /** catalog repo this skill appears to come from */
+  matchedRepo: string | null
+  matchedSkillPath: string | null
+}
+
+export interface InstallTargetCandidate {
+  path: string
+  absPath: string
+  label: string
+  count: number
+  exists: boolean
+  agentId: string
+}
+
+export interface InstallTargetAdvice {
+  path: string
+  absPath: string
+  /** why this location was chosen */
+  reason: 'configured' | 'universal' | 'detected' | 'default'
+  exists: boolean
+  candidates: InstallTargetCandidate[]
+}
+
 export interface ActivityEvent {
   id: string
   at: number

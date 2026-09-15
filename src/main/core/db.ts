@@ -27,6 +27,7 @@ export const DEFAULT_SETTINGS: Settings = {
   projectDir: null,
   sidebarOpen: true,
   theme: 'azure',
+  installRoot: undefined,
   firstRunDone: false
 }
 

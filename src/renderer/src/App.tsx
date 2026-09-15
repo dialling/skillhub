@@ -7,6 +7,7 @@ import { StatusBar } from './components/StatusBar'
 import { Toasts, JobBar } from './components/Toasts'
 import { CommandPalette } from './components/CommandPalette'
 import { AddLocalModal } from './components/AddLocalModal'
+import { InstallTargetModal } from './components/InstallTargetModal'
 import { DetailPanel } from './components/DetailPanel'
 import { StoreView } from './views/StoreView'
 import { LibraryView } from './views/LibraryView'
@@ -85,6 +86,7 @@ export default function App(): React.JSX.Element {
       <StatusBar />
       <CommandPalette />
       <AddLocalModal />
+      <InstallTargetModal />
       <Toasts />
       <JobBar />
     </div>

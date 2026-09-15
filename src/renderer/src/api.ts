@@ -8,7 +8,9 @@ import type {
   InstallProgress,
   InstallRecord,
   JobProgress,
+  InstallTargetAdvice,
   LibraryItem,
+  LocalSkill,
   RateLimit,
   RepoMeta,
   Scenario,
@@ -118,6 +120,15 @@ export interface SkillHubApi {
     activity(): Promise<ActivityEvent[]>
     refresh(): Promise<GitHubUser | null>
     starred(): Promise<{ fullName: string; stars: number; avatarUrl?: string; descriptionEn?: string }[]>
+  }
+  discover: {
+    localSkills(): Promise<LocalSkill[]>
+    audit(): Promise<
+      { agentId: string; agentName: string; path: string; exists: boolean; skills: number; managed: number; brokenLinks: number }[]
+    >
+    installTarget(): Promise<InstallTargetAdvice>
+    setInstallTarget(path: string): Promise<InstallTargetAdvice>
+    adopt(repoFullName: string): Promise<unknown>
   }
   system: {
     boot(): Promise<{

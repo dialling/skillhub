@@ -29,6 +29,8 @@ export function SettingsView(): React.JSX.Element {
   const updateSettings = useStore((s) => s.updateSettings)
   const rate = useStore((s) => s.rate)
   const tokenSource = useStore((s) => s.tokenSource)
+  const installTarget = useStore((s) => s.installTarget)
+  const setShowTargetModal = useStore((s) => s.setShowTargetModal)
   const loadCatalog = useStore((s) => s.loadCatalog)
   const toast = useStore((s) => s.toast)
 
@@ -307,6 +309,23 @@ export function SettingsView(): React.JSX.Element {
               </button>
             </div>
             <div className="hint">{t('settings.projectHint')}</div>
+          </div>
+
+          <div className="field">
+            <label>{t('settings.installLocation')}</label>
+            <div className="row">
+              <input
+                className="input mono"
+                value={installTarget?.path || ''}
+                readOnly
+                placeholder={t('settings.installLocationHint')}
+              />
+              <button className="btn" onClick={() => setShowTargetModal(true)}>
+                <FolderOpen size={13} />
+                {t('settings.changeLocation')}
+              </button>
+            </div>
+            <div className="hint">{t('settings.installLocationHint')}</div>
           </div>
 
           <div className="field" style={{ marginBottom: 0 }}>

@@ -61,6 +61,12 @@ import { expandPath, userDataDir as stateDir } from './core/paths'
 import { m } from './core/msg'
 import { buildRemoteSkills, parseSkillMd } from './core/skills'
 import { cleanSkillDirs } from './core/skilldirs'
+import {
+  auditAgentDirs,
+  detectLocalSkills,
+  recommendInstallTarget,
+  setInstallRoot
+} from './core/discover'
 
 type Broadcast = (channel: string, payload: unknown) => void
 let broadcast: Broadcast = () => {}
@@ -358,6 +364,13 @@ export function registerIpc(send: Broadcast): void {
     }
     return out
   })
+
+  /* --------------------------------------------------------------- discovery */
+  handle('discover:localSkills', () => detectLocalSkills())
+  handle('discover:audit', () => auditAgentDirs())
+  handle('discover:installTarget', () => recommendInstallTarget())
+  handle('discover:setInstallTarget', (path: string) => setInstallRoot(path))
+  handle('discover:adopt', (repoFullName: string) => addRepo(repoFullName))
 
   /* ------------------------------------------------------------------ system */
   handle('system:boot', () => ({

@@ -15,6 +15,7 @@ export function TitleBar(): React.JSX.Element {
   const settings = useStore((s) => s.settings)
   const refreshRate = useStore((s) => s.refreshRate)
   const searching = useStore((s) => s.searching)
+  const refreshing = useStore((s) => s.refreshing)
   const inputRef = useRef<HTMLInputElement>(null)
   const [draft, setDraft] = useState(query)
 
@@ -87,8 +88,13 @@ export function TitleBar(): React.JSX.Element {
           <Languages size={13} />
           {t('lang.abbr')}
         </button>
-        <button className="btn ghost sm" title={t('common.refresh')} onClick={() => void refreshRate(true)}>
-          <RefreshCw size={13} />
+        <button
+          className="btn ghost sm"
+          title={t('common.refresh')}
+          onClick={() => void refreshRate(true)}
+          disabled={refreshing}
+        >
+          <RefreshCw size={13} className={refreshing ? 'spin' : undefined} />
         </button>
         <button
           className="avatar-btn"

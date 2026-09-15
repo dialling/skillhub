@@ -89,6 +89,13 @@ const api = {
     refresh: () => call<any>('profile:refresh'),
     starred: () => call<any[]>('profile:starred')
   },
+  discover: {
+    localSkills: () => call<any[]>('discover:localSkills'),
+    audit: () => call<any[]>('discover:audit'),
+    installTarget: () => call<any>('discover:installTarget'),
+    setInstallTarget: (path: string) => call<any>('discover:setInstallTarget', path),
+    adopt: (repoFullName: string) => call<any>('discover:adopt', repoFullName)
+  },
   system: {
     boot: () => call<{ initialView: string | null; initialRepo: string | null; initialQuery: string | null; argv: string[] }>('system:boot'),
     stats: () => call<any>('system:stats'),

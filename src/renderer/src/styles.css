@@ -134,7 +134,9 @@ button,
 }
 
 /* Content that must always be copyable, stated explicitly so a future
-   `user-select: none` on an ancestor can never take it away again. */
+   `user-select: none` on an ancestor can never take it away again.
+   `cursor: text` is set on the same list so the pointer tells the user the text
+   is selectable before they try. */
 .card-desc,
 .card-compact .sub,
 .trend-sub,
@@ -163,6 +165,7 @@ button,
 code,
 pre {
   user-select: text;
+  cursor: text;
 }
 
 button,
@@ -264,9 +267,10 @@ a:hover {
   place-items: center;
   flex: none;
   border-radius: 7px;
-  /* the mark draws its own plate; the ring just separates it from the bar */
-  box-shadow: 0 0 0 1px var(--border-2), 0 2px 8px rgba(var(--shadow-rgb), 0.35);
-  transition: box-shadow 0.2s ease;
+  /* the mark draws its own plate, already tinted with the accent; a soft glow
+     is all it needs to sit in the titlebar without looking pasted on */
+  filter: drop-shadow(0 0 7px var(--accent-dim));
+  transition: filter 0.25s ease;
 }
 
 .brand-sub {
@@ -1539,6 +1543,7 @@ a:hover {
   flex-wrap: wrap;
 }
 .agent-path {
+  cursor: text;
   font-family: var(--mono);
   font-size: 11px;
   color: var(--text-2);
@@ -2723,4 +2728,133 @@ button.status-item:hover {
   margin-left: auto;
   color: var(--accent-hi);
   flex: none;
+}
+
+/* Spin used by refresh affordances while work is in flight. */
+@keyframes spin-once {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.spin {
+  animation: spin-once 0.9s linear infinite;
+}
+
+/* Install-target advice block + candidate list. */
+.target-advice {
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+}
+.target-advice .ta-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-0);
+}
+.target-advice .ta-head svg {
+  color: var(--accent-hi);
+  flex: none;
+}
+.target-advice .ta-reason {
+  font-size: 11.5px;
+  color: var(--text-1);
+  margin-top: 5px;
+  line-height: 1.55;
+}
+.target-advice .ta-warn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--warn);
+  margin-top: 7px;
+}
+.target-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 210px;
+  overflow-y: auto;
+}
+.target-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s, border-color 0.12s;
+}
+.target-row:hover {
+  background: var(--bg-4);
+  border-color: var(--border-3);
+}
+.target-row.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.target-row .tr-label {
+  font-size: 12.5px;
+  font-weight: 560;
+  color: var(--text-0);
+  flex: none;
+}
+.target-row .tr-path {
+  font-size: 11px;
+  color: var(--text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+.target-row .tr-count {
+  font-size: 11px;
+  color: var(--text-3);
+  flex: none;
+}
+.target-row .tr-check {
+  color: var(--accent-hi);
+  flex: none;
+}
+
+/* Discovery panel in the Library view. */
+.discover-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 9px;
+}
+.discover-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--bg-3), var(--bg-2));
+}
+.discover-card .dc-main {
+  min-width: 0;
+  flex: 1;
+}
+.discover-card .dc-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-0);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.discover-card .dc-meta {
+  font-size: 11px;
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
