@@ -57,6 +57,8 @@ const DICT: Dict = {
   'store.scenarios': ['我要做…', 'What do you want to do?'],
   'store.entry': ['浏览', 'Browse'],
   'store.byFunction': ['按功能分类', 'By function'],
+  'store.loadMore': ['加载更多 · 还有 {n} 个', 'Load {n} more'],
+  'store.showLess': ['收起', 'Show less'],
   'store.scenariosHint': ['按「我现在要干什么」挑，比按领域翻更快', 'Pick by the job at hand — faster than browsing by field'],
   'store.useWhen': ['什么时候用', 'Use when'],
   'store.clearScenario': ['退出场景', 'Exit scenario'],

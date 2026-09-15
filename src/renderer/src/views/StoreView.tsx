@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import {
   Store,
   Search,
@@ -10,6 +10,7 @@ import {
   Funnel,
   Star,
   Target,
+  ChevronDown,
   ArrowRight
 } from 'lucide-react'
 import { FN_LABELS, type FnCategory } from '@shared/types'
@@ -19,6 +20,9 @@ import { sourceKey } from '../components/DetailPanel'
 import { fnColor } from '../components/Sidebar'
 import { fmtStars } from '../api'
 import { stagger } from '../ui'
+
+/** How many scenario cards to show before offering the rest. */
+const SCENARIO_PREVIEW = 3
 
 export function StoreView(): React.JSX.Element {
   const t = useStore((s) => s.t)
@@ -62,6 +66,11 @@ export function StoreView(): React.JSX.Element {
         .slice(0, 10),
     [catalog]
   )
+
+  // Thirteen scenario cards filled the entire first screen before anything else
+  // was reachable. Show a taster and let the rest be asked for.
+  const [scenariosExpanded, setScenariosExpanded] = useState(false)
+  const visibleScenarios = scenariosExpanded ? scenarios : scenarios.slice(0, SCENARIO_PREVIEW)
 
   const hot = useMemo(() => (trending || []).slice(0, 6), [trending])
   const scenario = scenarios.find((s) => s.id === activeScenario) || null
@@ -211,7 +220,7 @@ export function StoreView(): React.JSX.Element {
           <span className="section-meta">{t('store.scenariosHint')}</span>
         </div>
         <div className="scenario-grid">
-          {scenarios.map((sc, i) => (
+          {visibleScenarios.map((sc, i) => (
             <button
               key={sc.id}
               className="scenario-card"
@@ -226,6 +235,14 @@ export function StoreView(): React.JSX.Element {
             </button>
           ))}
         </div>
+        {scenarios.length > SCENARIO_PREVIEW && (
+          <button className="scenario-more" onClick={() => setScenariosExpanded((v) => !v)}>
+            {scenariosExpanded
+              ? t('store.showLess')
+              : t('store.loadMore', { n: scenarios.length - SCENARIO_PREVIEW })}
+            <ChevronDown size={13} className={scenariosExpanded ? 'flip' : undefined} />
+          </button>
+        )}
       </div>
 
       <div className="section">

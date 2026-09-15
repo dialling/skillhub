@@ -3390,3 +3390,35 @@ button.status-item:hover {
   gap: 13px;
   flex: none;
 }
+
+/* "Load more" under the scenario grid — a full-width ghost row rather than
+   another card, so it reads as an affordance and not as content. */
+.scenario-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 9px;
+  padding: 9px;
+  border-radius: var(--r-md);
+  border: 1px dashed var(--border-2);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 560;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color 0.14s, border-color 0.14s, background 0.14s;
+}
+.scenario-more:hover {
+  color: var(--text-0);
+  border-color: var(--border-3);
+  background: rgba(var(--tint-rgb), 0.03);
+}
+.scenario-more svg {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.scenario-more svg.flip {
+  transform: rotate(180deg);
+}
