@@ -314,7 +314,7 @@ export function DetailPanel(): React.JSX.Element | null {
       </div>
 
       <div className="detail-body" ref={bodyRef}>
-        {detail.loading ? (
+        {detail.loading && !meta ? (
           <div className="flex" style={{ justifyContent: 'center', padding: 60 }}>
             <span className="spinner lg" />
           </div>

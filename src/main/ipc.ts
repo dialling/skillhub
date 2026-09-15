@@ -60,6 +60,7 @@ import { testProvider, translate, translateBatch, translationAvailable } from '.
 import { expandPath, userDataDir as stateDir } from './core/paths'
 import { m } from './core/msg'
 import { buildRemoteSkills, parseSkillMd } from './core/skills'
+import { cleanSkillDirs } from './core/skilldirs'
 
 type Broadcast = (channel: string, payload: unknown) => void
 let broadcast: Broadcast = () => {}
@@ -152,9 +153,12 @@ export function registerIpc(send: Broadcast): void {
       if (opts.withSkills !== false) {
         try {
           const tree = await listSkillDirs(fullName, branch)
-          dirs = tree.dirs
-          meta.skillDirs = tree.dirs
-          meta.skillCount = tree.dirs.length
+          // Clean before caching: the raw crawl over-counts repos that package
+          // the same skills once per agent, or that ship templates.
+          const cleaned = cleanSkillDirs(tree.dirs)
+          dirs = cleaned.dirs
+          meta.skillDirs = cleaned.dirs
+          meta.skillCount = cleaned.dirs.length
           meta.truncatedTree = tree.truncated
         } catch {
           /* keep whatever we had */
@@ -173,8 +177,11 @@ export function registerIpc(send: Broadcast): void {
       })
       // A repo already in the library has every SKILL.md on disk, so the remote
       // metadata pass is pure overhead.
+      // Reading every SKILL.md costs one request per skill (the raw host is not
+      // always reachable, in which case these fall back to the Contents API), so
+      // cap it: a 124-skill repo would otherwise stall the detail page.
       if (dirs.length && !inLibrary) {
-        const details = await fetchRemoteSkillMeta(fullName, branch, dirs.slice(0, 60))
+        const details = await fetchRemoteSkillMeta(fullName, branch, dirs.slice(0, 24))
         for (const s of skills) {
           const d = details[s.path]
           if (d) {

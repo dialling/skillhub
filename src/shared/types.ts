@@ -91,6 +91,8 @@ export interface RepoMeta {
   htmlUrl: string
   skillDirs?: string[]
   skillCount?: number
+  /** raw crawl count before de-duplication and scaffold removal, kept for audit */
+  skillDirsAll?: number
   truncatedTree?: boolean
   installHint?: string
 }

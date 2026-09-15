@@ -28,7 +28,25 @@ export async function curatedCatalog(): Promise<RepoMeta[]> {
   const repoCache = cache.get().repos
   const repos = bundled.repos.map((r) => {
     const fresh = repoCache[r.fullName]
-    const merged = fresh ? { ...r, ...fresh.meta, descriptionZh: r.descriptionZh || fresh.meta.descriptionZh } : r
+    if (!fresh) return { ...r, topics: cleanTopics(r.topics) }
+    // Live API metadata wins on facts (stars, pushedAt), but the bundled
+    // catalog owns the skill list: it has been through the cleaning pass, while
+    // anything cached from a raw tree crawl has not.
+    const merged = {
+      ...r,
+      ...fresh.meta,
+      skillDirs: r.skillDirs,
+      skillCount: r.skillCount,
+      skillDirsAll: r.skillDirsAll,
+      fn: r.fn,
+      category: r.category,
+      taglineZh: r.taglineZh,
+      taglineEn: r.taglineEn,
+      useWhen: r.useWhen,
+      useWhenEn: r.useWhenEn,
+      aboutZh: r.aboutZh,
+      descriptionZh: r.descriptionZh || fresh.meta.descriptionZh
+    }
     return { ...merged, topics: cleanTopics(merged.topics) }
   })
   for (const r of repos) snapshotStars(r.fullName, r.stars)

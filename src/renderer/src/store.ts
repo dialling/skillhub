@@ -263,8 +263,21 @@ export const useStore = create<State>((set, get) => ({
   },
 
   async openDetail(fullName) {
+    // Paint from the bundled catalog immediately — it already has the tagline,
+    // use-case, category and skill paths — then replace it with live data when
+    // the network round-trip lands. Otherwise a 124-skill repo shows a spinner
+    // for seconds before anything appears.
+    const seeded = get().catalogRepos.find((r) => r.fullName === fullName)
+    const localItem = get().library.find((i) => i.fullName === fullName)
     set({
-      detail: { fullName, loading: true, meta: null, skills: [], readme: '', tab: 'overview' }
+      detail: {
+        fullName,
+        loading: !seeded,
+        meta: seeded || null,
+        skills: localItem?.skills?.length ? localItem.skills : [],
+        readme: '',
+        tab: 'overview'
+      }
     })
     try {
       const res = await api.github.repoDetail(fullName, { withSkills: true, withReadme: true })
