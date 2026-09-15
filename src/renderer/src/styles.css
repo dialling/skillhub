@@ -725,7 +725,7 @@ html:not([data-platform]) .titlebar {
 .btn.primary {
   background: linear-gradient(180deg, var(--accent) 0%, var(--accent-deep) 100%);
   border-color: rgba(var(--accent-rgb), 0.45);
-  color: #fff;
+  color: var(--on-accent);
   box-shadow: 0 2px 12px -2px var(--accent-dim);
 }
 .btn.primary:hover {
@@ -3121,10 +3121,10 @@ button.status-item:hover {
   content: '';
   position: absolute;
   inset: 0;
-  /* Darkens toward the right, where the action sits, so the button always has
-     a calm backdrop no matter which hue the repository's gradient lands on. */
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.14) 0%, rgba(0, 0, 0, 0.52) 100%),
-    radial-gradient(120% 160% at 100% 50%, rgba(0, 0, 0, 0.42) 0%, transparent 62%);
+  /* A slight vignette only. The heavy dark scrim existed to keep white text
+     readable over a saturated gradient — the gradient is now a tint over the
+     normal surface, so text uses the theme's own colours and needs no scrim. */
+  background: radial-gradient(130% 170% at 100% 50%, rgba(var(--shadow-rgb), 0.16) 0%, transparent 60%);
   pointer-events: none;
 }
 .lib-hero-inner {
@@ -3140,7 +3140,7 @@ button.status-item:hover {
   width: 84px;
   height: 84px;
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  border: 1px solid var(--border-2);
   object-fit: cover;
   flex: none;
   box-shadow: var(--shadow-2);
@@ -3152,27 +3152,25 @@ button.status-item:hover {
 }
 .lh-owner {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--text-2);
   letter-spacing: 0.3px;
 }
 .lh-title {
   font-size: 30px;
   font-weight: 720;
   letter-spacing: -0.6px;
-  color: #fff;
+  color: var(--text-0);
   line-height: 1.15;
-  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.5);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .lh-tagline {
   font-size: 13.5px;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text-1);
   margin-top: 5px;
   max-width: 640px;
   line-height: 1.5;
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
 }
 .lh-stats {
   display: flex;
@@ -3185,12 +3183,12 @@ button.status-item:hover {
   align-items: center;
   gap: 5px;
   font-size: 11.5px;
-  color: rgba(255, 255, 255, 0.88);
+  color: var(--text-1);
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
 }
 .lh-stat.dim {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-3);
 }
 .lh-actions {
   display: flex;
@@ -3204,12 +3202,12 @@ button.status-item:hover {
   gap: 5px;
 }
 /*
-  The primary action on a banner whose colour is derived from the repository,
-  so it can be any hue. An accent-coloured button turned into a blue-on-blue
-  smudge the moment the gradient was blue — the previous gradient fill, gloss
-  highlight and heavy shadow made that worse. Inverting the text colours
-  guarantees contrast on every hue and flips automatically between light and
-  dark themes, because --text-0 and --bg-0 are opposites in both.
+  The primary action. Filled with the theme accent, like every other primary
+  button in the app — an earlier attempt inverted it to a white slab to dodge
+  the banner's colour, which fixed the clash by removing the accent entirely.
+  The banner is subdued instead, so the accent has something to stand against.
+  `--on-accent` carries the text colour, because a light accent (sepia's amber)
+  needs dark text and cannot be assumed to want white.
 */
 .btn-play {
   display: inline-flex;
@@ -3219,29 +3217,32 @@ button.status-item:hover {
   padding: 0 26px;
   border-radius: 10px;
   border: none;
-  background: var(--text-0);
-  color: var(--bg-0);
+  background: var(--accent);
+  color: var(--on-accent);
   font-size: 14.5px;
   font-weight: 660;
   letter-spacing: 0.2px;
   cursor: pointer;
-  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.55);
-  transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.14s, opacity 0.14s;
+  box-shadow: 0 3px 14px -3px var(--accent-dim), 0 1px 2px rgba(var(--shadow-rgb), 0.4);
+  transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.14s, filter 0.14s;
 }
+/* 1.08 keeps white on the accent at 4.8:1; beyond 1.14 it drops under 4.5. */
 .btn-play:hover {
+  filter: brightness(1.08);
   transform: translateY(-1px);
-  box-shadow: 0 8px 22px -6px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 7px 20px -5px var(--accent-dim), 0 1px 2px rgba(var(--shadow-rgb), 0.4);
 }
 .btn-play:active {
   transform: translateY(0);
-  opacity: 0.9;
+  filter: brightness(0.96);
 }
 .btn-play svg {
   flex: none;
 }
+
 .lh-hint {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--text-2);
 }
 
 /* Toolbar ---------------------------------------------------------------- */

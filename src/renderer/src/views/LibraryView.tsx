@@ -19,7 +19,7 @@ import {
   Play
 } from 'lucide-react'
 import type { LibraryItem } from '@shared/types'
-import { fmtRelative, fmtStars, gradientFor } from '../api'
+import { fmtRelative, fmtStars, gradientFor, gradientTint } from '../api'
 import { useStore } from '../store'
 import { stagger } from '../ui'
 
@@ -281,12 +281,21 @@ function LibraryHero({
 }): React.JSX.Element {
   const t = useStore((s) => s.t)
   const lang = useStore((s) => s.lang)
-  const [c1, c2] = gradientFor(item.fullName)
+  const [t1, t2] = gradientTint(item.fullName, 0.32)
   const tagline = lang === 'zh' ? item.meta.taglineZh || item.meta.descriptionZh : item.meta.taglineEn
   const ready = installedSkills > 0
 
   return (
-    <div className="lib-hero" style={{ background: `linear-gradient(120deg, ${c1} 0%, ${c2} 60%, var(--bg-0) 100%)` }}>
+    <div
+      className="lib-hero"
+      style={{
+        // The repository's colour as a tint over the normal surface, not a
+        // saturated wash. At full strength the banner was a colour clash with
+        // everything placed on it, which is what pushed the launch button to
+        // white. Subduing the banner lets the accent button stand.
+        background: `linear-gradient(100deg, ${t1} 0%, ${t2} 46%, transparent 82%), linear-gradient(180deg, var(--bg-3), var(--bg-2))`
+      }}
+    >
       <div className="lib-hero-inner">
         {item.meta.avatarUrl && <img className="lh-avatar" src={item.meta.avatarUrl} alt="" />}
         <div className="lh-main">

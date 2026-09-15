@@ -199,10 +199,27 @@ export function fmtRelative(ts: number, lang: 'zh' | 'en' = 'zh'): string {
 }
 
 /** Deterministic colour pair derived from a repo name, for capsule art. */
-export function gradientFor(seed: string): [string, string] {
+/** Stable hue for a repository name — the same seed always gets the same colour. */
+export function hueFor(seed: string): number {
   let h = 0
   for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) % 360
-  const a = h
-  const b = (h + 58) % 360
+  return h
+}
+
+export function gradientFor(seed: string): [string, string] {
+  const a = hueFor(seed)
+  const b = (a + 58) % 360
   return [`hsl(${a} 72% 46%)`, `hsl(${b} 68% 32%)`]
+}
+
+/**
+ * The same gradient at a given alpha, for tinting a surface instead of filling
+ * it. Returned in the same `hsl(...)` form as gradientFor so callers never have
+ * to parse one colour format into another — an earlier tint helper assumed hex
+ * and silently produced black for every repository.
+ */
+export function gradientTint(seed: string, alpha: number): [string, string] {
+  const a = hueFor(seed)
+  const b = (a + 58) % 360
+  return [`hsl(${a} 72% 46% / ${alpha})`, `hsl(${b} 68% 32% / ${alpha})`]
 }

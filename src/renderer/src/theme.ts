@@ -92,11 +92,18 @@ interface AccentSpec {
   third: string
   ambient1: string
   ambient2: string
+  /** text colour used on accent-filled surfaces; defaults to white */
+  onAccent?: string
 }
 
 function accentVars(a: AccentSpec): Record<string, string> {
   return {
     '--accent': a.accent,
+    // Text colour for accent-filled surfaces. Almost every palette takes white,
+    // but a light accent cannot: sepia's amber gives white only 2.52:1 while a
+    // near-black gives 7.25:1. Filling with the accent must not decide the text
+    // colour by assumption.
+    '--on-accent': a.onAccent || '#ffffff',
     '--accent-hi': a.accentHi,
     '--accent-deep': a.accentDeep,
     '--accent-rgb': a.accentRgb,
@@ -328,6 +335,7 @@ export const THEMES: Record<ThemeId, Theme> = {
         accentHi: '#e8b845',
         accentDeep: '#a8781a',
         accentRgb: '210, 153, 34',
+        onAccent: '#1a1408',
         second: '#e08c4a',
         third: '#a3714b',
         ambient1: 'rgba(210, 153, 34, 0.12)',
