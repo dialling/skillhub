@@ -69,6 +69,7 @@ import { installLocations, launchTargets, prepareLaunch, runLaunch } from './cor
 import { liveStatus, refreshLiveData } from './core/live'
 import { searchSkillIndex, skillIndex, skillShard } from './core/skillsindex'
 import { listStarred, setStar, starState } from './core/starring'
+import { listSubmissions, submitSkill } from './core/submit'
 
 type Broadcast = (channel: string, payload: unknown) => void
 let broadcast: Broadcast = () => {}
@@ -391,6 +392,13 @@ export function registerIpc(send: Broadcast): void {
   // is involved and a fresh install still gets real history.
   handle('live:refresh', () => refreshLiveData())
   handle('live:status', () => liveStatus())
+
+  /* ---------------------------------------------------------- submissions -- */
+  // Local skills that are not in the store go to the repository's submissions
+  // area for review. Nothing here touches the catalog, so the store is
+  // unaffected until the entry has been written up and accepted.
+  handle('submit:list', () => listSubmissions())
+  handle('submit:skill', (input: { localPath: string; name: string; origin?: string }) => submitSkill(input))
 
   /* ------------------------------------------------------------- starring -- */
   // Writes to the user's real GitHub account, not to a local list.

@@ -17,7 +17,8 @@ import type {
   SearchResult,
   Settings,
   SkillEntry,
-  SkillIndexEntry
+  SkillIndexEntry,
+  SubmissionRecord
 } from '@shared/types'
 import { makeT, type Lang } from './i18n'
 import { applyTheme } from './theme'
@@ -82,6 +83,8 @@ interface State {
   starred: string[]
   starredLoaded: boolean
   starring: string | null
+  submissions: SubmissionRecord[]
+  submitting: string | null
   scenarios: Scenario[]
   activeScenario: string | null
   scenarioRepos: RepoMeta[]
@@ -122,6 +125,8 @@ interface State {
   setSkillQuery: (q: string) => void
   loadStarred: (force?: boolean) => Promise<void>
   toggleStar: (fullName: string) => Promise<void>
+  loadSubmissions: () => Promise<void>
+  submitSkill: (input: { localPath: string; name: string; origin?: string }) => Promise<void>
   setLibraryFilter: (f: 'all' | 'pending' | 'installed') => void
   setLibraryView: (v: 'grid' | 'list') => void
   setSelectedLibrary: (id: string) => void
@@ -197,6 +202,8 @@ export const useStore = create<State>((set, get) => ({
   starred: [],
   starredLoaded: false,
   starring: null,
+  submissions: [],
+  submitting: null,
   scenarios: [],
   activeScenario: null,
   scenarioRepos: [],
@@ -401,6 +408,34 @@ export const useStore = create<State>((set, get) => ({
     }
   },
 
+  async loadSubmissions() {
+    try {
+      set({ submissions: await api.submit.list() })
+    } catch {
+      /* the submissions list is informational */
+    }
+  },
+
+  /**
+   * Send a local skill to the repository for review.
+   *
+   * It deliberately does not go into the store: an entry needs a hand-written
+   * bilingual tagline, use-case and long description, and this skill has none of
+   * those yet. Uploading puts it somewhere the copy can be written later.
+   */
+  async submitSkill(input) {
+    set({ submitting: input.name })
+    try {
+      const res = await api.submit.skill(input)
+      get().toast(res.ok ? 'success' : 'error', res.message)
+      if (res.ok) await get().loadSubmissions()
+    } catch (err: any) {
+      get().toast('error', get().t('toast.failed', { msg: err?.message || err }))
+    } finally {
+      set({ submitting: null })
+    }
+  },
+
   async toggleStar(fullName) {
     if (!get().settings?.user) {
       get().toast('info', get().t('star.signInFirst'))
@@ -482,6 +517,7 @@ export const useStore = create<State>((set, get) => ({
     ])
     void get().scanLocal()
     void get().loadStarred()
+    void get().loadSubmissions()
     // Record what already exists so nothing pre-existing badges as "new" —
     // only what shows up after this point does.
     const seen = await api.settings.get()

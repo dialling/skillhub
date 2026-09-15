@@ -86,6 +86,10 @@ const api = {
     refresh: () => call<any>('profile:refresh'),
     starred: () => call<any[]>('profile:starred')
   },
+  submit: {
+    list: () => call<any[]>('submit:list'),
+    skill: (input: { localPath: string; name: string; origin?: string }) => call<any>('submit:skill', input)
+  },
   star: {
     state: (fullName: string) => call<any>('star:state', fullName),
     set: (fullName: string, on: boolean) => call<any>('star:set', fullName, on),

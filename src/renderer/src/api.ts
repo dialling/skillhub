@@ -12,6 +12,8 @@ import type {
   LaunchTarget,
   LibraryItem,
   SkillIndexEntry,
+  SubmissionRecord,
+  SubmissionResult,
   LocalSkill,
   RateLimit,
   RepoMeta,
@@ -120,6 +122,10 @@ export interface SkillHubApi {
     activity(): Promise<ActivityEvent[]>
     refresh(): Promise<GitHubUser | null>
     starred(): Promise<{ fullName: string; stars: number; avatarUrl?: string; descriptionEn?: string }[]>
+  }
+  submit: {
+    list(): Promise<SubmissionRecord[]>
+    skill(input: { localPath: string; name: string; origin?: string }): Promise<SubmissionResult>
   }
   star: {
     state(fullName: string): Promise<{ signedIn: boolean; starred: boolean; stars: number; scopeProblem: boolean }>

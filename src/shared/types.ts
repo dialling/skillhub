@@ -90,6 +90,30 @@ export function categoryLabel(cat: string | undefined, lang: 'zh' | 'en'): strin
   return entry ? entry[lang] : cat
 }
 
+/** A skill waiting in the repository's submissions area, not yet in the store. */
+export interface SubmissionRecord {
+  /** folder name under submissions/ */
+  slug: string
+  name: string
+  /** the author's own one-line description, truncated for the manifest */
+  description: string
+  files: number
+  bytes: number
+  /** media or oversized files that were left out */
+  skipped?: number
+  /** where on the submitting machine it came from */
+  origin: string
+  at: string
+  status: 'pending' | 'accepted' | 'rejected'
+}
+
+export interface SubmissionResult {
+  ok: boolean
+  uploaded: number
+  slug?: string
+  message: string
+}
+
 /** One skill inside a catalog repository, as published by the extraction pass. */
 export interface SkillIndexEntry {
   /** skill name, from the SKILL.md frontmatter */
