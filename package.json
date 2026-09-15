@@ -136,6 +136,7 @@
     },
     "portable": {
       "artifactName": "${productName}-${version}-${arch}-portable.${ext}"
-    }
+    },
+    "afterPack": "scripts/sign-adhoc.mjs"
   }
 }

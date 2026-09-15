@@ -29,6 +29,45 @@ SkillHub 是一个 macOS 桌面应用（Electron + React），把「登录 GitHu
 
 ---
 
+## 下载安装
+
+到 [Releases](https://github.com/dialling/skillhub/releases) 下载对应平台的安装包。
+
+| 平台 | 下载 | 说明 |
+|---|---|---|
+| **macOS Apple 芯片**（M 系列） | `SkillHub-0.1.0-arm64.dmg` | 打开后把 SkillHub 拖进「应用程序」 |
+| **macOS Intel** | `SkillHub-0.1.0.dmg` | 同上 |
+| **Windows 64 位** | `SkillHub-0.1.0-x64-setup.exe` | 安装版，可自选安装目录 |
+| **Windows 免安装** | `SkillHub-0.1.0-x64-portable.exe` | 双击即用，不写注册表 |
+
+### 首次打开会被系统拦下来 —— 这是正常的
+
+安装包**没有做代码签名**（Apple 的 Developer ID 证书每年 99 美元，Windows 代码签名证书也要钱），
+所以系统会警告。应用本身没问题，按下面的方式打开一次即可，之后就不再提示。
+
+**macOS** —— 双击会提示「无法验证开发者」或「已损坏」：
+
+- 方式一：在「应用程序」里**右键点 SkillHub → 打开 → 再点「打开」**
+- 方式二：终端执行
+  ```bash
+  xattr -dr com.apple.quarantine /Applications/SkillHub.app
+  ```
+
+> 「已损坏，请移到废纸篓」这个提示具有误导性，它不代表文件损坏，只是 Gatekeeper 对未签名应用的默认措辞。
+> 安装包已做 ad-hoc 签名，所以正常会走到「无法验证开发者」这个可操作的提示。
+
+**Windows** —— SmartScreen 会提示「Windows 已保护你的电脑」：
+
+- 点「更多信息」→「仍要运行」
+
+### 运行前提
+
+- **必须有的**：`git`（入库技能时要克隆仓库）。Windows 装 [Git for Windows](https://git-scm.com/download/win)；
+  macOS 执行 `xcode-select --install` 或 `brew install git`
+- **可选的**：`gh`（GitHub CLI）。应用会复用它的登录凭据；没有也行，在设置里填 Personal Access Token
+- 技能会装到你已有的智能体技能目录（如 `~/.claude/skills`、`~/.cursor/skills`）。
+  首次入库时会弹窗告诉你装到哪里，可以改
+
 ## 平台支持
 
 | 平台 | 打包目标 | 状态 |
