@@ -25,6 +25,7 @@ export const DEFAULT_SETTINGS: Settings = {
   enabledAgents: [],
   customAgents: [],
   projectDir: null,
+  sidebarOpen: true,
   firstRunDone: false
 }
 

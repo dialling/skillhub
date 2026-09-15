@@ -217,7 +217,7 @@ export function StoreView(): React.JSX.Element {
       </div>
 
       {/* Scenarios: "what are you trying to do?" — the fastest way in. */}
-      <div className="section">
+      <div className="section" id="store-scenarios">
         <div className="section-head">
           <span className="section-title">
             <Target size={13} />

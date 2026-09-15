@@ -41,6 +41,8 @@ const DICT: Dict = {
   'common.skills': ['技能', 'Skills'],
   'common.items': ['项', 'items'],
   'common.unknown': ['未知', 'Unknown'],
+  'common.collapseSidebar': ['收起侧边栏', 'Collapse sidebar'],
+  'common.expandSidebar': ['展开侧边栏', 'Expand sidebar'],
 
   'store.title': ['技能商店', 'Skill Store'],
   'store.subtitle': ['发现、入库并安装来自 GitHub 的智能体技能', 'Discover, collect and install agent skills from GitHub'],
@@ -48,6 +50,7 @@ const DICT: Dict = {
   'store.trending': ['本周热门', 'Trending this week'],
   'store.browseCategory': ['按分类浏览', 'Browse by category'],
   'store.scenarios': ['我要做…', 'What do you want to do?'],
+  'store.entry': ['浏览', 'Browse'],
   'store.byFunction': ['按功能分类', 'By function'],
   'store.scenariosHint': ['按「我现在要干什么」挑，比按领域翻更快', 'Pick by the job at hand — faster than browsing by field'],
   'store.useWhen': ['什么时候用', 'Use when'],

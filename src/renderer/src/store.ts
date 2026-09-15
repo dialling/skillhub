@@ -72,6 +72,7 @@ interface State {
   setChartMode: (m: 'stars' | 'growth') => void
   loadScenarios: () => Promise<void>
   openScenario: (id: string | null) => Promise<void>
+  goToScenarios: () => void
   setStoreCategory: (c: string | null) => void
   setLibraryFilter: (f: 'all' | 'pending' | 'installed') => void
   setLibrarySort: (s: 'recent' | 'stars' | 'name') => void
@@ -182,7 +183,7 @@ export const useStore = create<State>((set, get) => ({
   async boot() {
     const settings = await api.settings.get()
     const lang = settings.lang || 'zh'
-    set({ settings, lang, t: makeT(lang) })
+    set({ settings, lang, t: makeT(lang), sidebarOpen: settings.sidebarOpen !== false })
     await Promise.all([
       get().refreshLibrary(),
       get().refreshAgents(),
@@ -475,8 +476,20 @@ export const useStore = create<State>((set, get) => ({
     set({ showAddLocal: open })
   },
   toggleSidebar() {
-    set({ sidebarOpen: !get().sidebarOpen })
-  }
+    const sidebarOpen = !get().sidebarOpen
+    set({ sidebarOpen })
+    // Remember the choice so the app opens the way the user left it.
+    void api.settings.update({ sidebarOpen })
+  },
+
+  /** The sidebar keeps a single "what do you want to do?" entry rather than
+   *  listing all 13 scenarios, so it needs to land the user on the grid. */
+  goToScenarios() {
+    set({ view: 'store', activeScenario: null, scenarioRepos: [], storeCategory: null })
+    window.setTimeout(() => {
+      document.getElementById('store-scenarios')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 80)
+  },
 }))
 
 // Wire main-process progress events into the store.

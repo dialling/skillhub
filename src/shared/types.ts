@@ -252,6 +252,8 @@ export interface Settings {
   enabledAgents: string[]
   customAgents: { id: string; name: string; path: string }[]
   projectDir: string | null
+  /** whether the contextual sidebar is expanded */
+  sidebarOpen?: boolean
   curatedUpdatedAt?: number
   firstRunDone?: boolean
 }

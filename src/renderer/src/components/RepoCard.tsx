@@ -83,7 +83,12 @@ export function RepoCard({
               {lang === 'zh' ? FN_LABELS[fn].zh : FN_LABELS[fn].en}
             </span>
           )}
-          {category && <span className="chip">{lang === 'zh' ? category.zh : category.en}</span>}
+          {/* Only the provenance label that carries real signal. "官方出品" is a
+              trust marker (skills.sh has a whole Official nav for it); labels
+              like 垂直领域 / 技能合集 just restate what the card already shows. */}
+          {repo.category === 'official' && (
+            <span className="chip green">{lang === 'zh' ? category!.zh : category!.en}</span>
+          )}
           {skillCount > 0 && (
             <span className="chip mono">
               <Layers size={10} />

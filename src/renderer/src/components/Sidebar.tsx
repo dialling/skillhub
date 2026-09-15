@@ -7,7 +7,10 @@ import {
   CheckCircle2,
   Circle,
   Bot,
+  PanelLeftClose,
+  PanelLeftOpen,
   Sparkles,
+  Target,
   TrendingUp,
   Info,
   Compass
@@ -15,6 +18,35 @@ import {
 import { FN_LABELS, type FnCategory } from '@shared/types'
 import { useStore } from '../store'
 import { api } from '../api'
+
+/** Every sidebar variant gets the same head, so the collapse control is always
+ *  in the same place instead of being hidden at the bottom of the activity bar. */
+function SideHead({ title }: { title: string }): React.JSX.Element {
+  const toggleSidebar = useStore((s) => s.toggleSidebar)
+  const t = useStore((s) => s.t)
+  return (
+    <div className="sidebar-head">
+      <span className="sidebar-head-title">{title}</span>
+      <button className="sidebar-collapse" title={t('common.collapseSidebar')} onClick={toggleSidebar}>
+        <PanelLeftClose size={15} />
+      </button>
+    </div>
+  )
+}
+
+/** Shown in place of the sidebar when it is collapsed, so it can be reopened
+ *  without hunting for the activity-bar toggle. */
+export function SidebarRail(): React.JSX.Element {
+  const toggleSidebar = useStore((s) => s.toggleSidebar)
+  const t = useStore((s) => s.t)
+  return (
+    <div className="sidebar-rail">
+      <button title={t('common.expandSidebar')} onClick={toggleSidebar}>
+        <PanelLeftOpen size={16} />
+      </button>
+    </div>
+  )
+}
 
 function SideSection({
   title,
@@ -58,7 +90,7 @@ function StoreSidebar(): React.JSX.Element {
   const setAddLocal = useStore((s) => s.setAddLocal)
   const scenarios = useStore((s) => s.scenarios)
   const activeScenario = useStore((s) => s.activeScenario)
-  const openScenario = useStore((s) => s.openScenario)
+  const goToScenarios = useStore((s) => s.goToScenarios)
 
   // Functional categories: what the user wants to do, not what kind of repo it is.
   const counts = useMemo(() => {
@@ -86,25 +118,19 @@ function StoreSidebar(): React.JSX.Element {
 
   return (
     <aside className="sidebar">
-      <SideSection title={t('store.scenarios')}>
-        <button className={`side-item ${!activeScenario ? 'active' : ''}`} onClick={() => void openScenario(null)}>
+      <SideHead title={t('nav.store')} />
+      <SideSection title={t('store.entry')}>
+        <button className={`side-item ${!activeScenario && !category ? 'active' : ''}`} onClick={goToScenarios}>
           <Compass size={14} />
           {t('common.all')}
           <span className="count">{catalog.length}</span>
         </button>
-        {scenarios.map((sc) => (
-          <button
-            key={sc.id}
-            className={`side-item ${activeScenario === sc.id ? 'active' : ''}`}
-            onClick={() => void openScenario(activeScenario === sc.id ? null : sc.id)}
-            title={lang === 'zh' ? sc.descZh : sc.descEn}
-          >
-            <Sparkles size={14} />
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {lang === 'zh' ? sc.titleZh : sc.titleEn}
-            </span>
-          </button>
-        ))}
+        {/* One entry, not thirteen: the scenarios are chosen from the store grid. */}
+        <button className={`side-item ${activeScenario ? 'active' : ''}`} onClick={goToScenarios}>
+          <Target size={14} />
+          {t('store.scenarios')}
+          <span className="count">{scenarios.length}</span>
+        </button>
       </SideSection>
 
       <SideSection title={t('store.byFunction')}>
@@ -189,7 +215,8 @@ function LibrarySidebar(): React.JSX.Element {
 
   return (
     <aside className="sidebar">
-      <SideSection title={t('library.title')}>
+      <SideHead title={t('nav.library')} />
+<SideSection title={t('library.title')}>
         <button className={`side-item ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>
           <Package size={14} />
           {t('library.filterAll')}
@@ -246,7 +273,8 @@ function ChartsSidebar(): React.JSX.Element {
 
   return (
     <aside className="sidebar">
-      <SideSection title={t('charts.title')}>
+      <SideHead title={t('nav.charts')} />
+<SideSection title={t('charts.title')}>
         {windows.map((w) => (
           <button
             key={w.d}
@@ -292,7 +320,8 @@ function AgentsSidebar(): React.JSX.Element {
 
   return (
     <aside className="sidebar">
-      <SideSection title={`${t('agents.autodetect')} · ${agents.length}`}>
+      <SideHead title={t('nav.agents')} />
+<SideSection title={`${t('agents.autodetect')} · ${agents.length}`}>
         {agents.map((a) => (
           <button
             key={a.id}
@@ -324,7 +353,8 @@ function ProfileSidebar(): React.JSX.Element {
   const stats = useStore((s) => s.library)
   return (
     <aside className="sidebar">
-      <SideSection title={t('profile.title')}>
+      <SideHead title={t('nav.profile')} />
+<SideSection title={t('profile.title')}>
         <div className="side-note">
           {settings?.user ? (
             <>
@@ -357,7 +387,8 @@ function SettingsSidebar(): React.JSX.Element {
   const t = useStore((s) => s.t)
   return (
     <aside className="sidebar">
-      <SideSection title={t('settings.title')}>
+      <SideHead title={t('nav.settings')} />
+<SideSection title={t('settings.title')}>
         <div className="side-note">{t('settings.subtitle')}</div>
       </SideSection>
     </aside>

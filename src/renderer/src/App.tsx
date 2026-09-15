@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useStore, wireEvents } from './store'
 import { TitleBar } from './components/TitleBar'
 import { ActivityBar } from './components/ActivityBar'
-import { Sidebar } from './components/Sidebar'
+import { Sidebar, SidebarRail } from './components/Sidebar'
 import { StatusBar } from './components/StatusBar'
 import { Toasts, JobBar } from './components/Toasts'
 import { CommandPalette } from './components/CommandPalette'
@@ -58,7 +58,7 @@ export default function App(): React.JSX.Element {
       <TitleBar />
       <div className={`app-body ${sidebarOpen ? '' : 'no-sidebar'}`}>
         <ActivityBar />
-        <Sidebar />
+        {sidebarOpen ? <Sidebar /> : <SidebarRail />}
         {/*
           The detail panel must cover the viewport, not the scrollable content.
           If it were absolutely positioned inside `.content` it would scroll away
