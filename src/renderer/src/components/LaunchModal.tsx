@@ -184,11 +184,17 @@ export function LaunchModal(): React.JSX.Element | null {
               {t('launch.agentCount', { ready: targets.filter((x) => x.ready).length, total: targets.length })}
             </span>
           </div>
-          <div className="launch-agents">
-            {targets.map((a) => (
-              <AgentRow key={a.agentId} agent={a} selected={a.agentId === agentId} onSelect={setAgentId} />
-            ))}
-            {targets.length === 0 && <div className="dim" style={{ fontSize: 12 }}>{t('launch.noAgents')}</div>}
+          <div className="launch-agents-wrap">
+            <div className="launch-agents">
+              {targets.map((a) => (
+                <AgentRow key={a.agentId} agent={a} selected={a.agentId === agentId} onSelect={setAgentId} />
+              ))}
+              {targets.length === 0 && (
+                <div className="dim" style={{ fontSize: 12 }}>
+                  {t('launch.noAgents')}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* 3. what will happen ------------------------------------------ */}

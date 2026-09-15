@@ -3694,3 +3694,43 @@ button.status-item:hover {
   padding: 12px 16px;
   border-top: 1px solid var(--border);
 }
+
+/* ---------------------------------------------------------------------------
+   Modal layout: a fixed head and foot with only the body scrolling.
+
+   The launch dialog grew past the window — 913px of content in a 787px window,
+   with the start button 221px below the bottom edge and no way to reach it,
+   because the overlay centres nothing and nothing scrolls. Sizing the modal to
+   the viewport and letting the body scroll keeps the actions reachable at any
+   window height, which is the only part of a dialog that must never move.
+   ------------------------------------------------------------------------- */
+.overlay {
+  overflow-y: auto;
+  padding-bottom: 5vh;
+}
+.modal {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 17vh);
+  min-height: 0;
+}
+.modal-head,
+.modal-foot {
+  flex: none;
+}
+.modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+/* The agent list scrolls inside the body now, so it does not need to reserve
+   the whole dialog's height for itself. */
+.launch-agents {
+  max-height: none;
+  overflow-y: visible;
+}
+/* Enough rows to make the list feel like a list, not a window. */
+.launch-agents-wrap {
+  max-height: 260px;
+  overflow-y: auto;
+}
