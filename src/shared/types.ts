@@ -103,6 +103,8 @@ export interface AgentTarget {
   sourceUrl?: string
   readsUniversalDir?: boolean
   supportsSymlink?: boolean
+  /** the agent documents only a project-level skills directory */
+  projectOnly?: boolean
 }
 
 export type InstallMode = 'symlink' | 'copy'

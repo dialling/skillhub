@@ -14,7 +14,8 @@ import {
   FolderPlus,
   X,
   Info,
-  Search
+  Search,
+  Sparkles
 } from 'lucide-react'
 import { api } from '../api'
 import { useStore } from '../store'
@@ -37,6 +38,9 @@ export function AgentsView(): React.JSX.Element {
 
   const active = agents.filter((a) => a.enabled).length
   const detected = agents.filter((a) => a.detected).length
+  // Newly installed agents are deliberately NOT auto-enabled (that would
+  // silently change what an install touches), but they should not be missed.
+  const newArrivals = agents.filter((a) => a.detected && !a.enabled)
 
   // The registry covers 40+ agents, so keep the useful ones on screen: enabled
   // first, then detected, then everything else in registry order.
@@ -107,6 +111,27 @@ export function AgentsView(): React.JSX.Element {
           </button>
         </div>
       </div>
+
+      {newArrivals.length > 0 && (
+        <div className="notice">
+          <Sparkles size={14} />
+          <span>
+            {t('agents.newArrivals', { n: newArrivals.length })}
+            <span className="dim"> · {newArrivals.map((a) => a.name).slice(0, 6).join('、')}</span>
+          </span>
+          <button
+            className="btn sm primary"
+            onClick={async () => {
+              await api.agents.setEnabled([...new Set([...agents.filter((a) => a.enabled).map((a) => a.id), ...newArrivals.map((a) => a.id)])])
+              await refreshAgents()
+              toast('success', t('common.save'))
+            }}
+          >
+            <Check size={11} />
+            {t('agents.enableAll')}
+          </button>
+        </div>
+      )}
 
       <div className="filter-bar">
         <div className="searchbox" style={{ maxWidth: 320 }}>

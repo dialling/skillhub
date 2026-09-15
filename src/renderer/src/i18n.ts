@@ -100,6 +100,10 @@ const DICT: Dict = {
   'detail.repoSkillCount': ['仓库技能数', 'Repo skills'],
   'detail.growth': ['增长', 'Growth'],
   'detail.tags': ['标签', 'Tags'],
+  'detail.agentSearch': ['搜索智能体…', 'Search agents…'],
+  'detail.showAllAgents': ['显示全部 {n} 个智能体', 'Show all {n} agents'],
+  'detail.hideAllAgents': ['收起列表', 'Collapse'],
+  'detail.projectOnly': ['仅项目级', 'project-only'],
 
   'library.title': ['我的库', 'My Library'],
   'library.subtitle': ['已入库的技能仓库，可随时安装到任意智能体', 'Collected skill repos, ready to install into any agent'],
@@ -166,6 +170,11 @@ const DICT: Dict = {
   'agents.removeEntry': ['删除该技能目录', 'Delete this skill folder'],
   'agents.autodetect': ['自动检测', 'Auto-detect'],
   'agents.filterPlaceholder': ['筛选：名称、厂商或路径…', 'Filter by name, vendor or path…'],
+  'agents.confHigh': ['路径来自厂商文档', 'Path taken from vendor documentation'],
+  'agents.confMedium': ['路径来自第三方安装器表格，未能在厂商文档中核实 —— 安装前请确认', 'Path comes from a third-party installer table and could not be confirmed against vendor docs — verify before installing'],
+  'agents.confLow': ['路径未经核实', 'Path is unverified'],
+  'agents.newArrivals': ['检测到 {n} 个已安装但未启用的智能体', '{n} installed agents are not enabled yet'],
+  'agents.enableAll': ['全部启用', 'Enable all'],
 
   'profile.title': ['个人资料', 'Profile'],
   'profile.notLoggedIn': ['未登录 GitHub', 'Not signed in to GitHub'],

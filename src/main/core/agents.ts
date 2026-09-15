@@ -19,6 +19,7 @@ interface RegistryEntry {
   sourceUrl?: string | null
   readsUniversalDir?: boolean
   supportsSymlink?: boolean
+  projectOnly?: boolean
 }
 
 const FALLBACK_REGISTRY: RegistryEntry[] = [
@@ -113,17 +114,44 @@ export function registryMeta(): { path: string; count: number; agents: RegistryE
   return { path: curatedAgentRegistryPath(), count: loadRegistry().length, agents: loadRegistry() }
 }
 
-function binaryExists(name: string): boolean {
+function resolveBinary(name: string): string | null {
   try {
     const out = execFileSync('/bin/sh', ['-lc', `command -v ${name}`], {
       encoding: 'utf8',
       timeout: 3000,
       stdio: ['ignore', 'pipe', 'ignore']
     })
-    return !!out.trim()
+    const p = out.trim().split('\n')[0]
+    return p || null
   } catch {
-    return false
+    return null
   }
+}
+
+/**
+ * Two different products can ship a binary with the same name — Kimi CLI and
+ * Kimi Code both install `kimi`, and only the latter is present on a Kimi Code
+ * machine. A binary that lives inside *another* registered agent's own directory
+ * is that agent's evidence, not ours, so don't count it.
+ */
+function binaryIsForeign(binPath: string, ownId: string): boolean {
+  for (const other of loadRegistry()) {
+    if (other.id === ownId) continue
+    const roots = [
+      ...(other.detect?.dirs || []),
+      other.globalSkillsDir ? other.globalSkillsDir.replace(/\/skills$/, '') : null
+    ].filter(Boolean) as string[]
+    for (const root of roots) {
+      const abs = expandPath(root)
+      if (abs.length > 1 && binPath.startsWith(abs + '/')) return true
+    }
+  }
+  return false
+}
+
+function binaryExists(name: string, ownId: string): boolean {
+  const bin = resolveBinary(name)
+  return bin ? !binaryIsForeign(bin, ownId) : false
 }
 
 export function countSkills(dir: string): number {
@@ -154,7 +182,7 @@ function detect(entry: RegistryEntry): { detected: boolean; by?: AgentTarget['de
     return { detected: true, by: 'dir' }
   }
   for (const b of d.binaries || []) {
-    if (binaryExists(b)) return { detected: true, by: 'binary' }
+    if (binaryExists(b, entry.id)) return { detected: true, by: 'binary' }
   }
   return { detected: false }
 }
@@ -164,21 +192,33 @@ export function listAgents(): AgentTarget[] {
   const enabled = new Set(s.enabledAgents)
   const out: AgentTarget[] = []
 
+  const projectBase = s.projectDir
+
   for (const entry of loadRegistry()) {
-    if (!entry.globalSkillsDir) continue
-    const det = detect(entry)
-    const found = countSkills(entry.globalSkillsDir)
+    // Agents that document only a project-level directory (ona, qodo, replit…)
+    // still need to be visible and installable, so resolve them against the
+    // configured project directory instead of dropping them silently.
+    let path = entry.globalSkillsDir || null
+    let kind: AgentTarget['kind'] = 'global'
+    if (!path) {
+      if (!entry.projectSkillsDir) continue
+      kind = 'project'
+      path = projectBase ? join(projectBase, entry.projectSkillsDir) : entry.projectSkillsDir
+    }
+    const det = path.startsWith('~') || path.startsWith('/') ? detect(entry) : { detected: false }
+    const found = countSkills(path)
     out.push({
       id: entry.id,
       name: entry.name,
       vendor: entry.vendor,
       color: entry.color,
-      kind: 'global',
-      path: entry.globalSkillsDir,
-      detected: det.detected,
-      detectedBy: det.by,
-      enabled: enabled.has(entry.id) || (det.detected && !s.enabledAgents.length),
+      kind,
+      path,
+      detected: 'detected' in det ? !!det.detected : false,
+      detectedBy: 'by' in det ? det.by : undefined,
+      enabled: enabled.has(entry.id) || (kind === 'global' && det.detected && !s.enabledAgents.length),
       found,
+      projectOnly: !entry.globalSkillsDir,
       confidence: entry.confidence,
       sourceUrl: entry.sourceUrl || undefined,
       readsUniversalDir: entry.readsUniversalDir,
@@ -242,7 +282,10 @@ export function resolveAgentDir(agentId: string): string | null {
     return entry?.projectSkillsDir ? join(base, entry.projectSkillsDir) : null
   }
   const entry = loadRegistry().find((e) => e.id === agentId)
-  return entry?.globalSkillsDir ? expandPath(entry.globalSkillsDir) : null
+  if (!entry) return null
+  if (entry.globalSkillsDir) return expandPath(entry.globalSkillsDir)
+  const base = settings.get().projectDir
+  return base && entry.projectSkillsDir ? join(base, entry.projectSkillsDir) : null
 }
 
 export function agentDisplayName(agentId: string): string {

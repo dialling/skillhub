@@ -20,7 +20,7 @@ SkillHub 是一个 macOS 桌面应用（Electron + React），把「登录 GitHu
 | 智能体 | 设置 |
 |---|---|
 | ![智能体](docs/screenshots/agents.jpg) | ![设置](docs/screenshots/settings.jpg) |
-| 21 个 agent 的技能目录，自动探测本机已装哪些 | 凭据、库目录、安装方式、AI 翻译 |
+| 80 个 agent 的技能目录，自动探测本机已装哪些 | 凭据、库目录、安装方式、AI 翻译 |
 
 ---
 
@@ -65,7 +65,8 @@ npm run dev
 - 把库里的技能装进 agent 的 skills 目录，两种方式：
   - **软链接（默认，推荐）**：单一真源，更新库即更新所有 agent；
   - **复制**：与原仓库解耦，副本内写入 `.skillhub-install.json` 标记以便识别与清理。
-- **多 agent 适配**：内置 21 个 agent 的技能目录注册表（见下），自动探测本机装了哪些，默认勾选已启用的。
+- **多 agent 适配**：内置 80 个 agent 的技能目录注册表（见下），自动探测本机装了哪些，默认勾选已启用的。
+  安装栏默认只列出已启用的 agent，其余通过「显示全部」展开并支持搜索。
 - 命名冲突处理：目标已存在且不是 SkillHub 管理的，自动追加 owner 后缀；仍是冲突就跳过并如实报告，绝不覆盖别人的东西。
 - 多个 agent 共享同一物理目录时（例如 Zed / Goose / `.agents` 标准都读 `~/.agents/skills`），只做一次文件操作，但为每个 agent 保留安装记录。
 
@@ -83,34 +84,106 @@ npm run dev
 - 最近活动时间线、我的 Star 列表。
 
 ### 智能体（Agents）
-- 21 个 agent 的**经核实**技能目录注册表（`data/agent-registry.json`），每条都带 `confidence` 与 `sourceUrl`，
+- **80 个 agent** 的技能目录注册表（`data/agent-registry.json`），每条都带 `confidence` 与 `sourceUrl`，
   UI 上可直接点开查看依据；非高置信度的条目会显示置信度角标。
+- 支持筛选（名称/厂商/路径）与 全部 / 已检测 / 已启用 分段视图，已启用与已检测的排在前面。
+- 检测同时看目录、配置文件与命令行；若某个二进制位于**另一个** agent 的目录内（例如 Kimi CLI 与
+  Kimi Code 的二进制都叫 `kimi`），则不计入该 agent 的证据，避免误报。
+- 只记录项目级目录的 agent（如 ona / qodo / replit）也会列出，安装到「设置」里配置的项目目录。
 - 展示每个目录里已有的技能、哪些是 SkillHub 装的（软链接指向库 / 含标记文件）、哪些没有 `SKILL.md`。
 - 支持自定义目录（例如你自己的 agent）。
+
+<!-- AGENT-TABLE:START -->
+共 **80** 个 agent。
 
 | Agent | 全局技能目录 | 项目级目录 |
 |---|---|---|
 | Claude Code | `~/.claude/skills` | `.claude/skills` |
-| OpenAI Codex CLI | `~/.codex/skills` | `.codex/skills` |
-| Cursor | `~/.cursor/skills` | `.cursor/skills` |
-| Gemini CLI | `~/.gemini/skills` | `.gemini/skills` |
-| GitHub Copilot | `~/.copilot/skills` | `.github/skills` |
-| Windsurf | `~/.codeium/windsurf/skills` | `.windsurf/skills` |
+| OpenAI Codex CLI | `~/.codex/skills` | `.codex/skills` ·ᵁ |
+| Cursor | `~/.cursor/skills` | `.cursor/skills` ·ᵁ |
+| Gemini CLI | `~/.gemini/skills` | `.gemini/skills` ·ᵁ |
+| GitHub Copilot | `~/.copilot/skills` | `.github/skills` ·ᵁ |
+| Kimi Code CLI | `~/.kimi-code/skills` | `.kimi-code/skills` ·ᵁ |
+| Kimi CLI | `~/.kimi/skills` | `.kimi/skills` ·ᵁ |
+| Windsurf | `~/.codeium/windsurf/skills` | `.windsurf/skills` ·ᵁ |
 | Cline | `~/.cline/skills` | `.cline/skills` |
-| OpenCode | `~/.config/opencode/skills` | `.opencode/skills` |
-| Roo Code | `~/.roo/skills` | `.roo/skills` |
-| Kilo Code | `~/.kilo/skills` | `.kilo/skills` |
-| Qwen Code | `~/.qwen/skills` | `.qwen/skills` |
-| Amp | `~/.config/agents/skills` | `.agents/skills` |
-| Goose | `~/.agents/skills` | `.agents/skills` |
-| Factory Droid | `~/.factory/skills` | `.factory/skills` |
-| Zed | `~/.agents/skills` | `.agents/skills` |
+| Qwen Code | `~/.qwen/skills` | `.qwen/skills` ·ᵁ |
+| Roo Code | `~/.roo/skills` | `.roo/skills` ·ᵁ |
+| Kilo Code | `~/.kilo/skills` | `.kilo/skills` ·ᵁ |
+| OpenCode | `~/.config/opencode/skills` | `.opencode/skills` ·ᵁ |
+| Trae | `~/.trae/skills` | `.trae/skills` ·ᵁ |
 | Kiro | `~/.kiro/skills` | `.kiro/skills` |
-| Trae | `~/.trae/skills` | `.trae/skills` |
-| Warp | `~/.warp/skills` | `.warp/skills` |
-| Continue | `~/.continue/skills` | `.continue/skills` |
-| DeepSeek Harness | `~/.dsh/skills` | `.dsh/skills` |
-| Agent Skills 标准 | `~/.agents/skills` | `.agents/skills` |
+| Amp | `~/.config/agents/skills` | `.agents/skills` ·ᵁ |
+| Goose | `~/.agents/skills` | `.agents/skills` ·ᵁ |
+| Continue ᵐ | `~/.continue/skills` | `.continue/skills` |
+| Zed | `~/.agents/skills` | `.agents/skills` ·ᵁ |
+| Warp | `~/.warp/skills` | `.warp/skills` ·ᵁ |
+| Factory Droid | `~/.factory/skills` | `.factory/skills` ·ᵁ |
+| DeepSeek Harness | `~/.dsh/skills` | `.dsh/skills` ·ᵁ |
+| Agent Skills portable .agents convention | `~/.agents/skills` | `.agents/skills` ·ᵁ |
+| Tongyi Lingma (Qoder CN IDE) | `~/.lingma/skills` | `.lingma/skills` |
+| Qoder | `~/.qoder/skills` | `.qoder/skills` |
+| CodeBuddy Code | `~/.codebuddy/skills` | `.codebuddy/skills` |
+| Comate (Wenxin Kuaixiang) | `~/.comate/skills` | `.comate/skills` ·ᵁ |
+| Qoder CN CLI | `~/.qoder-cn/skills` | `.qoder/skills` |
+| Huawei CodeArts Agent (CodeArts Doer / Snap) | `~/.codeartsdoer/skills` | `.codeartsdoer/skills` |
+| MiniMax Code | `~/.minimax/skills` | `.minimax/skills` ·ᵁ |
+| WorkBuddy ᵐ | `~/.workbuddy/skills` | `.workbuddy/skills` |
+| Neovate | `~/.neovate/skills` | `.neovate/skills` |
+| Pochi | `~/.pochi/skills` | `.pochi/skills` ·ᵁ |
+| CodeRider | `~/.coderider/skills` | `.coderider/skills` |
+| iFlow CLI | `~/.iflow/skills` | `.iflow/skills` |
+| ZCode | `~/.zcode/skills` | `.zcode/skills` ·ᵁ |
+| CoStrict | `~/.costrict/skills` | `.costrict/skills` ·ᵁ |
+| JoyCode ᵐ | `~/.joycode/skills` | `.joycode/skills` |
+| QoderWork | `~/.qoderwork/skills` | — |
+| Deep Code | `~/.deepcode/skills` | `.deepcode/skills` ·ᵁ |
+| DeepSeek-TUI ᵐ | `~/.deepseek/skills` | `.deepseek/skills` |
+| Kode CLI | `~/.kode/skills` | `.kode/skills` |
+| Junie | `~/.junie/skills` | `.junie/skills` ·ᵁ |
+| Augment Code | `~/.augment/skills` | `.augment/skills` ·ᵁ |
+| Google Antigravity | `~/.gemini/config/skills` | `.agents/skills` ·ᵁ |
+| Grok Build / xAI Grok CLI | `~/.grok/skills` | `.grok/skills` ·ᵁ |
+| Devin CLI (Devin for Terminal) | `~/.config/devin/skills` | `.devin/skills` ·ᵁ |
+| OpenHands | `~/.agents/skills` | `.agents/skills` ·ᵁ |
+| Tabnine CLI | `~/.tabnine/agent/skills` | `.tabnine/agent/skills` ·ᵁ |
+| Rovo Dev CLI | `~/.rovodev/skills` | `.rovodev/skills` ·ᵁ |
+| Mistral Vibe | `~/.vibe/skills` | `.vibe/skills` ·ᵁ |
+| Crush | `~/.config/crush/skills` | `.crush/skills` |
+| Letta Code | `~/.letta/skills` | `.agents/skills` ·ᵁ |
+| AiderDesk | `~/.aider-desk/skills` | `.aider-desk/skills` |
+| OpenClaw | `~/.openclaw/skills` | `.agents/skills` ·ᵁ |
+| Hermes Agent | `~/.hermes/skills` | `.hermes/skills` ·ᵁ |
+| Mux / Xum | `~/.xum/skills` | `.xum/skills` ·ᵁ |
+| Firebender | `~/.firebender/skills` | `.firebender/skills` ·ᵁ |
+| Ona | — | `.ona/skills` ·ᵁ |
+| Qodo | — | `.qodo/skills` ·ᵁ |
+| Snowflake Cortex Code | `~/.snowflake/cortex/skills` | `.cortex/skills` |
+| Command Code | `~/.commandcode/skills` | `.commandcode/skills` ·ᵁ |
+| pi coding agent | `~/.pi/agent/skills` | `.pi/skills` ·ᵁ |
+| Autohand Code CLI | `~/.autohand/skills` | `.autohand/skills` |
+| Emdash | `~/.agentskills` | — |
+| fast-agent | — | `.fast-agent/skills` ·ᵁ |
+| nanobot | `~/.nanobot/workspace/skills` | — |
+| VT Code ᵐ | `~/.agents/skills` | `.agents/skills` ·ᵁ |
+| Bub ᵐ | `~/.agents/skills` | `.agents/skills` ·ᵁ |
+| Sarvam Code ᵐ | `~/.agents/skills` | `.agents/skills` ·ᵁ |
+| Zencoder ᵐ | `~/.zencoder/skills` | `.zencoder/skills` |
+| Zenflow ᵐ | `~/.zencoder/skills` | `.zencoder/skills` |
+| Deep Agents ᵐ | `~/.deepagents/agent/skills` | `.agents/skills` ·ᵁ |
+| IBM Bob ᵐ | `~/.bob/skills` | `.bob/skills` |
+| Posit Assistant ᵐ | `~/.posit/assistant/skills` | `.posit/assistant/skills` |
+| Replit Agent | — | `.agents/skills` ·ᵁ |
+| AdaL ᵐ | `~/.adal/skills` | `.adal/skills` |
+| ForgeCode ᵐ | `~/.forge/skills` | `.forge/skills` |
+| Kimchi ᵐ | `~/.config/kimchi/harness/skills` | `.kimchi/skills` |
+| Dexto ᵐ | `~/.agents/skills` | `.agents/skills` ·ᵁ |
+
+> `ᵁ` = 同时读取通用目录 `~/.agents/skills`；`ᵐ` / `ˡ` = 中等 / 低置信度，
+> 表示该路径来自厂商源码或未能从官方文档核实，可在应用内「智能体」页点开查看出处。
+
+*由 `scripts/update-readme-agents.mjs` 从 `data/agent-registry.json` 生成，请勿手改。*
+<!-- AGENT-TABLE:END -->
 
 ### 界面细节
 - **命令面板**：`⌘K` / `⌘P`，可跳转页面、切换语言、刷新，或直接搜索库/精选目录/GitHub。
@@ -177,7 +250,7 @@ src/
   renderer/src/           React 界面
 data/
   curated-catalog.json    60 个精选技能仓库（含中文简介）
-  agent-registry.json     21 个 agent 的技能目录（含出处与置信度）
+  agent-registry.json     80 个 agent 的技能目录（含出处与置信度）
 ```
 
 ### 存储位置

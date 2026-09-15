@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-15T03:50:38Z",
-  "notes": "Every path below was read from a vendor-owned source: official documentation, or (where a vendor docs site blocked automated fetching) the vendor's own published source code in its public repository. Verification caveats: (1) developers.openai.com/codex/skills and cursor.com help pages returned HTTP 403/partial content to the fetcher, so Codex directories were verified from openai/codex source (codex-rs/ext/skills/src/host_roots.rs and codex-rs/ext/skills/src/lib.rs) and Cursor from its .md docs endpoints; (2) Aider is deliberately OMITTED: no official Aider documentation mentions SKILL.md, and a code search of Aider-AI/aider found no SKILL.md handling, so its skills support is unverified; (3) Continue.dev is included with confidence medium: no Continue docs page documents skills yet, the paths come from Continue's own source (core/config/markdown/loadMarkdownSkills.ts -> .continue/skills workspace+global, plus workspace .claude/skills); (4) Trae's global path differs by edition - the international build uses ~/.trae/skills, the China edition (docs.trae.cn) uses ~/.trae-cn/skills; (5) supportsSymlink is true ONLY where a vendor documents or demonstrably implements symlinked skill folders (Claude Code, Zed, Warp, OpenCode, Qwen Code); false means 'not documented', NOT 'known to be unsupported' (Continue's loader in particular filters readdir entries with isDirectory(), so symlinks there are genuinely not followed); (6) DeepSeek Harness paths were read from the shipped implementation (@deepseek-ai/dsh-skill-filesystem) inside the DSH Desktop app bundle - vendor source, not a public docs page; (7) OpenAI Codex reads ~/.agents/skills as an additional user root and .agents/skills in each ancestor directory, and its ~/.codex/skills root is marked 'deprecated but kept for backward compatibility' in codex source, so ~/.agents/skills is the forward-looking global root for Codex; (8) Agents whose only documented location is a shared/portable directory (Goose, Zed, Amp, the .agents standard) list that directory as their global/project skills dir, since it is where an installer must place skills for them to be discovered.",
+  "generatedAt": "2026-09-15T05:58:22.200Z",
+  "notes": "Every path below was read from a vendor-owned source: official documentation, or (where a vendor docs site blocked automated fetching) the vendor's own published source code in its public repository. Verification caveats: (1) developers.openai.com/codex/skills and cursor.com help pages returned HTTP 403/partial content to the fetcher, so Codex directories were verified from openai/codex source (codex-rs/ext/skills/src/host_roots.rs and codex-rs/ext/skills/src/lib.rs) and Cursor from its .md docs endpoints; (2) Aider is deliberately OMITTED: no official Aider documentation mentions SKILL.md, and a code search of Aider-AI/aider found no SKILL.md handling, so its skills support is unverified; (3) Continue.dev is included with confidence medium: no Continue docs page documents skills yet, the paths come from Continue's own source (core/config/markdown/loadMarkdownSkills.ts -> .continue/skills workspace+global, plus workspace .claude/skills); (4) Trae's global path differs by edition - the international build uses ~/.trae/skills, the China edition (docs.trae.cn) uses ~/.trae-cn/skills; (5) supportsSymlink is true ONLY where a vendor documents or demonstrably implements symlinked skill folders (Claude Code, Zed, Warp, OpenCode, Qwen Code); false means 'not documented', NOT 'known to be unsupported' (Continue's loader in particular filters readdir entries with isDirectory(), so symlinks there are genuinely not followed); (6) DeepSeek Harness paths were read from the shipped implementation (@deepseek-ai/dsh-skill-filesystem) inside the DSH Desktop app bundle - vendor source, not a public docs page; (7) OpenAI Codex reads ~/.agents/skills as an additional user root and .agents/skills in each ancestor directory, and its ~/.codex/skills root is marked 'deprecated but kept for backward compatibility' in codex source, so ~/.agents/skills is the forward-looking global root for Codex; (8) Agents whose only documented location is a shared/portable directory (Goose, Zed, Amp, the .agents standard) list that directory as their global/project skills dir, since it is where an installer must place skills for them to be discovered.\n\n[2026-09-15] 追加 60 个 agent（Kimi 等中英文生态补全）。 每条路径的来源见 sourceUrl；confidence 为 low 的条目表示未能在厂商文档中核实。",
   "agents": [
     {
       "id": "claude-code",
@@ -120,6 +120,55 @@
       "notes": "VS Code / Copilot docs list .github/skills, .claude/skills and .agents/skills (project) plus ~/.copilot/skills, ~/.claude/skills and ~/.agents/skills (personal)."
     },
     {
+      "id": "kimi-code",
+      "name": "Kimi Code CLI",
+      "vendor": "Moonshot AI",
+      "color": "#0F172A",
+      "globalSkillsDir": "~/.kimi-code/skills",
+      "projectSkillsDir": ".kimi-code/skills",
+      "detect": {
+        "dirs": [
+          "~/.kimi-code"
+        ],
+        "files": [
+          "~/.kimi-code/config.toml"
+        ],
+        "binaries": [
+          "kimi"
+        ]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://www.kimi.com/code/docs/kimi-code-cli/customization/skills.html",
+      "notes": "国际调研另以 kimi-code-cli 为 id 重复收录（仅记录了通用目录），已合并到本条。",
+      "aliases": [
+        "kimi-code-cli"
+      ]
+    },
+    {
+      "id": "kimi-cli",
+      "name": "Kimi CLI",
+      "vendor": "Moonshot AI",
+      "color": "#1F2937",
+      "globalSkillsDir": "~/.kimi/skills",
+      "projectSkillsDir": ".kimi/skills",
+      "detect": {
+        "dirs": [
+          "~/.kimi"
+        ],
+        "files": [
+          "~/.kimi/config.toml"
+        ],
+        "binaries": []
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://moonshotai.github.io/kimi-cli/zh/customization/skills.html",
+      "notes": "注意：kimi-cli 与 kimi-code 的二进制同名（都叫 kimi），因此 binary 检测不可用 —— 本条目只按目录 ~/.kimi 检测。"
+    },
+    {
       "id": "windsurf",
       "name": "Windsurf",
       "vendor": "Cognition (Windsurf / Devin Desktop)",
@@ -162,27 +211,27 @@
       "sourceUrl": "https://docs.cline.bot/customization/skills"
     },
     {
-      "id": "opencode",
-      "name": "OpenCode",
-      "vendor": "SST",
-      "color": "#03B000",
-      "globalSkillsDir": "~/.config/opencode/skills",
-      "projectSkillsDir": ".opencode/skills",
+      "id": "qwen-code",
+      "name": "Qwen Code",
+      "vendor": "Alibaba",
+      "color": "#615CED",
+      "globalSkillsDir": "~/.qwen/skills",
+      "projectSkillsDir": ".qwen/skills",
       "detect": {
         "dirs": [
-          "~/.config/opencode"
+          "~/.qwen"
         ],
         "files": [
-          "~/.config/opencode/opencode.json"
+          "~/.qwen/settings.json"
         ],
         "binaries": [
-          "opencode"
+          "qwen"
         ]
       },
       "readsUniversalDir": true,
       "supportsSymlink": true,
       "confidence": "high",
-      "sourceUrl": "https://opencode.ai/docs/skills"
+      "sourceUrl": "https://github.com/QwenLM/qwen-code/blob/main/docs/users/features/skills.md"
     },
     {
       "id": "roo-code",
@@ -225,27 +274,69 @@
       "sourceUrl": "https://github.com/Kilo-Org/kilocode/blob/main/packages/kilo-docs/pages/customize/skills.md"
     },
     {
-      "id": "qwen-code",
-      "name": "Qwen Code",
-      "vendor": "Alibaba",
-      "color": "#615CED",
-      "globalSkillsDir": "~/.qwen/skills",
-      "projectSkillsDir": ".qwen/skills",
+      "id": "opencode",
+      "name": "OpenCode",
+      "vendor": "SST",
+      "color": "#03B000",
+      "globalSkillsDir": "~/.config/opencode/skills",
+      "projectSkillsDir": ".opencode/skills",
       "detect": {
         "dirs": [
-          "~/.qwen"
+          "~/.config/opencode"
         ],
         "files": [
-          "~/.qwen/settings.json"
+          "~/.config/opencode/opencode.json"
         ],
         "binaries": [
-          "qwen"
+          "opencode"
         ]
       },
       "readsUniversalDir": true,
       "supportsSymlink": true,
       "confidence": "high",
-      "sourceUrl": "https://github.com/QwenLM/qwen-code/blob/main/docs/users/features/skills.md"
+      "sourceUrl": "https://opencode.ai/docs/skills"
+    },
+    {
+      "id": "trae",
+      "name": "Trae",
+      "vendor": "ByteDance",
+      "color": "#32F08C",
+      "globalSkillsDir": "~/.trae/skills",
+      "projectSkillsDir": ".trae/skills",
+      "detect": {
+        "dirs": [
+          "~/.trae"
+        ],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://docs.trae.ai/ide/skills"
+    },
+    {
+      "id": "kiro",
+      "name": "Kiro",
+      "vendor": "Amazon Web Services",
+      "color": "#C6A0FF",
+      "globalSkillsDir": "~/.kiro/skills",
+      "projectSkillsDir": ".kiro/skills",
+      "detect": {
+        "dirs": [
+          "~/.kiro"
+        ],
+        "files": [
+          "~/.kiro/settings/cli.json"
+        ],
+        "binaries": [
+          "kiro-cli"
+        ]
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://kiro.dev/docs/skills/"
     },
     {
       "id": "amp",
@@ -294,27 +385,27 @@
       "sourceUrl": "https://goose-docs.ai/docs/guides/context-engineering/using-skills/"
     },
     {
-      "id": "factory-droid",
-      "name": "Factory Droid",
-      "vendor": "Factory AI",
-      "color": "#D15010",
-      "globalSkillsDir": "~/.factory/skills",
-      "projectSkillsDir": ".factory/skills",
+      "id": "continue",
+      "name": "Continue",
+      "vendor": "Continue Dev, Inc.",
+      "color": "#5C4DFF",
+      "globalSkillsDir": "~/.continue/skills",
+      "projectSkillsDir": ".continue/skills",
       "detect": {
         "dirs": [
-          "~/.factory"
+          "~/.continue"
         ],
         "files": [
-          "~/.factory/settings.json"
+          "~/.continue/config.yaml"
         ],
         "binaries": [
-          "droid"
+          "cn"
         ]
       },
-      "readsUniversalDir": true,
+      "readsUniversalDir": false,
       "supportsSymlink": false,
-      "confidence": "high",
-      "sourceUrl": "https://docs.factory.ai/harness/skills"
+      "confidence": "medium",
+      "sourceUrl": "https://github.com/continuedev/continue/blob/main/core/config/markdown/loadMarkdownSkills.ts"
     },
     {
       "id": "zed",
@@ -341,48 +432,6 @@
       "sourceUrl": "https://zed.dev/docs/ai/skills"
     },
     {
-      "id": "kiro",
-      "name": "Kiro",
-      "vendor": "Amazon Web Services",
-      "color": "#C6A0FF",
-      "globalSkillsDir": "~/.kiro/skills",
-      "projectSkillsDir": ".kiro/skills",
-      "detect": {
-        "dirs": [
-          "~/.kiro"
-        ],
-        "files": [
-          "~/.kiro/settings/cli.json"
-        ],
-        "binaries": [
-          "kiro-cli"
-        ]
-      },
-      "readsUniversalDir": false,
-      "supportsSymlink": false,
-      "confidence": "high",
-      "sourceUrl": "https://kiro.dev/docs/skills/"
-    },
-    {
-      "id": "trae",
-      "name": "Trae",
-      "vendor": "ByteDance",
-      "color": "#32F08C",
-      "globalSkillsDir": "~/.trae/skills",
-      "projectSkillsDir": ".trae/skills",
-      "detect": {
-        "dirs": [
-          "~/.trae"
-        ],
-        "files": [],
-        "binaries": []
-      },
-      "readsUniversalDir": true,
-      "supportsSymlink": false,
-      "confidence": "high",
-      "sourceUrl": "https://docs.trae.ai/ide/skills"
-    },
-    {
       "id": "warp",
       "name": "Warp",
       "vendor": "Warp",
@@ -404,27 +453,27 @@
       "sourceUrl": "https://docs.warp.dev/agents/capabilities/skills"
     },
     {
-      "id": "continue",
-      "name": "Continue",
-      "vendor": "Continue Dev, Inc.",
-      "color": "#5C4DFF",
-      "globalSkillsDir": "~/.continue/skills",
-      "projectSkillsDir": ".continue/skills",
+      "id": "factory-droid",
+      "name": "Factory Droid",
+      "vendor": "Factory AI",
+      "color": "#D15010",
+      "globalSkillsDir": "~/.factory/skills",
+      "projectSkillsDir": ".factory/skills",
       "detect": {
         "dirs": [
-          "~/.continue"
+          "~/.factory"
         ],
         "files": [
-          "~/.continue/config.yaml"
+          "~/.factory/settings.json"
         ],
         "binaries": [
-          "cn"
+          "droid"
         ]
       },
-      "readsUniversalDir": false,
+      "readsUniversalDir": true,
       "supportsSymlink": false,
-      "confidence": "medium",
-      "sourceUrl": "https://github.com/continuedev/continue/blob/main/core/config/markdown/loadMarkdownSkills.ts"
+      "confidence": "high",
+      "sourceUrl": "https://docs.factory.ai/harness/skills"
     },
     {
       "id": "dsh",
@@ -467,6 +516,1187 @@
       "supportsSymlink": false,
       "confidence": "high",
       "sourceUrl": "https://agentskills.io/client-implementation/adding-skills-support"
+    },
+    {
+      "id": "lingma",
+      "name": "Tongyi Lingma (Qoder CN IDE)",
+      "vendor": "Alibaba",
+      "color": "#5A4AF4",
+      "globalSkillsDir": "~/.lingma/skills",
+      "projectSkillsDir": ".lingma/skills",
+      "detect": {
+        "dirs": [
+          "~/.lingma"
+        ],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://docs.qoder.cn/user-guide/skills"
+    },
+    {
+      "id": "qoder",
+      "name": "Qoder",
+      "vendor": "Alibaba",
+      "color": "#7B61FF",
+      "globalSkillsDir": "~/.qoder/skills",
+      "projectSkillsDir": ".qoder/skills",
+      "detect": {
+        "dirs": [
+          "~/.qoder"
+        ],
+        "files": [],
+        "binaries": [
+          "qoder"
+        ]
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://docs.qoder.com/zh/cli/Skills"
+    },
+    {
+      "id": "codebuddy",
+      "name": "CodeBuddy Code",
+      "vendor": "Tencent",
+      "color": "#0052D9",
+      "globalSkillsDir": "~/.codebuddy/skills",
+      "projectSkillsDir": ".codebuddy/skills",
+      "detect": {
+        "dirs": [
+          "~/.codebuddy"
+        ],
+        "files": [],
+        "binaries": [
+          "codebuddy"
+        ]
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://cloud.tencent.cn/document/product/1831/137020"
+    },
+    {
+      "id": "comate",
+      "name": "Comate (Wenxin Kuaixiang)",
+      "vendor": "Baidu",
+      "color": "#2932E1",
+      "globalSkillsDir": "~/.comate/skills",
+      "projectSkillsDir": ".comate/skills",
+      "detect": {
+        "dirs": [
+          "~/.comate"
+        ],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://cloud.baidu.com/article/6272460"
+    },
+    {
+      "id": "qoder-cn",
+      "name": "Qoder CN CLI",
+      "vendor": "Alibaba",
+      "color": "#8B5CF6",
+      "globalSkillsDir": "~/.qoder-cn/skills",
+      "projectSkillsDir": ".qoder/skills",
+      "detect": {
+        "dirs": [
+          "~/.qoder-cn"
+        ],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://help.aliyun.com/zh/lingma/skills"
+    },
+    {
+      "id": "codearts-agent",
+      "name": "Huawei CodeArts Agent (CodeArts Doer / Snap)",
+      "vendor": "Huawei Cloud",
+      "color": "#C7000B",
+      "globalSkillsDir": "~/.codeartsdoer/skills",
+      "projectSkillsDir": ".codeartsdoer/skills",
+      "detect": {
+        "dirs": [
+          "~/.codeartsdoer"
+        ],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://support.huaweicloud.com/intl/en-us/usermanual-cli/codeartsagent_cli_0019.html"
+    },
+    {
+      "id": "minimax-code",
+      "name": "MiniMax Code",
+      "vendor": "MiniMax",
+      "color": "#FF4E45",
+      "globalSkillsDir": "~/.minimax/skills",
+      "projectSkillsDir": ".minimax/skills",
+      "detect": {
+        "dirs": [
+          "~/.minimax"
+        ],
+        "files": [
+          "~/.minimax/config.yaml"
+        ],
+        "binaries": [
+          "mcode"
+        ]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://agent.minimaxi.com/docs/cli/configuration.md"
+    },
+    {
+      "id": "workbuddy",
+      "name": "WorkBuddy",
+      "vendor": "Tencent",
+      "color": "#00A4FF",
+      "globalSkillsDir": "~/.workbuddy/skills",
+      "projectSkillsDir": ".workbuddy/skills",
+      "detect": {
+        "dirs": [
+          "~/.workbuddy"
+        ],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "medium",
+      "sourceUrl": "https://github.com/Tencent/teamai-cli/blob/main/src/known-agents.ts"
+    },
+    {
+      "id": "neovate",
+      "name": "Neovate",
+      "vendor": "Ant Group (Alipay)",
+      "color": "#1677FF",
+      "globalSkillsDir": "~/.neovate/skills",
+      "projectSkillsDir": ".neovate/skills",
+      "detect": {
+        "dirs": [
+          "~/.neovate"
+        ],
+        "files": [],
+        "binaries": [
+          "neovate"
+        ]
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://neovateai.dev/en/docs/skills"
+    },
+    {
+      "id": "pochi",
+      "name": "Pochi",
+      "vendor": "TabbyML",
+      "color": "#F97316",
+      "globalSkillsDir": "~/.pochi/skills",
+      "projectSkillsDir": ".pochi/skills",
+      "detect": {
+        "dirs": [
+          "~/.pochi"
+        ],
+        "files": [],
+        "binaries": [
+          "pochi"
+        ]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://docs.getpochi.com/skills/"
+    },
+    {
+      "id": "coderider",
+      "name": "CodeRider",
+      "vendor": "JiHu GitLab",
+      "color": "#FC6D26",
+      "globalSkillsDir": "~/.coderider/skills",
+      "projectSkillsDir": ".coderider/skills",
+      "detect": {
+        "dirs": [
+          "~/.coderider"
+        ],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": true,
+      "confidence": "high",
+      "sourceUrl": "https://gitlab.cn/docs/coderider/user_manual/VSCode/skills/"
+    },
+    {
+      "id": "iflow-cli",
+      "name": "iFlow CLI",
+      "vendor": "iFlow (Xinliu)",
+      "color": "#0EA5E9",
+      "globalSkillsDir": "~/.iflow/skills",
+      "projectSkillsDir": ".iflow/skills",
+      "detect": {
+        "dirs": [
+          "~/.iflow"
+        ],
+        "files": [],
+        "binaries": [
+          "iflow"
+        ]
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "http://docs.iflow.cn/cli/examples/skill/"
+    },
+    {
+      "id": "zcode",
+      "name": "ZCode",
+      "vendor": "Z.ai (Zhipu AI)",
+      "color": "#3859FF",
+      "globalSkillsDir": "~/.zcode/skills",
+      "projectSkillsDir": ".zcode/skills",
+      "detect": {
+        "dirs": [
+          "~/.zcode"
+        ],
+        "files": [
+          "~/.zcode/cli/config.json"
+        ],
+        "binaries": []
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": true,
+      "confidence": "high",
+      "sourceUrl": "https://zcode.z.ai/en/docs/skill"
+    },
+    {
+      "id": "costrict",
+      "name": "CoStrict",
+      "vendor": "Sangfor Technologies",
+      "color": "#1D4ED8",
+      "globalSkillsDir": "~/.costrict/skills",
+      "projectSkillsDir": ".costrict/skills",
+      "detect": {
+        "dirs": [
+          "~/.costrict"
+        ],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": true,
+      "confidence": "high",
+      "sourceUrl": "https://docs.costrict.ai/plugin/product-features/skills"
+    },
+    {
+      "id": "joycode",
+      "name": "JoyCode",
+      "vendor": "JD.com",
+      "color": "#E1251B",
+      "globalSkillsDir": "~/.joycode/skills",
+      "projectSkillsDir": ".joycode/skills",
+      "detect": {
+        "dirs": [
+          "~/.joycode"
+        ],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "medium",
+      "sourceUrl": "https://github.com/Tencent/teamai-cli/blob/main/src/known-agents.ts"
+    },
+    {
+      "id": "qoderwork",
+      "name": "QoderWork",
+      "vendor": "Alibaba",
+      "color": "#5B4DF5",
+      "globalSkillsDir": "~/.qoderwork/skills",
+      "projectSkillsDir": null,
+      "detect": {
+        "dirs": [
+          "~/.qoderwork"
+        ],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://docs.qoder.com/zh/qoderwork/skills"
+    },
+    {
+      "id": "deepcode",
+      "name": "Deep Code",
+      "vendor": "DeepSeek (documented integration)",
+      "color": "#4D6BFE",
+      "globalSkillsDir": "~/.deepcode/skills",
+      "projectSkillsDir": ".deepcode/skills",
+      "detect": {
+        "dirs": [
+          "~/.deepcode"
+        ],
+        "files": [],
+        "binaries": [
+          "deepcode"
+        ]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://api-docs.deepseek.com/quick_start/agent_integrations/deepcode/",
+      "notes": "两份独立调研对全局目录存在分歧：中文调研只记录到通用目录 ~/.agents/skills，国际调研找到了专用目录 ~/.deepcode/skills。此处采用专用目录，并标注它也读取通用目录。"
+    },
+    {
+      "id": "deepseek-tui",
+      "name": "DeepSeek-TUI",
+      "vendor": "DeepSeek (community agent, documented in DeepSeek's org)",
+      "color": "#3E63F5",
+      "globalSkillsDir": "~/.deepseek/skills",
+      "projectSkillsDir": ".deepseek/skills",
+      "detect": {
+        "dirs": [
+          "~/.deepseek"
+        ],
+        "files": [],
+        "binaries": [
+          "codewhale"
+        ]
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "medium",
+      "sourceUrl": "https://github.com/deepseek-ai/awesome-deepseek-agent/blob/main/docs/deepseek-tui.md"
+    },
+    {
+      "id": "kode",
+      "name": "Kode CLI",
+      "vendor": "shareAI-lab",
+      "color": "#7C3AED",
+      "globalSkillsDir": "~/.kode/skills",
+      "projectSkillsDir": ".kode/skills",
+      "detect": {
+        "dirs": [
+          "~/.kode"
+        ],
+        "files": [],
+        "binaries": [
+          "kode"
+        ]
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://github.com/shareAI-lab/Kode-CLI/blob/main/docs/skills.md"
+    },
+    {
+      "id": "junie",
+      "name": "Junie",
+      "vendor": "JetBrains",
+      "color": "#FF318C",
+      "globalSkillsDir": "~/.junie/skills",
+      "projectSkillsDir": ".junie/skills",
+      "detect": {
+        "dirs": [
+          "~/.junie",
+          "~/Library/Caches/JetBrains"
+        ],
+        "files": [],
+        "binaries": [
+          "junie"
+        ]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://www.jetbrains.com/help/junie/agent-skills.html"
+    },
+    {
+      "id": "augment-code",
+      "name": "Augment Code",
+      "vendor": "Augment",
+      "color": "#6E56CF",
+      "globalSkillsDir": "~/.augment/skills",
+      "projectSkillsDir": ".augment/skills",
+      "detect": {
+        "dirs": [
+          "~/.augment"
+        ],
+        "files": [],
+        "binaries": [
+          "auggie"
+        ]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://docs.augmentcode.com/cli/skills"
+    },
+    {
+      "id": "antigravity",
+      "name": "Google Antigravity",
+      "vendor": "Google",
+      "color": "#4285F4",
+      "globalSkillsDir": "~/.gemini/config/skills",
+      "projectSkillsDir": ".agents/skills",
+      "detect": {
+        "dirs": [
+          "~/.gemini/config"
+        ],
+        "files": [],
+        "binaries": [
+          "antigravity"
+        ]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://antigravity.google/docs/skills"
+    },
+    {
+      "id": "grok",
+      "name": "Grok Build / xAI Grok CLI",
+      "vendor": "xAI",
+      "color": "#111111",
+      "globalSkillsDir": "~/.grok/skills",
+      "projectSkillsDir": ".grok/skills",
+      "detect": {
+        "dirs": [
+          "~/.grok"
+        ],
+        "files": [],
+        "binaries": [
+          "grok"
+        ]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://docs.x.ai/build/features/skills-plugins-marketplaces"
+    },
+    {
+      "id": "devin",
+      "name": "Devin CLI (Devin for Terminal)",
+      "vendor": "Cognition",
+      "color": "#317CFF",
+      "globalSkillsDir": "~/.config/devin/skills",
+      "projectSkillsDir": ".devin/skills",
+      "detect": {
+        "dirs": [
+          "~/.config/devin"
+        ],
+        "files": [],
+        "binaries": [
+          "devin"
+        ]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://docs.devin.ai/cli/extensibility/skills/overview"
+    },
+    {
+      "id": "openhands",
+      "name": "OpenHands",
+      "vendor": "All Hands AI",
+      "color": "#5B6EF5",
+      "globalSkillsDir": "~/.agents/skills",
+      "projectSkillsDir": ".agents/skills",
+      "detect": {
+        "dirs": [
+          "~/.openhands"
+        ],
+        "files": [],
+        "binaries": [
+          "openhands"
+        ]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://docs.openhands.dev/overview/skills"
+    },
+    {
+      "id": "tabnine",
+      "name": "Tabnine CLI",
+      "vendor": "Tabnine",
+      "color": "#6F42C1",
+      "globalSkillsDir": "~/.tabnine/agent/skills",
+      "projectSkillsDir": ".tabnine/agent/skills",
+      "detect": {
+        "dirs": [
+          "~/.tabnine"
+        ],
+        "files": [],
+        "binaries": [
+          "tabnine"
+        ]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://docs.tabnine.com/main/getting-started/tabnine-cli/features/agent-skills"
+    },
+    {
+      "id": "rovodev",
+      "name": "Rovo Dev CLI",
+      "vendor": "Atlassian",
+      "color": "#0052CC",
+      "globalSkillsDir": "~/.rovodev/skills",
+      "projectSkillsDir": ".rovodev/skills",
+      "detect": {
+        "dirs": [
+          "~/.rovodev"
+        ],
+        "files": [],
+        "binaries": [
+          "rovodev"
+        ]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://support.atlassian.com/rovo/docs/extend-rovo-dev-cli-with-agent-skills/"
+    },
+    {
+      "id": "mistral-vibe",
+      "name": "Mistral Vibe",
+      "vendor": "Mistral AI",
+      "color": "#FF7000",
+      "globalSkillsDir": "~/.vibe/skills",
+      "projectSkillsDir": ".vibe/skills",
+      "detect": {
+        "dirs": [
+          "~/.vibe"
+        ],
+        "files": [],
+        "binaries": [
+          "vibe"
+        ]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": true,
+      "confidence": "high",
+      "sourceUrl": "https://github.com/mistralai/platform-docs-public/blob/main/public/vibe/code/cli/skills.md"
+    },
+    {
+      "id": "crush",
+      "name": "Crush",
+      "vendor": "Charm",
+      "color": "#F472B6",
+      "globalSkillsDir": "~/.config/crush/skills",
+      "projectSkillsDir": ".crush/skills",
+      "detect": {
+        "dirs": [
+          "~/.config/crush"
+        ],
+        "files": [],
+        "binaries": [
+          "crush"
+        ]
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://github.com/charmbracelet/crush"
+    },
+    {
+      "id": "letta",
+      "name": "Letta Code",
+      "vendor": "Letta",
+      "color": "#0B0B0B",
+      "globalSkillsDir": "~/.letta/skills",
+      "projectSkillsDir": ".agents/skills",
+      "detect": {
+        "dirs": [
+          "~/.letta"
+        ],
+        "files": [],
+        "binaries": [
+          "letta"
+        ]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://docs.letta.com/letta-code/skills"
+    },
+    {
+      "id": "aider-desk",
+      "name": "AiderDesk",
+      "vendor": "AiderDesk (hotovo)",
+      "color": "#22C55E",
+      "globalSkillsDir": "~/.aider-desk/skills",
+      "projectSkillsDir": ".aider-desk/skills",
+      "detect": {
+        "dirs": [
+          "~/.aider-desk"
+        ],
+        "files": [],
+        "binaries": [
+          "aider-desk"
+        ]
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://aiderdesk.hotovo.com/docs/agent-mode/skills"
+    },
+    {
+      "id": "openclaw",
+      "name": "OpenClaw",
+      "vendor": "OpenClaw",
+      "color": "#E11D48",
+      "globalSkillsDir": "~/.openclaw/skills",
+      "projectSkillsDir": ".agents/skills",
+      "detect": {
+        "dirs": [
+          "~/.openclaw",
+          "~/.clawdbot"
+        ],
+        "files": [],
+        "binaries": [
+          "openclaw"
+        ]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://docs.openclaw.ai/tools/skills"
+    },
+    {
+      "id": "hermes-agent",
+      "name": "Hermes Agent",
+      "vendor": "Nous Research",
+      "color": "#9333EA",
+      "globalSkillsDir": "~/.hermes/skills",
+      "projectSkillsDir": ".hermes/skills",
+      "detect": {
+        "dirs": [
+          "~/.hermes"
+        ],
+        "files": [],
+        "binaries": [
+          "hermes"
+        ]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://hermes-agent.nousresearch.com/docs/user-guide/features/skills"
+    },
+    {
+      "id": "mux",
+      "name": "Mux / Xum",
+      "vendor": "Coder",
+      "color": "#0B5FFF",
+      "globalSkillsDir": "~/.xum/skills",
+      "projectSkillsDir": ".xum/skills",
+      "detect": {
+        "dirs": [
+          "~/.xum",
+          "~/.mux"
+        ],
+        "files": [],
+        "binaries": [
+          "mux"
+        ]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://mux.coder.com/agent-skills"
+    },
+    {
+      "id": "firebender",
+      "name": "Firebender",
+      "vendor": "Firebender",
+      "color": "#FF6B35",
+      "globalSkillsDir": "~/.firebender/skills",
+      "projectSkillsDir": ".firebender/skills",
+      "detect": {
+        "dirs": [
+          "~/.firebender"
+        ],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://docs.firebender.com/multi-agent/skills"
+    },
+    {
+      "id": "ona",
+      "name": "Ona",
+      "vendor": "Ona (formerly Gitpod)",
+      "color": "#F97316",
+      "globalSkillsDir": null,
+      "projectSkillsDir": ".ona/skills",
+      "detect": {
+        "dirs": [
+          "~/.ona"
+        ],
+        "files": [],
+        "binaries": [
+          "ona"
+        ]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://ona.com/docs/ona/agents/skills",
+      "projectOnly": true,
+      "notes": "该 agent 未记录用户级技能目录，只能安装到项目内的 .ona/skills。"
+    },
+    {
+      "id": "qodo",
+      "name": "Qodo",
+      "vendor": "Qodo (formerly Codium)",
+      "color": "#7B61FF",
+      "globalSkillsDir": null,
+      "projectSkillsDir": ".qodo/skills",
+      "detect": {
+        "dirs": [],
+        "files": [],
+        "binaries": [
+          "qodo"
+        ]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://docs.qodo.ai/governance/manage-skills-across-repositories",
+      "projectOnly": true,
+      "notes": "该 agent 未记录用户级技能目录，只能安装到项目内的 .qodo/skills。"
+    },
+    {
+      "id": "snowflake-cortex-code",
+      "name": "Snowflake Cortex Code",
+      "vendor": "Snowflake",
+      "color": "#29B5E8",
+      "globalSkillsDir": "~/.snowflake/cortex/skills",
+      "projectSkillsDir": ".cortex/skills",
+      "detect": {
+        "dirs": [
+          "~/.snowflake/cortex"
+        ],
+        "files": [],
+        "binaries": [
+          "cortex"
+        ]
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://docs.snowflake.com/en/user-guide/cortex-code/extensibility"
+    },
+    {
+      "id": "command-code",
+      "name": "Command Code",
+      "vendor": "Command Code",
+      "color": "#7C3AED",
+      "globalSkillsDir": "~/.commandcode/skills",
+      "projectSkillsDir": ".commandcode/skills",
+      "detect": {
+        "dirs": [
+          "~/.commandcode"
+        ],
+        "files": [],
+        "binaries": [
+          "command-code"
+        ]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://commandcode.ai/docs/skills"
+    },
+    {
+      "id": "pi",
+      "name": "pi coding agent",
+      "vendor": "Mario Zechner (pi-mono)",
+      "color": "#6B7280",
+      "globalSkillsDir": "~/.pi/agent/skills",
+      "projectSkillsDir": ".pi/skills",
+      "detect": {
+        "dirs": [
+          "~/.pi/agent"
+        ],
+        "files": [],
+        "binaries": [
+          "pi"
+        ]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/docs/skills.md"
+    },
+    {
+      "id": "autohand",
+      "name": "Autohand Code CLI",
+      "vendor": "Autohand AI",
+      "color": "#22D3EE",
+      "globalSkillsDir": "~/.autohand/skills",
+      "projectSkillsDir": ".autohand/skills",
+      "detect": {
+        "dirs": [
+          "~/.autohand"
+        ],
+        "files": [],
+        "binaries": [
+          "autohand"
+        ]
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://autohand.ai/docs/working-with-autohand-code/agent-skills.html"
+    },
+    {
+      "id": "emdash",
+      "name": "Emdash",
+      "vendor": "General Action",
+      "color": "#0F1F22",
+      "globalSkillsDir": "~/.agentskills",
+      "projectSkillsDir": null,
+      "detect": {
+        "dirs": [
+          "~/.agentskills"
+        ],
+        "files": [],
+        "binaries": [
+          "emdash"
+        ]
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": true,
+      "confidence": "high",
+      "sourceUrl": "https://docs.emdash.sh/library/skills"
+    },
+    {
+      "id": "fast-agent",
+      "name": "fast-agent",
+      "vendor": "fast-agent (evalstate)",
+      "color": "#10B981",
+      "globalSkillsDir": null,
+      "projectSkillsDir": ".fast-agent/skills",
+      "detect": {
+        "dirs": [],
+        "files": [],
+        "binaries": [
+          "fast-agent"
+        ]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://fast-agent.ai/agents/skills/",
+      "projectOnly": true,
+      "notes": "该 agent 未记录用户级技能目录，只能安装到项目内的 .fast-agent/skills。"
+    },
+    {
+      "id": "nanobot",
+      "name": "nanobot",
+      "vendor": "HKUDS",
+      "color": "#0EA5E9",
+      "globalSkillsDir": "~/.nanobot/workspace/skills",
+      "projectSkillsDir": null,
+      "detect": {
+        "dirs": [
+          "~/.nanobot"
+        ],
+        "files": [],
+        "binaries": [
+          "nanobot"
+        ]
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://nanobot.wiki/docs/0.1.5/use-nanobot/skills"
+    },
+    {
+      "id": "vtcode",
+      "name": "VT Code",
+      "vendor": "VT Code (vinhnx)",
+      "color": "#2563EB",
+      "globalSkillsDir": "~/.agents/skills",
+      "projectSkillsDir": ".agents/skills",
+      "detect": {
+        "dirs": [
+          "~/.agents"
+        ],
+        "files": [],
+        "binaries": [
+          "vtcode"
+        ]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "medium",
+      "sourceUrl": "https://github.com/vinhnx/vtcode/blob/main/docs/skills/SKILLS_GUIDE.md"
+    },
+    {
+      "id": "bub",
+      "name": "Bub",
+      "vendor": "bubbuild",
+      "color": "#8B5CF6",
+      "globalSkillsDir": "~/.agents/skills",
+      "projectSkillsDir": ".agents/skills",
+      "detect": {
+        "dirs": [
+          "~/.bub"
+        ],
+        "files": [],
+        "binaries": [
+          "bub"
+        ]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "medium",
+      "sourceUrl": "https://github.com/bubbuild/bub/blob/main/src/bub/skills.py"
+    },
+    {
+      "id": "sarvam-code",
+      "name": "Sarvam Code",
+      "vendor": "Sarvam AI",
+      "color": "#FF6B00",
+      "globalSkillsDir": "~/.agents/skills",
+      "projectSkillsDir": ".agents/skills",
+      "detect": {
+        "dirs": [
+          "~/.sarvam"
+        ],
+        "files": [],
+        "binaries": [
+          "sarvam"
+        ]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "medium",
+      "sourceUrl": "https://github.com/vercel-labs/skills/blob/main/src/agents.ts"
+    },
+    {
+      "id": "zencoder",
+      "name": "Zencoder",
+      "vendor": "Zencoder",
+      "color": "#6D28D9",
+      "globalSkillsDir": "~/.zencoder/skills",
+      "projectSkillsDir": ".zencoder/skills",
+      "detect": {
+        "dirs": [
+          "~/.zencoder"
+        ],
+        "files": [],
+        "binaries": [
+          "zencoder"
+        ]
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "medium",
+      "sourceUrl": "https://github.com/vercel-labs/skills/blob/main/src/agents.ts"
+    },
+    {
+      "id": "zenflow",
+      "name": "Zenflow",
+      "vendor": "Zencoder",
+      "color": "#6D28D9",
+      "globalSkillsDir": "~/.zencoder/skills",
+      "projectSkillsDir": ".zencoder/skills",
+      "detect": {
+        "dirs": [
+          "~/.zencoder"
+        ],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "medium",
+      "sourceUrl": "https://github.com/vercel-labs/skills/blob/main/src/agents.ts",
+      "notes": "该路径与 zencoder 相同，疑似第三方安装器表格的误差；未能在 Zenflow 官方文档核实，安装前请确认。"
+    },
+    {
+      "id": "deepagents",
+      "name": "Deep Agents",
+      "vendor": "LangChain",
+      "color": "#1C3C3C",
+      "globalSkillsDir": "~/.deepagents/agent/skills",
+      "projectSkillsDir": ".agents/skills",
+      "detect": {
+        "dirs": [
+          "~/.deepagents"
+        ],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "medium",
+      "sourceUrl": "https://github.com/vercel-labs/skills/blob/main/src/agents.ts"
+    },
+    {
+      "id": "bob",
+      "name": "IBM Bob",
+      "vendor": "IBM",
+      "color": "#0F62FE",
+      "globalSkillsDir": "~/.bob/skills",
+      "projectSkillsDir": ".bob/skills",
+      "detect": {
+        "dirs": [
+          "~/.bob"
+        ],
+        "files": [],
+        "binaries": [
+          "bob"
+        ]
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "medium",
+      "sourceUrl": "https://github.com/vercel-labs/skills/blob/main/src/agents.ts"
+    },
+    {
+      "id": "posit-assistant",
+      "name": "Posit Assistant",
+      "vendor": "Posit",
+      "color": "#447099",
+      "globalSkillsDir": "~/.posit/assistant/skills",
+      "projectSkillsDir": ".posit/assistant/skills",
+      "detect": {
+        "dirs": [
+          "~/.posit",
+          "~/.positai"
+        ],
+        "files": [],
+        "binaries": []
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "medium",
+      "sourceUrl": "https://github.com/vercel-labs/skills/blob/main/src/agents.ts"
+    },
+    {
+      "id": "replit",
+      "name": "Replit Agent",
+      "vendor": "Replit",
+      "color": "#F26207",
+      "globalSkillsDir": null,
+      "projectSkillsDir": ".agents/skills",
+      "detect": {
+        "dirs": [],
+        "files": [
+          ".replit"
+        ],
+        "binaries": []
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "high",
+      "sourceUrl": "https://docs.replit.com/features/agent/skills",
+      "projectOnly": true,
+      "notes": "该 agent 未记录用户级技能目录，只能安装到项目内的 .agents/skills。"
+    },
+    {
+      "id": "adal",
+      "name": "AdaL",
+      "vendor": "AdaL",
+      "color": "#8B5CF6",
+      "globalSkillsDir": "~/.adal/skills",
+      "projectSkillsDir": ".adal/skills",
+      "detect": {
+        "dirs": [
+          "~/.adal"
+        ],
+        "files": [],
+        "binaries": [
+          "adal"
+        ]
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "medium",
+      "sourceUrl": "https://github.com/vercel-labs/skills/blob/main/src/agents.ts"
+    },
+    {
+      "id": "forgecode",
+      "name": "ForgeCode",
+      "vendor": "ForgeCode",
+      "color": "#EF4444",
+      "globalSkillsDir": "~/.forge/skills",
+      "projectSkillsDir": ".forge/skills",
+      "detect": {
+        "dirs": [
+          "~/.forge"
+        ],
+        "files": [],
+        "binaries": [
+          "forge"
+        ]
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "medium",
+      "sourceUrl": "https://github.com/vercel-labs/skills/blob/main/src/agents.ts"
+    },
+    {
+      "id": "kimchi",
+      "name": "Kimchi",
+      "vendor": "Kimchi",
+      "color": "#EC4899",
+      "globalSkillsDir": "~/.config/kimchi/harness/skills",
+      "projectSkillsDir": ".kimchi/skills",
+      "detect": {
+        "dirs": [
+          "~/.config/kimchi"
+        ],
+        "files": [],
+        "binaries": [
+          "kimchi"
+        ]
+      },
+      "readsUniversalDir": false,
+      "supportsSymlink": false,
+      "confidence": "medium",
+      "sourceUrl": "https://github.com/vercel-labs/skills/blob/main/src/agents.ts"
+    },
+    {
+      "id": "dexto",
+      "name": "Dexto",
+      "vendor": "Dexto",
+      "color": "#0EA5E9",
+      "globalSkillsDir": "~/.agents/skills",
+      "projectSkillsDir": ".agents/skills",
+      "detect": {
+        "dirs": [
+          "~/.dexto"
+        ],
+        "files": [],
+        "binaries": [
+          "dexto"
+        ]
+      },
+      "readsUniversalDir": true,
+      "supportsSymlink": false,
+      "confidence": "medium",
+      "sourceUrl": "https://github.com/vercel-labs/skills/blob/main/src/agents.ts"
     }
   ]
 }

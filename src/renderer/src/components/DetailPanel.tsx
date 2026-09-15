@@ -16,10 +16,11 @@ import {
   FileText,
   TrendingUp,
   Sparkles,
-  AlertCircle,
+  Search,
+  CircleAlert,
   Languages
 } from 'lucide-react'
-import { CATEGORY_LABELS } from '@shared/types'
+import { CATEGORY_LABELS, type AgentTarget } from '@shared/types'
 import { api, fmtStars, fmtRelative, gradientFor } from '../api'
 import { useStore } from '../store'
 import { Markdown } from './Markdown'
@@ -48,6 +49,8 @@ export function DetailPanel(): React.JSX.Element | null {
   const [translating, setTranslating] = useState(false)
   const [skillPreview, setSkillPreview] = useState<{ name: string; body: string } | null>(null)
   const [closing, setClosing] = useState(false)
+  const [showAllAgents, setShowAllAgents] = useState(false)
+  const [agentQuery, setAgentQuery] = useState('')
   const bodyRef = useRef<HTMLDivElement>(null)
 
   const repoFullName = detail?.fullName
@@ -93,11 +96,9 @@ export function DetailPanel(): React.JSX.Element | null {
     setTranslated(null)
     setSkillPreview(null)
     setMode(useStore.getState().settings?.installMode || 'symlink')
-    const enabled = useStore
-      .getState()
-      .agents.filter((a) => a.enabled && a.kind !== 'project')
-      .map((a) => a.id)
-    setTargets(new Set(enabled))
+    setTargets(new Set(useStore.getState().agents.filter((a) => a.enabled).map((a) => a.id)))
+    setShowAllAgents(false)
+    setAgentQuery('')
   }, [repoFullName])
 
   useEffect(() => {
@@ -307,7 +308,7 @@ export function DetailPanel(): React.JSX.Element | null {
           </div>
         ) : detail.error ? (
           <div className="empty">
-            <AlertCircle size={26} className="icon" />
+            <CircleAlert size={26} className="icon" />
             <h3>{detail.error}</h3>
             <button className="btn" onClick={() => void useStore.getState().openDetail(detail.fullName)}>
               {t('common.retry')}
@@ -515,46 +516,15 @@ export function DetailPanel(): React.JSX.Element | null {
                   <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 600 }}>
                     {t('detail.chooseAgents')}
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
-                    {agents.filter((a) => a.kind !== 'project').length === 0 && (
-                      <div className="dim" style={{ fontSize: 11.5 }}>
-                        {t('detail.noAgents')}
-                      </div>
-                    )}
-                    {agents
-                      .filter((a) => a.kind !== 'project')
-                      .map((a) => {
-                        const on = targets.has(a.id)
-                        return (
-                          <label
-                            key={a.id}
-                            className="flex"
-                            style={{ gap: 9, cursor: 'pointer', padding: '4px 2px' }}
-                            title={a.path}
-                          >
-                            <button
-                              className={`skill-check ${on ? 'on' : ''}`}
-                              onClick={(e) => {
-                                e.preventDefault()
-                                const next = new Set(targets)
-                                if (on) next.delete(a.id)
-                                else next.add(a.id)
-                                setTargets(next)
-                              }}
-                            >
-                              <Check size={10} />
-                            </button>
-                            <span className="dot" style={{ background: a.color || 'var(--text-3)', width: 7, height: 7, borderRadius: '50%' }} />
-                            <span style={{ fontSize: 12.5 }}>{a.name}</span>
-                            {a.kind === 'custom' && <span className="chip mono">custom</span>}
-                            {!a.detected && <span className="chip mono dim">?</span>}
-                            <span className="mono dim" style={{ marginLeft: 'auto', fontSize: 10 }}>
-                              {a.found || 0}
-                            </span>
-                          </label>
-                        )
-                      })}
-                  </div>
+                  <AgentPicker
+                    agents={agents}
+                    targets={targets}
+                    setTargets={setTargets}
+                    expanded={showAllAgents}
+                    onToggleExpanded={() => setShowAllAgents((v) => !v)}
+                    query={agentQuery}
+                    setQuery={setAgentQuery}
+                  />
 
                   <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 600 }}>
                     {t('detail.installMode')}
@@ -646,6 +616,115 @@ export function DetailPanel(): React.JSX.Element | null {
             </div>
           </div>
         </div>
+      )}
+    </div>
+  )
+}
+
+/**
+ * The registry covers 80 agents. Dumping 80 checkboxes into a 330px column is
+ * useless, so show the enabled ones (which are pre-checked) plus anything the
+ * user has already selected, and put the rest behind a searchable disclosure.
+ */
+function AgentPicker({
+  agents,
+  targets,
+  setTargets,
+  expanded,
+  onToggleExpanded,
+  query,
+  setQuery
+}: {
+  agents: AgentTarget[]
+  targets: Set<string>
+  setTargets: (next: Set<string>) => void
+  expanded: boolean
+  onToggleExpanded: () => void
+  query: string
+  setQuery: (q: string) => void
+}): React.JSX.Element {
+  const t = useStore((s) => s.t)
+  const term = query.trim().toLowerCase()
+  const matches = (a: AgentTarget): boolean =>
+    !term ||
+    a.name.toLowerCase().includes(term) ||
+    (a.vendor || '').toLowerCase().includes(term) ||
+    a.path.toLowerCase().includes(term)
+
+  const primary = agents.filter((a) => a.enabled || targets.has(a.id))
+  const rest = agents.filter((a) => !primary.includes(a))
+  const shown = expanded ? agents.filter(matches) : primary
+  const toggle = (id: string): void => {
+    const next = new Set(targets)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    setTargets(next)
+  }
+
+  const confTitle = (a: AgentTarget): string =>
+    a.confidence === 'medium' || a.confidence === 'low'
+      ? t('agents.confMedium')
+      : t('agents.confHigh')
+
+  return (
+    <div style={{ marginBottom: 14 }}>
+      {expanded && (
+        <div className="searchbox" style={{ marginBottom: 8, height: 26 }}>
+          <Search size={12} className="dim" />
+          <input
+            value={query}
+            spellCheck={false}
+            placeholder={t('detail.agentSearch')}
+            onChange={(e) => setQuery(e.target.value)}
+            style={{ fontSize: 12 }}
+          />
+        </div>
+      )}
+
+      <div className="agent-picker">
+        {agents.length === 0 && (
+          <div className="dim" style={{ fontSize: 11.5 }}>
+            {t('detail.noAgents')}
+          </div>
+        )}
+        {shown.map((a) => {
+          const on = targets.has(a.id)
+          return (
+            <label key={a.id} className="agent-pick-row" title={`${a.path}\n${confTitle(a)}`}>
+              <button
+                className={`skill-check ${on ? 'on' : ''}`}
+                onClick={(e) => {
+                  e.preventDefault()
+                  toggle(a.id)
+                }}
+              >
+                <Check size={10} />
+              </button>
+              <span className="dot" style={{ background: a.color || 'var(--text-3)' }} />
+              <span className="nm">{a.name}</span>
+              {a.projectOnly && <span className="chip mono violet">{t('detail.projectOnly')}</span>}
+              {a.kind === 'custom' && <span className="chip mono">custom</span>}
+              {!a.detected && !a.projectOnly && <span className="chip mono dim">?</span>}
+              {a.confidence && a.confidence !== 'high' && (
+                <span
+                  className="chip mono"
+                  style={{ color: 'var(--warn)', borderColor: 'rgba(210,153,34,.3)' }}
+                  title={confTitle(a)}
+                >
+                  {a.confidence}
+                </span>
+              )}
+              <span className="mono dim cnt">{a.found || 0}</span>
+            </label>
+          )
+        })}
+        {shown.length === 0 && <div className="dim" style={{ fontSize: 11.5, padding: 6 }}>{t('palette.noMatch')}</div>}
+      </div>
+
+      {(rest.length > 0 || expanded) && (
+        <button className="btn block sm" style={{ marginTop: 8 }} onClick={onToggleExpanded}>
+          {expanded ? t('detail.hideAllAgents') : t('detail.showAllAgents', { n: agents.length })}
+        </button>
       )}
     </div>
   )
