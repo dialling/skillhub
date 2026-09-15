@@ -280,6 +280,15 @@ export interface Settings {
   recentWorkspaces?: string[]
   curatedUpdatedAt?: number
   firstRunDone?: boolean
+  /**
+   * Unread markers for the left nav. `seenLibraryAt` is the moment the library
+   * was last opened; a repository added after it counts as new. `seenAgents`
+   * lists the agents already shown, so a newly installed tool is the only thing
+   * that badges. Both are unset until the first boot records the state it
+   * found, which stops an upgrade from badging everything at once.
+   */
+  seenLibraryAt?: number
+  seenAgents?: string[]
 }
 
 export interface SearchResult {

@@ -19,14 +19,29 @@ export function ActivityBar(): React.JSX.Element {
   const toggleSidebar = useStore((s) => s.toggleSidebar)
   const sidebarOpen = useStore((s) => s.sidebarOpen)
 
-  const installedCount = Object.values(installMap).reduce((n, list) => n + list.length, 0)
-  const activeAgents = agents.filter((a) => a.enabled).length
+  const settings = useStore((s) => s.settings)
+  const markSeen = useStore((s) => s.markSeen)
+
+  /*
+    These badges are unread markers, not counters. A permanent "5" next to
+    Library says nothing useful — the number is only interesting when it means
+    "something arrived since you last looked". So: repositories added after the
+    library was last opened, and agents detected that were not there last time.
+    Both stay empty until the first boot records what it found.
+  */
+  const newLibrary =
+    settings?.seenLibraryAt === undefined
+      ? 0
+      : library.filter((i) => i.addedAt > settings.seenLibraryAt!).length
+  const detectedIds = agents.filter((a) => a.detected).map((a) => a.id)
+  const newAgents =
+    settings?.seenAgents === undefined
+      ? 0
+      : detectedIds.filter((id) => !settings.seenAgents!.includes(id)).length
   const badges: Partial<Record<ViewKey, number>> = {
-    library: library.length,
-    agents: activeAgents,
-    store: 0
+    library: newLibrary,
+    agents: newAgents
   }
-  void installedCount
 
   return (
     <nav className="activitybar">
@@ -38,6 +53,8 @@ export function ActivityBar(): React.JSX.Element {
           onClick={() => {
             setView(id)
             if (!sidebarOpen) toggleSidebar()
+            // Opening the view is the acknowledgement.
+            if (id === 'library' || id === 'agents') void markSeen(id)
           }}
         >
           <Icon size={19} />

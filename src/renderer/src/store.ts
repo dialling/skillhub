@@ -94,6 +94,7 @@ interface State {
   loadInstallTarget: () => Promise<void>
   applyInstallTarget: (path: string) => Promise<void>
   setShowTargetModal: (open: boolean) => void
+  markSeen: (view: 'library' | 'agents') => Promise<void>
   openLaunch: (source: LaunchSource) => Promise<void>
   closeLaunch: () => void
   buildLaunchPlan: (agentId: string, workspace: string) => Promise<LaunchPlan | null>
@@ -224,6 +225,24 @@ export const useStore = create<State>((set, get) => ({
     set({ showTargetModal: open })
   },
 
+  /**
+   * Clear the unread badge for a nav item. The markers live in settings rather
+   * than in component state so they survive a restart.
+   */
+  async markSeen(view) {
+    const patch =
+      view === 'library'
+        ? { seenLibraryAt: Date.now() }
+        : { seenAgents: get().agents.filter((a) => a.detected).map((a) => a.id) }
+    try {
+      await api.settings.update(patch)
+      const settings = await api.settings.get()
+      set({ settings })
+    } catch {
+      /* the badge is cosmetic; a failed write must not break navigation */
+    }
+  },
+
   /** Open the launch dialog for a skill — library-managed or found on disk. */
   async openLaunch(source) {
     try {
@@ -334,6 +353,22 @@ export const useStore = create<State>((set, get) => ({
       get().loadInstallTarget()
     ])
     void get().scanLocal()
+    // Record what already exists so nothing pre-existing badges as "new" —
+    // only what shows up after this point does.
+    const seen = await api.settings.get()
+    if (seen.seenLibraryAt === undefined || seen.seenAgents === undefined) {
+      const patch: Record<string, unknown> = {}
+      if (seen.seenLibraryAt === undefined) patch.seenLibraryAt = Date.now()
+      if (seen.seenAgents === undefined) {
+        patch.seenAgents = get().agents.filter((a) => a.detected).map((a) => a.id)
+      }
+      try {
+        await api.settings.update(patch)
+        set({ settings: await api.settings.get() })
+      } catch {
+        /* cosmetic */
+      }
+    }
     // Deep links: `skillhub --view=charts --repo=owner/name --q="term"`
     try {
       const boot = await api.system.boot()

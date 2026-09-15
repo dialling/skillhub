@@ -23,6 +23,8 @@ export const DEFAULT_SETTINGS: Settings = {
   theme: 'azure',
   installRoot: undefined,
   recentWorkspaces: [],
+  seenLibraryAt: undefined,
+  seenAgents: undefined,
   firstRunDone: false
 }
 
