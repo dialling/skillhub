@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process'
-import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, statSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 import type { JobProgress, LibraryItem, RepoMeta, SkillEntry } from '../../shared/types'
 import { ensureDir, expandPath, libraryFolderName } from './paths'

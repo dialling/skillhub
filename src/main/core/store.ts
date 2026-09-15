@@ -1,4 +1,3 @@
-import { app } from 'electron'
 import { existsSync, readFileSync, renameSync, writeFileSync, mkdirSync, statSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { userDataDir } from './paths'

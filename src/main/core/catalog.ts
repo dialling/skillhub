@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs'
-import type { Category, CuratedCatalog, FnCategory, RepoMeta, Scenario, SkillEntry } from '../../shared/types'
+import type { Category, CuratedCatalog, FnCategory, RepoMeta, Scenario } from '../../shared/types'
 import { curatedCatalogPath, scenariosPath } from './paths'
 import { cache, settings, snapshotStars } from './db'
 import { getRepo, cleanTopics } from './github'

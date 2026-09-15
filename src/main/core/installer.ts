@@ -3,8 +3,6 @@ import {
   existsSync,
   lstatSync,
   mkdirSync,
-  readFileSync,
-  readdirSync,
   rmSync,
   symlinkSync,
   unlinkSync,
