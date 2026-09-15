@@ -16,7 +16,8 @@ import type {
   RepoMeta,
   SearchResult,
   Settings,
-  SkillEntry
+  SkillEntry,
+  SkillIndexEntry
 } from '@shared/types'
 import { makeT, type Lang } from './i18n'
 import { applyTheme } from './theme'
@@ -70,6 +71,13 @@ interface State {
   sidebarOpen: boolean
   lang: Lang
   storeCategory: string | null
+  /** the store browses repositories or the individual skills inside them */
+  storeMode: 'repos' | 'skills'
+  skillIndexInfo: { updatedAt: string; total: number; shards: Record<string, { count: number; bytes: number }> } | null
+  skillShards: Record<string, SkillIndexEntry[]>
+  skillShardLoading: string | null
+  skillQuery: string
+  skillHits: SkillIndexEntry[] | null
   scenarios: Scenario[]
   activeScenario: string | null
   scenarioRepos: RepoMeta[]
@@ -103,6 +111,11 @@ interface State {
   openScenario: (id: string | null) => Promise<void>
   goToScenarios: () => void
   setStoreCategory: (c: string | null) => void
+  setStoreMode: (m: 'repos' | 'skills') => void
+  loadSkillIndex: () => Promise<void>
+  loadSkillShard: (fn: string) => Promise<void>
+  searchSkillIndex: (term: string) => Promise<void>
+  setSkillQuery: (q: string) => void
   setLibraryFilter: (f: 'all' | 'pending' | 'installed') => void
   setLibraryView: (v: 'grid' | 'list') => void
   setSelectedLibrary: (id: string) => void
@@ -169,6 +182,12 @@ export const useStore = create<State>((set, get) => ({
   sidebarOpen: true,
   lang: 'zh',
   storeCategory: null,
+  storeMode: 'repos',
+  skillIndexInfo: null,
+  skillShards: {},
+  skillShardLoading: null,
+  skillQuery: '',
+  skillHits: null,
   scenarios: [],
   activeScenario: null,
   scenarioRepos: [],
@@ -319,6 +338,52 @@ export const useStore = create<State>((set, get) => ({
       if (get().activeScenario === id) set({ scenarioRepos })
     } catch {
       set({ scenarioRepos: [] })
+    }
+  },
+
+  setStoreMode(m) {
+    set({ storeMode: m })
+    if (m === 'skills' && !get().skillIndexInfo) void get().loadSkillIndex()
+  },
+
+  async loadSkillIndex() {
+    try {
+      const info = await api.skillsIndex.index()
+      set({ skillIndexInfo: info })
+    } catch {
+      /* the skill index is additive; the repo store still works without it */
+    }
+  },
+
+  /** One category of skills, fetched once and kept. */
+  async loadSkillShard(fn) {
+    if (get().skillShards[fn]?.length) return
+    set({ skillShardLoading: fn })
+    try {
+      const list = await api.skillsIndex.shard(fn)
+      set({ skillShards: { ...get().skillShards, [fn]: list } })
+    } catch {
+      set({ skillShards: { ...get().skillShards, [fn]: [] } })
+    } finally {
+      set({ skillShardLoading: null })
+    }
+  },
+
+  setSkillQuery(q) {
+    set({ skillQuery: q })
+    if (!q.trim()) set({ skillHits: null })
+  },
+
+  async searchSkillIndex(term) {
+    if (!term.trim()) {
+      set({ skillHits: null })
+      return
+    }
+    try {
+      const hits = await api.skillsIndex.search(term, 80)
+      set({ skillHits: hits })
+    } catch {
+      set({ skillHits: [] })
     }
   },
 

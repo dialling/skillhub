@@ -67,6 +67,7 @@ import {
 } from './core/discover'
 import { installLocations, launchTargets, prepareLaunch, runLaunch } from './core/launch'
 import { liveStatus, refreshLiveData } from './core/live'
+import { searchSkillIndex, skillIndex, skillShard } from './core/skillsindex'
 
 type Broadcast = (channel: string, payload: unknown) => void
 let broadcast: Broadcast = () => {}
@@ -389,6 +390,13 @@ export function registerIpc(send: Broadcast): void {
   // is involved and a fresh install still gets real history.
   handle('live:refresh', () => refreshLiveData())
   handle('live:status', () => liveStatus())
+
+  /* ------------------------------------------------------- skill index ----- */
+  // The individual skills inside the catalog's repositories, published as
+  // per-category shards so a client pulls only what it is showing.
+  handle('skills:index', () => skillIndex())
+  handle('skills:shard', (fn: string) => skillShard(fn))
+  handle('skills:search', (term: string, limit?: number) => searchSkillIndex(term, limit))
 
   /* ------------------------------------------------------------------ system */
   handle('system:boot', () => ({

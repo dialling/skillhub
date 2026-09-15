@@ -16,6 +16,7 @@ import {
 import { FN_LABELS, type FnCategory } from '@shared/types'
 import { useStore } from '../store'
 import { RepoCard, RepoRow } from '../components/RepoCard'
+import { SkillBrowser } from '../components/SkillBrowser'
 import { sourceKey } from '../components/DetailPanel'
 import { fnColor } from '../components/Sidebar'
 import { fmtStars } from '../api'
@@ -69,6 +70,9 @@ export function StoreView(): React.JSX.Element {
 
   // Thirteen scenario cards filled the entire first screen before anything else
   // was reachable. Show a taster and let the rest be asked for.
+  const storeMode = useStore((s) => s.storeMode)
+  const setStoreMode = useStore((s) => s.setStoreMode)
+
   const [scenariosExpanded, setScenariosExpanded] = useState(false)
   const visibleScenarios = scenariosExpanded ? scenarios : scenarios.slice(0, SCENARIO_PREVIEW)
 
@@ -206,10 +210,24 @@ export function StoreView(): React.JSX.Element {
             <Store size={19} />
             {t('store.title')}
           </div>
-          <div className="view-sub">{t('store.subtitle')}</div>
+          <div className="view-sub">{storeMode === 'skills' ? t('store.subtitleSkills') : t('store.subtitle')}</div>
         </div>
+          <div className="view-head-actions">
+            <div className="seg">
+              <button className={storeMode === 'repos' ? 'active' : ''} onClick={() => setStoreMode('repos')}>
+                {t('skills.tab.repos')}
+              </button>
+              <button className={storeMode === 'skills' ? 'active' : ''} onClick={() => setStoreMode('skills')}>
+                {t('skills.tab.skills')}
+              </button>
+            </div>
+          </div>
       </div>
 
+      {storeMode === 'skills' ? (
+        <SkillBrowser />
+      ) : (
+        <>
       {/* Scenarios: "what are you trying to do?" — the fastest way in. */}
       <div className="section" id="store-scenarios">
         <div className="section-head">
@@ -345,6 +363,8 @@ export function StoreView(): React.JSX.Element {
             ))}
         </div>
       </div>
+        </>
+      )}
     </div>
   )
 }

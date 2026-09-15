@@ -90,6 +90,27 @@ export function categoryLabel(cat: string | undefined, lang: 'zh' | 'en'): strin
   return entry ? entry[lang] : cat
 }
 
+/** One skill inside a catalog repository, as published by the extraction pass. */
+export interface SkillIndexEntry {
+  /** skill name, from the SKILL.md frontmatter */
+  n: string
+  /** the repository it lives in */
+  r: string
+  /** path within that repository */
+  p: string
+  /** one-line description from the frontmatter */
+  d: string
+  /** functional category, inherited from the repository */
+  f: string
+  /** repository stars, so the list can rank */
+  s: number
+}
+
+export interface SkillShardInfo {
+  count: number
+  bytes: number
+}
+
 export interface RepoMeta {
   fullName: string
   owner: string

@@ -86,6 +86,11 @@ const api = {
     refresh: () => call<any>('profile:refresh'),
     starred: () => call<any[]>('profile:starred')
   },
+  skillsIndex: {
+    index: () => call<any>('skills:index'),
+    shard: (fn: string) => call<any[]>('skills:shard', fn),
+    search: (term: string, limit?: number) => call<any[]>('skills:search', term, limit)
+  },
   live: {
     refresh: () => call<any>('live:refresh'),
     status: () => call<any>('live:status')

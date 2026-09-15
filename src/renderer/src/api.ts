@@ -11,6 +11,7 @@ import type {
   LaunchPlan,
   LaunchTarget,
   LibraryItem,
+  SkillIndexEntry,
   LocalSkill,
   RateLimit,
   RepoMeta,
@@ -119,6 +120,11 @@ export interface SkillHubApi {
     activity(): Promise<ActivityEvent[]>
     refresh(): Promise<GitHubUser | null>
     starred(): Promise<{ fullName: string; stars: number; avatarUrl?: string; descriptionEn?: string }[]>
+  }
+  skillsIndex: {
+    index(): Promise<{ updatedAt: string; total: number; shards: Record<string, { count: number; bytes: number }> }>
+    shard(fn: string): Promise<SkillIndexEntry[]>
+    search(term: string, limit?: number): Promise<SkillIndexEntry[]>
   }
   live: {
     refresh(): Promise<{
