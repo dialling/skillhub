@@ -24,6 +24,17 @@ import { expandPath, tildify } from './core/paths'
 const argv = process.argv.slice(2)
 const cmd = argv[0]
 
+/**
+ * `skillhub list | head -1` closes the pipe early, and the next write raises
+ * EPIPE — which by default kills the process before the final flush runs, so
+ * the work is silently lost. Swallow it and let the normal exit path persist.
+ */
+process.stdout.on('error', (err: NodeJS.ErrnoException) => {
+  if (err.code === 'EPIPE') return
+  throw err
+})
+process.on('SIGPIPE', () => {})
+
 function flag(name: string): string | null {
   const hit = argv.find((a) => a.startsWith(`--${name}=`))
   if (hit) return hit.slice(name.length + 3)

@@ -74,6 +74,8 @@ interface State {
   activeScenario: string | null
   scenarioRepos: RepoMeta[]
   libraryFilter: 'all' | 'pending' | 'installed'
+  libraryView: 'grid' | 'list'
+  selectedLibraryId: string | null
   librarySort: 'recent' | 'stars' | 'name'
   chartMode: 'stars' | 'growth'
   discovered: LocalSkill[]
@@ -101,6 +103,8 @@ interface State {
   goToScenarios: () => void
   setStoreCategory: (c: string | null) => void
   setLibraryFilter: (f: 'all' | 'pending' | 'installed') => void
+  setLibraryView: (v: 'grid' | 'list') => void
+  setSelectedLibrary: (id: string) => void
   setLibrarySort: (s: 'recent' | 'stars' | 'name') => void
   boot: () => Promise<void>
   setView: (v: ViewKey) => void
@@ -167,6 +171,8 @@ export const useStore = create<State>((set, get) => ({
   activeScenario: null,
   scenarioRepos: [],
   libraryFilter: 'all',
+  libraryView: 'grid',
+  selectedLibraryId: null,
   librarySort: 'recent',
   chartMode: 'growth',
   discovered: [],
@@ -302,6 +308,12 @@ export const useStore = create<State>((set, get) => ({
   },
   setLibraryFilter(f) {
     set({ libraryFilter: f })
+  },
+  setLibraryView(v) {
+    set({ libraryView: v })
+  },
+  setSelectedLibrary(id) {
+    set({ selectedLibraryId: id })
   },
   setLibrarySort(s) {
     set({ librarySort: s })
@@ -456,7 +468,9 @@ export const useStore = create<State>((set, get) => ({
 
   async refreshLibrary() {
     const library = await api.library.list()
-    set({ library })
+    const selected = get().selectedLibraryId
+    const stillThere = selected && library.some((i) => i.id === selected)
+    set({ library, selectedLibraryId: stillThere ? selected : (library[0]?.id ?? null) })
   },
 
   async refreshAgents() {
