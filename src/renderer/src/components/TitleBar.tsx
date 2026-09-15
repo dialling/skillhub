@@ -88,7 +88,7 @@ export function TitleBar(): React.JSX.Element {
       <div className="titlebar-actions">
         <button className="btn ghost sm" title={t('common.language')} onClick={() => void toggleLang()}>
           <Languages size={13} />
-          {lang === 'zh' ? '中' : 'EN'}
+          {t('lang.abbr')}
         </button>
         <button className="btn ghost sm" title={t('common.refresh')} onClick={() => void refreshRate(true)}>
           <RefreshCw size={13} />

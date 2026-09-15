@@ -228,8 +228,8 @@ export function ProfileView(): React.JSX.Element {
                     <div className="tl-item" key={e.id}>
                       <span className={`tl-dot ${e.kind}`} />
                       <div className="tl-body">
-                        <div className="tl-title">{e.title}</div>
-                        {e.detail && <div className="tl-detail">{e.detail}</div>}
+                        <div className="tl-title">{t(e.code, e.params)}</div>
+                        {e.params?.agents && <div className="tl-detail">{e.params.agents}</div>}
                       </div>
                       <span className="tl-time">{fmtRelative(e.at, lang)}</span>
                     </div>

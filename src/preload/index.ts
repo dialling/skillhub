@@ -98,7 +98,8 @@ const api = {
     openExternal: (url: string) => call<boolean>('system:openExternal', url),
     checkPaths: (paths: string[]) => call<any[]>('system:checkPaths', paths),
     parseSkill: (text: string) => call<any>('system:parseSkill', text),
-    agentName: (id: string) => call<string>('system:agentName', id)
+    agentName: (id: string) => call<string>('system:agentName', id),
+    rebuildMenu: () => call<boolean>('menu:rebuild')
   },
   on: (channel: string, cb: (payload: any) => void) => {
     const listener = (_e: unknown, payload: any): void => cb(payload)

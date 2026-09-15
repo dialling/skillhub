@@ -38,6 +38,7 @@ interface State {
   booted: boolean
   settings: Settings | null
   rate: RateLimit | null
+  tokenSource: string
   library: LibraryItem[]
   agents: AgentTarget[]
   installMap: Record<string, string[]>
@@ -68,7 +69,7 @@ interface State {
   librarySort: 'recent' | 'stars' | 'name'
   chartMode: 'stars' | 'growth'
 
-  t: (key: string, vars?: Record<string, string | number>) => string
+  t: (key: string, vars?: Record<string, string | number | undefined>) => string
   setChartMode: (m: 'stars' | 'growth') => void
   loadScenarios: () => Promise<void>
   openScenario: (id: string | null) => Promise<void>
@@ -111,6 +112,7 @@ export const useStore = create<State>((set, get) => ({
   booted: false,
   settings: null,
   rate: null,
+  tokenSource: 'none',
   library: [],
   agents: [],
   installMap: {},
@@ -222,6 +224,8 @@ export const useStore = create<State>((set, get) => ({
     const next: Lang = get().lang === 'zh' ? 'en' : 'zh'
     set({ lang: next, t: makeT(next) })
     await api.settings.update({ lang: next })
+    // The native application menu is built in the main process.
+    await api.system.rebuildMenu().catch(() => {})
   },
 
   toast(kind, message, detail) {
@@ -317,6 +321,10 @@ export const useStore = create<State>((set, get) => ({
     try {
       const rate = await api.github.rate(force)
       set({ rate })
+      // "settings" (a saved PAT) vs "gh-cli" (reused from the GitHub CLI) is
+      // shown in Settings so the user knows where their credentials live.
+      const status = await api.github.status().catch(() => null)
+      if (status) set({ tokenSource: status.tokenSource })
       if (rate.ok && rate.login && get().settings && !get().settings!.user) {
         try {
           const user = await api.github.user(rate.login)
@@ -431,7 +439,7 @@ export const useStore = create<State>((set, get) => ({
         get().toast('success', get().t('toast.installed', { n: res.ok.length }))
       }
       if (res.errors.length) {
-        get().toast('error', res.errors[0].reason, `${res.errors.length} 项失败`)
+        get().toast('error', res.errors[0].reason, get().t('toast.nFailed', { n: res.errors.length }))
       }
       if (res.skipped.length && !res.errors.length) {
         get().toast('info', res.skipped[0].reason)
@@ -465,7 +473,10 @@ export const useStore = create<State>((set, get) => ({
   async updateSettings(patch) {
     const settings = await api.settings.update(patch)
     set({ settings })
-    if (patch.lang) set({ lang: patch.lang, t: makeT(patch.lang) })
+    if (patch.lang) {
+      set({ lang: patch.lang, t: makeT(patch.lang) })
+      await api.system.rebuildMenu().catch(() => {})
+    }
     get().toast('success', get().t('toast.settingsSaved'))
   },
 

@@ -71,7 +71,7 @@ export function StatusBar(): React.JSX.Element {
       {settings?.user && <span className="status-item">@{settings.user.login}</span>}
       <button className="status-item" onClick={() => void toggleLang()} title={t('common.language')}>
         <Languages size={11} />
-        {lang === 'zh' ? '中文' : 'English'}
+        {t('lang.current')}
       </button>
       <span className="status-item">v{version || '0.1.0'}</span>
     </footer>

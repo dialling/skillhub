@@ -12,7 +12,9 @@ import {
   Info,
   Check,
   FlaskConical,
-  HardDriveDownload
+  HardDriveDownload,
+  Terminal,
+  LogOut
 } from 'lucide-react'
 import type { TranslationConfig } from '@shared/types'
 import { api, fmtBytes } from '../api'
@@ -23,6 +25,8 @@ export function SettingsView(): React.JSX.Element {
   const lang = useStore((s) => s.lang)
   const settings = useStore((s) => s.settings)
   const updateSettings = useStore((s) => s.updateSettings)
+  const rate = useStore((s) => s.rate)
+  const tokenSource = useStore((s) => s.tokenSource)
   const loadCatalog = useStore((s) => s.loadCatalog)
   const toast = useStore((s) => s.toast)
 
@@ -33,6 +37,13 @@ export function SettingsView(): React.JSX.Element {
   const [model, setModel] = useState(settings?.translation.model || '')
   const [sys, setSys] = useState<Record<string, any> | null>(null)
   const [testing, setTesting] = useState(false)
+  const [showToken, setShowToken] = useState(false)
+
+  /** Language changes also have to rebuild the native application menu. */
+  const changeLang = async (next: 'zh' | 'en'): Promise<void> => {
+    await updateSettings({ lang: next })
+    await api.system.rebuildMenu().catch(() => {})
+  }
   const [refreshing, setRefreshing] = useState(false)
 
   useEffect(() => {
@@ -75,35 +86,162 @@ export function SettingsView(): React.JSX.Element {
       <div className="panel" style={{ marginBottom: 16 }}>
         <div className="panel-head">
           <KeyRound size={13} />
-          {t('settings.github')}
+          {settings?.user ? t('settings.account') : t('settings.github')}
+          {settings?.user && (
+            <span className="chip green mono" style={{ marginLeft: 'auto' }}>
+              <Check size={10} />
+              {t('settings.connected')}
+            </span>
+          )}
         </div>
-        <div className="panel-body">
-          <div className="field">
-            <label>{t('settings.token')}</label>
-            <div className="row">
-              <input
-                className="input"
-                type="password"
-                value={token}
-                spellCheck={false}
-                placeholder="ghp_… / github_pat_…"
-                onChange={(e) => setToken(e.target.value)}
-              />
+
+        {settings?.user ? (
+          /* Signed in: show who we are and where the credential came from.
+             Never ask for a token the user has already given. */
+          <div className="panel-body">
+            <div className="gh-account">
+              <img src={settings.user.avatarUrl} alt="" />
+              <div className="who">
+                <div className="nm">{settings.user.name || settings.user.login}</div>
+                <div className="lg mono">@{settings.user.login}</div>
+              </div>
+              <div className="meta">
+                <span className="chip mono">
+                  {t('settings.credentialSource')}:{' '}
+                  {t(`profile.src.${tokenSource === 'settings' ? 'settings' : tokenSource === 'env' ? 'env' : tokenSource === 'gh-cli' ? 'gh-cli' : 'none'}`)}
+                </span>
+                {rate?.ok && (
+                  <span className="chip mono">
+                    {t('settings.rateLeft')} {rate.remaining}/{rate.limit}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="row" style={{ marginTop: 14, flexWrap: 'wrap' }}>
               <button
-                className="btn primary"
+                className="btn"
                 onClick={async () => {
-                  await updateSettings({ token })
                   await useStore.getState().refreshRate(true)
+                  const fresh = await api.profile.refresh().catch(() => null)
+                  if (fresh) {
+                    useStore.setState({ settings: { ...(useStore.getState().settings as any), user: fresh } })
+                  }
+                  toast('success', t('settings.revalidate'))
                 }}
               >
-                {t('common.save')}
+                <RefreshCw size={13} />
+                {t('settings.revalidate')}
               </button>
+              <button className="btn" onClick={() => setShowToken((v) => !v)}>
+                <KeyRound size={13} />
+                {t('settings.replaceToken')}
+              </button>
+              <button
+                className="btn danger"
+                onClick={async () => {
+                  await api.github.logout()
+                  useStore.setState({
+                    settings: { ...(useStore.getState().settings as any), user: null, token: '' },
+                    tokenSource: 'none'
+                  })
+                  setToken('')
+                  await useStore.getState().refreshRate(true)
+                  toast('success', t('profile.logout'))
+                }}
+              >
+                <LogOut size={13} />
+                {t('profile.logout')}
+              </button>
+            </div>
+
+            {showToken && (
+              <div className="field" style={{ marginTop: 16, marginBottom: 0 }}>
+                <label>{t('settings.replaceToken')}</label>
+                <div className="row">
+                  <input
+                    className="input"
+                    type="password"
+                    value={token}
+                    spellCheck={false}
+                    placeholder="ghp_… / github_pat_…"
+                    onChange={(e) => setToken(e.target.value)}
+                  />
+                  <button
+                    className="btn primary"
+                    onClick={async () => {
+                      try {
+                        const me = await api.github.login(token.trim())
+                        useStore.setState({
+                          settings: { ...(useStore.getState().settings as any), user: me, token: token.trim() },
+                          tokenSource: 'settings'
+                        })
+                        setToken('')
+                        setShowToken(false)
+                        await useStore.getState().refreshRate(true)
+                        toast('success', t('settings.tokenSaved'))
+                      } catch (err: any) {
+                        toast('error', t('toast.failed', { msg: err?.message || err }))
+                      }
+                    }}
+                  >
+                    {t('common.save')}
+                  </button>
+                </div>
+                <div className="hint">{t('settings.tokenHint')}</div>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* Signed out: offer the two ways in. */
+          <div className="panel-body">
+            <p className="dim" style={{ fontSize: 12.5, marginBottom: 14, lineHeight: 1.65 }}>
+              {t('settings.notConnectedHint')}
+            </p>
+            <div className="field">
+              <label>{t('settings.token')}</label>
+              <div className="row">
+                <input
+                  className="input"
+                  type="password"
+                  value={token}
+                  spellCheck={false}
+                  placeholder="ghp_… / github_pat_…"
+                  onChange={(e) => setToken(e.target.value)}
+                />
+                <button
+                  className="btn primary"
+                  disabled={!token.trim()}
+                  onClick={async () => {
+                    try {
+                      const me = await api.github.login(token.trim())
+                      useStore.setState({
+                        settings: { ...(useStore.getState().settings as any), user: me, token: token.trim() },
+                        tokenSource: 'settings'
+                      })
+                      setToken('')
+                      await useStore.getState().refreshRate(true)
+                      toast('success', t('toast.loginOk', { login: me.login }))
+                    } catch (err: any) {
+                      toast('error', t('toast.failed', { msg: err?.message || err }))
+                    }
+                  }}
+                >
+                  {t('common.save')}
+                </button>
+              </div>
+              <div className="hint">{t('settings.tokenHint')}</div>
+            </div>
+            <div className="row">
               <button
                 className="btn"
                 onClick={async () => {
                   try {
                     const me = await api.github.loginWithCli()
-                    useStore.setState({ settings: { ...(useStore.getState().settings as any), user: me } })
+                    useStore.setState({
+                      settings: { ...(useStore.getState().settings as any), user: me },
+                      tokenSource: 'gh-cli'
+                    })
                     await useStore.getState().refreshRate(true)
                     toast('success', t('toast.loginOk', { login: me.login }))
                   } catch (err: any) {
@@ -111,12 +249,12 @@ export function SettingsView(): React.JSX.Element {
                   }
                 }}
               >
-                gh CLI
+                <Terminal size={13} />
+                {t('profile.loginCli')}
               </button>
             </div>
-            <div className="hint">{t('settings.tokenHint')}</div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Paths ----------------------------------------------------------- */}
@@ -314,11 +452,11 @@ export function SettingsView(): React.JSX.Element {
             <dt>{t('common.language')}</dt>
             <dd>
               <div className="seg">
-                <button className={lang === 'zh' ? 'active' : ''} onClick={() => void updateSettings({ lang: 'zh' })}>
-                  中文
+                <button className={lang === 'zh' ? 'active' : ''} onClick={() => void changeLang('zh')}>
+                  {t('lang.zh')}
                 </button>
-                <button className={lang === 'en' ? 'active' : ''} onClick={() => void updateSettings({ lang: 'en' })}>
-                  English
+                <button className={lang === 'en' ? 'active' : ''} onClick={() => void changeLang('en')}>
+                  {t('lang.en')}
                 </button>
               </div>
             </dd>

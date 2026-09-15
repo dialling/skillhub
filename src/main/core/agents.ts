@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import type { AgentTarget } from '../../shared/types'
 import { curatedAgentRegistryPath, expandPath, tildify } from './paths'
 import { settings } from './db'
+import { m } from './msg'
 
 /** Built-in fallback registry used only when data/agent-registry.json is absent. */
 interface RegistryEntry {
@@ -230,7 +231,7 @@ export function listAgents(): AgentTarget[] {
     out.push({
       id: `custom:${c.id}`,
       name: c.name,
-      vendor: '自定义',
+      vendor: m('agent.customLabel'),
       kind: 'custom',
       path: c.path,
       detected: existsSync(expandPath(c.path)),
@@ -291,12 +292,12 @@ export function resolveAgentDir(agentId: string): string | null {
 export function agentDisplayName(agentId: string): string {
   if (agentId.startsWith('custom:')) {
     const c = settings.get().customAgents.find((x) => `custom:${x.id}` === agentId)
-    return c ? `${c.name} (自定义)` : agentId
+    return c ? m('agent.customSuffix', { name: c.name }) : agentId
   }
   if (agentId.startsWith('project:')) {
     const realId = agentId.slice('project:'.length)
     const entry = loadRegistry().find((e) => e.id === realId)
-    return entry ? `${entry.name} · 项目级` : agentId
+    return entry ? m('agent.projectSuffix', { name: entry.name }) : agentId
   }
   return loadRegistry().find((e) => e.id === agentId)?.name || agentId
 }

@@ -67,7 +67,7 @@ export function RepoCard({
   const fn = repo.fn as FnCategory | undefined
   const category = repo.category ? CATEGORY_LABELS[repo.category] : null
   const skillCount = repo.skillCount ?? repo.skillDirs?.length ?? 0
-  const freshness = repo.pushedAt ? fmtRelative(Date.parse(repo.pushedAt), 'zh') : ''
+  const freshness = repo.pushedAt ? fmtRelative(Date.parse(repo.pushedAt), lang) : ''
 
   return (
     <div className="card" style={style} onClick={() => void openDetail(repo.fullName)} role="button" tabIndex={0}>

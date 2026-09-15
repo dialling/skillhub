@@ -42,6 +42,24 @@ const DICT: Dict = {
   'common.items': ['项', 'items'],
   'common.unknown': ['未知', 'Unknown'],
   'common.collapseSidebar': ['收起侧边栏', 'Collapse sidebar'],
+  'common.listSeparator': ['、', ', '],
+  'common.labelSeparator': ['：', ': '],
+  'time.justNow': ['刚刚', 'just now'],
+  'time.minutesAgo': ['{n} 分钟前', '{n}m ago'],
+  'time.hoursAgo': ['{n} 小时前', '{n}h ago'],
+  'time.daysAgo': ['{n} 天前', '{n}d ago'],
+  'time.monthsAgo': ['{n} 个月前', '{n}mo ago'],
+  'lang.current': ['中文', 'English'],
+  'lang.abbr': ['中', 'EN'],
+  'lang.switchTo': ['→ English', '→ 中文'],
+  'lang.zh': ['中文', '中文'],
+  'lang.en': ['English', 'English'],
+  'addLocal.hint': [
+    'SkillHub 会递归扫描该目录下所有包含 SKILL.md 的技能，加入你的库并可用于安装。',
+    'SkillHub scans the folder recursively for every skill containing a SKILL.md, adds it to your library and makes it installable.'
+  ],
+  'toast.nFailed': ['{n} 项失败', '{n} failed'],
+  'toast.nSkipped': ['{n} 项跳过', '{n} skipped'],
   'common.expandSidebar': ['展开侧边栏', 'Expand sidebar'],
 
   'store.title': ['技能商店', 'Skill Store'],
@@ -77,6 +95,8 @@ const DICT: Dict = {
   'detail.install': ['安装', 'Install'],
   'detail.about': ['关于', 'About'],
   'detail.zhIntro': ['中文简介', 'Chinese'],
+  'detail.secondaryIntro': ['中文原文', 'Original Chinese'],
+  'detail.showSecondary': ['显示中文原文', 'Show Chinese'],
   'detail.enIntro': ['English 简介', 'English'],
   'detail.translate': ['AI 翻译', 'Translate'],
   'detail.translating': ['翻译中…', 'Translating…'],
@@ -184,6 +204,10 @@ const DICT: Dict = {
   'agents.confLow': ['路径未经核实', 'Path is unverified'],
   'agents.newArrivals': ['检测到 {n} 个已安装但未启用的智能体', '{n} installed agents are not enabled yet'],
   'agents.enableAll': ['全部启用', 'Enable all'],
+  'agents.unknownVendor': ['其他', 'Other'],
+  'agents.vendorDetected': ['已装 {n} / 共 {total} 个', '{n} of {total} installed'],
+  'agents.vendorTotal': ['{n} 个', '{n} agents'],
+  'agents.groupByVendor': ['按厂商分组', 'Grouped by vendor'],
 
   'profile.title': ['个人资料', 'Profile'],
   'profile.notLoggedIn': ['未登录 GitHub', 'Not signed in to GitHub'],
@@ -196,10 +220,19 @@ const DICT: Dict = {
   'profile.libraryItems': ['入库仓库', 'Library repos'],
   'profile.installedSkills': ['已安装技能', 'Installed skills'],
   'profile.agents': ['启用智能体', 'Active agents'],
+  'profile.recentActivity': ['最近活动', 'Recent activity'],
   'profile.disk': ['占用空间', 'Disk usage'],
   'profile.activity': ['最近活动', 'Recent activity'],
   'profile.noActivity': ['还没有活动记录', 'No activity yet'],
   'profile.starred': ['我的 Star', 'My stars'],
+  'activity.added': ['入库 {name}（{count} 个技能）', 'Added {name} ({count} skills)'],
+  'activity.imported': ['导入本地目录 {dir}（{count} 个技能）', 'Imported local folder {dir} ({count} skills)'],
+  'activity.installed': ['安装 {count} 项技能', 'Installed {count} skills'],
+  'activity.uninstalled': ['卸载 {skill}', 'Uninstalled {skill}'],
+  'activity.removed': ['移出库 {name}', 'Removed {name} from the library'],
+  'activity.synced': ['同步 {name}（{count} 个技能）', 'Synced {name} ({count} skills)'],
+  'activity.loggedIn': ['已登录 GitHub @{login}', 'Signed in to GitHub as @{login}'],
+  'activity.loggedInCli': ['使用 gh CLI 凭据登录 @{login}', 'Signed in with gh CLI credentials as @{login}'],
   'profile.repos': ['公开仓库', 'Public repos'],
   'profile.followers': ['关注者', 'Followers'],
   'profile.following': ['正在关注', 'Following'],
@@ -212,8 +245,18 @@ const DICT: Dict = {
   'settings.title': ['设置', 'Settings'],
   'settings.subtitle': ['凭据、路径、安装方式与翻译服务', 'Credentials, paths, install behaviour and translation'],
   'settings.github': ['GitHub', 'GitHub'],
-  'settings.token': ['Personal Access Token', 'Personal Access Token'],
-  'settings.tokenHint': ['保存在本机 userData 目录，仅用于 GitHub API 调用', 'Stored locally in userData, used only for GitHub API calls'],
+  'settings.account': ['GitHub 账号', 'GitHub account'],
+  'settings.token': ['个人访问令牌', 'Personal Access Token'],
+  'settings.tokenHint': ['保存在本机 ~/.skillhub/state，仅用于 GitHub API 调用', 'Stored locally in ~/.skillhub/state, used only for GitHub API calls'],
+  'settings.connected': ['已连接', 'Connected'],
+  'settings.revalidate': ['重新验证', 'Re-check'],
+  'settings.useToken': ['改用 Token 登录', 'Use a token instead'],
+  'settings.replaceToken': ['更换 Token', 'Replace token'],
+  'settings.tokenSaved': ['Token 已保存', 'Token saved'],
+  'settings.credentialSource': ['凭据来源', 'Credential source'],
+  'settings.notConnected': ['未连接 GitHub', 'Not connected to GitHub'],
+  'settings.notConnectedHint': ['未连接时仍可浏览内置精选目录，但无法搜索 GitHub 或入库私有仓库。', 'Without a connection you can still browse the bundled catalog, but you cannot search GitHub or add private repos.'],
+  'settings.rateLeft': ['剩余额度', 'Rate limit left'],
   'settings.library': ['库目录', 'Library directory'],
   'settings.libraryHint': ['技能仓库的克隆位置', 'Where skill repositories are cloned'],
   'settings.installMode': ['默认安装方式', 'Default install mode'],
@@ -221,7 +264,7 @@ const DICT: Dict = {
   'settings.translation': ['AI 翻译（可选）', 'AI translation (optional)'],
   'settings.translationHint': ['配置任意 OpenAI 兼容接口，即可为英文简介生成中文翻译', 'Configure any OpenAI-compatible endpoint to translate English descriptions'],
   'settings.baseUrl': ['接口地址', 'Base URL'],
-  'settings.apiKey': ['API Key', 'API Key'],
+  'settings.apiKey': ['API 密钥', 'API Key'],
   'settings.model': ['模型', 'Model'],
   'settings.test': ['测试连接', 'Test connection'],
   'settings.testing': ['测试中…', 'Testing…'],
@@ -276,15 +319,22 @@ const DICT: Dict = {
   'toast.translationNeeded': ['请先在设置中配置翻译服务', 'Configure a translation provider in Settings first']
 }
 
-export function translate(lang: Lang, key: string, vars?: Record<string, string | number>): string {
+export function translate(
+  lang: Lang,
+  key: string,
+  vars?: Record<string, string | number | undefined>
+): string {
   const entry = DICT[key]
   let out = entry ? (lang === 'zh' ? entry[0] : entry[1]) : key
   if (vars) {
-    for (const [k, v] of Object.entries(vars)) out = out.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v))
+    for (const [k, v] of Object.entries(vars)) {
+      if (v === undefined || v === null) continue
+      out = out.split(`{${k}}`).join(String(v))
+    }
   }
   return out
 }
 
 export function makeT(lang: Lang) {
-  return (key: string, vars?: Record<string, string | number>): string => translate(lang, key, vars)
+  return (key: string, vars?: Record<string, string | number | undefined>): string => translate(lang, key, vars)
 }

@@ -22,10 +22,10 @@ SkillHub 是一个 macOS 桌面应用（Electron + React），把「登录 GitHu
 | ![排行榜](docs/screenshots/charts.jpg) | ![库](docs/screenshots/library.jpg) |
 | 总星数榜与 24h / 7d / 30d 增长榜，每行标注数据来源 | 已入库仓库，可批量安装到所有已启用的 agent |
 
-| 设置 | |
+| 设置 | 英文界面 |
 |---|---|
-| ![设置](docs/screenshots/settings.jpg) | |
-| 凭据、库目录、安装方式、AI 翻译 | |
+| ![设置](docs/screenshots/settings.jpg) | ![英文](docs/screenshots/detail-en.jpg) |
+| 已登录时直接显示账号与凭据来源，不再要求输入 Token | 完整双语，切换后界面无一处语言混杂 |
 
 ---
 
@@ -116,7 +116,10 @@ npm run dev
 ### 智能体（Agents）
 - **80 个 agent** 的技能目录注册表（`data/agent-registry.json`），每条都带 `confidence` 与 `sourceUrl`，
   UI 上可直接点开查看依据；非高置信度的条目会显示置信度角标。
-- 支持筛选（名称/厂商/路径）与 全部 / 已检测 / 已启用 分段视图，已启用与已检测的排在前面。
+- **按厂商分组**：同一家公司的 agent 归在一起（Moonshot AI 下面是 Kimi Code CLI 与 Kimi CLI，
+  Alibaba 下面是 Qwen Code / Qoder / 灵码…），已经装了的厂商排在前面。
+- 支持搜索（匹配名称、厂商或路径 —— 搜 `kimi` 找 agent，搜 `moonshot` 找厂商）
+  与 全部 / 已检测 / 已启用 分段视图。
 - 检测同时看目录、配置文件与命令行；若某个二进制位于**另一个** agent 的目录内（例如 Kimi CLI 与
   Kimi Code 的二进制都叫 `kimi`），则不计入该 agent 的证据，避免误报。
 - 只记录项目级目录的 agent（如 ona / qodo / replit）也会列出，安装到「设置」里配置的项目目录。
@@ -216,12 +219,18 @@ npm run dev
 <!-- AGENT-TABLE:END -->
 
 ### 界面细节
+- **文字可框选复制**：技能简介、agent 路径、错误信息等都能直接选中复制；
+  只有按钮、标签、导航这类控件不参与选择，避免拖拽时误选。
 - **可收起的侧边栏**：活动栏底部（左下角）的按钮收起/展开，状态会记住（下次启动保持原样）。
   侧边栏只放「当前页面能做的选择」——例如商店里只保留「全部 / 我要做…」两个入口加功能分类，
   13 个场景在内容区以卡片挑选。
 - **命令面板**：`⌘K` / `⌘P`，可跳转页面、切换语言、刷新，或直接搜索库/精选目录/GitHub。
 - **状态栏**：GitHub API 额度实时显示（每分钟轮询）、库统计、已启用 agent、已安装数、语言、版本。
-- **中英双语界面**：标题栏或状态栏一键切换，所有仓库简介同时提供中英文两个面板。
+- **完整中英双语**：标题栏、状态栏或设置页一键切换，**原生应用菜单也会跟着重建**。
+  简介、标签、按钮、提示、活动日志全部双语，仓库数据（tagline / useWhen）也都有中英两份。
+  默认不混杂：英文模式下不出现中文，中文模式下不出现英文（品牌与 agent 专有名词除外）；
+  另一种语言的简介折叠在「Show Chinese / 中文原文」按钮后面，需要时才展开。
+  完整性由 `npm run i18n` 强制校验，作为构建门禁。
 - **实时进度**：克隆、同步、安装都有底部进度条与逐条进度事件。
 
 ---
@@ -248,7 +257,9 @@ node out/main/cli.js growth 7                        # 7 天增长榜
 ## 自检
 
 ```bash
-npm run selftest
+npm run verify     # 类型检查 + 双语审计 + 构建 + 端到端自检，一条命令全跑
+npm run selftest   # 只跑端到端自检
+npm run i18n       # 只跑双语审计
 ```
 
 会真实跑完 29 项检查：GitHub 凭据 → 精选目录 → 搜索 → 技能树 → 增长数据源 → 排行榜 →
@@ -282,7 +293,7 @@ src/
   preload/index.ts        contextBridge API
   renderer/src/           React 界面
 data/
-  curated-catalog.json    60 个精选技能仓库（含功能分类与「一眼看懂」简介）
+  curated-catalog.json    精选技能仓库（含功能分类、中英双语「一眼看懂」简介）
   scenarios.json          13 个场景（「我要做…」）及其推荐仓库
   agent-registry.json     80 个 agent 的技能目录（含出处与置信度）
 ```
@@ -317,6 +328,20 @@ SKILLHUB_TRACE=1 node scripts/run.mjs --electron . --repo=obra/superpowers
 ```
 
 ---
+
+## 双语审计
+
+`scripts/i18n-audit.mjs` 是双语完整性的强制门禁，检查四件事：
+
+| 检查 | 含义 |
+|---|---|
+| 缺失词条 | 代码里 `t('some.key')` 在字典里不存在 → 界面会直接显示 `some.key` |
+| 渲染层硬编码 | 渲染代码里的中文字面量 → 英文模式下会显示中文 |
+| 主进程硬编码 | 经 IPC 传给界面的中文消息 → 同上（终端工具 `cli.ts` / `selftest.ts` 与字典文件已排除） |
+| 未翻译词条 | 中英两个值完全相同且含字母 → 中文模式下会显示英文 |
+
+审计会剥离注释后再扫描，因此中文注释不会被误报；`*Zh` 这类成对的数据字段
+（例如 `descriptionZh` 配 `descriptionEn`）被视为内容而非界面文案，不计入。
 
 ## 已知限制
 

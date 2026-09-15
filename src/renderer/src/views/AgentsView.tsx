@@ -44,6 +44,8 @@ export function AgentsView(): React.JSX.Element {
 
   // The registry covers 40+ agents, so keep the useful ones on screen: enabled
   // first, then detected, then everything else in registry order.
+  const UNKNOWN_VENDOR = t('agents.unknownVendor')
+
   const visible = useMemo(() => {
     const term = query.trim().toLowerCase()
     const rank = (a: AgentTarget): number => (a.enabled ? 0 : a.detected ? 1 : 2)
@@ -63,6 +65,33 @@ export function AgentsView(): React.JSX.Element {
       .sort((x, y) => rank(x.a) - rank(y.a) || x.i - y.i)
       .map((x) => x.a)
   }, [agents, query, scope])
+
+  /**
+   * Group by the company that makes the agent — "all the Kimi ones together",
+   * which is how people actually think about agents. Groups holding something
+   * the user already has come first, then groups by size, then alphabetically.
+   */
+  const groups = useMemo(() => {
+    const map = new Map<string, AgentTarget[]>()
+    for (const a of visible) {
+      const vendor = (a.vendor || '').trim() || UNKNOWN_VENDOR
+      ;(map.get(vendor) || map.set(vendor, []).get(vendor)!).push(a)
+    }
+    return [...map.entries()]
+      .map(([vendor, list]) => ({
+        vendor,
+        agents: list,
+        detected: list.filter((a) => a.detected).length,
+        enabled: list.filter((a) => a.enabled).length
+      }))
+      .sort(
+        (a, b) =>
+          b.detected - a.detected ||
+          b.enabled - a.enabled ||
+          b.agents.length - a.agents.length ||
+          a.vendor.localeCompare(b.vendor)
+      )
+  }, [visible, UNKNOWN_VENDOR])
 
   useEffect(() => {
     void refreshAgents()
@@ -117,7 +146,10 @@ export function AgentsView(): React.JSX.Element {
           <Sparkles size={14} />
           <span>
             {t('agents.newArrivals', { n: newArrivals.length })}
-            <span className="dim"> · {newArrivals.map((a) => a.name).slice(0, 6).join('、')}</span>
+            <span className="dim">
+              {' · '}
+              {newArrivals.map((a) => a.name).slice(0, 6).join(t('common.listSeparator'))}
+            </span>
           </span>
           <button
             className="btn sm primary"
@@ -217,16 +249,31 @@ export function AgentsView(): React.JSX.Element {
           </button>
         </div>
       ) : (
-        <div style={{ display: 'grid', gap: 10 }}>
-          {visible.map((agent, i) => (
-            <AgentCard
-              key={agent.id}
-              agent={agent}
-              style={{ ['--i' as never]: Math.min(i, 10) }}
-              expanded={expanded === agent.id}
-              onToggleExpand={() => setExpanded(expanded === agent.id ? null : agent.id)}
-              onToggleEnabled={(v) => void toggleAgent(agent.id, v)}
-            />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+          {groups.map((group) => (
+            <div key={group.vendor}>
+              <div className="vendor-head">
+                <span className="vendor-name">{group.vendor}</span>
+                <span className="vendor-count">
+                  {group.detected > 0
+                    ? t('agents.vendorDetected', { n: group.detected, total: group.agents.length })
+                    : t('agents.vendorTotal', { n: group.agents.length })}
+                </span>
+                <div className="vendor-line" />
+              </div>
+              <div style={{ display: 'grid', gap: 10 }}>
+                {group.agents.map((agent, i) => (
+                  <AgentCard
+                    key={agent.id}
+                    agent={agent}
+                    style={{ ['--i' as never]: Math.min(i, 10) }}
+                    expanded={expanded === agent.id}
+                    onToggleExpand={() => setExpanded(expanded === agent.id ? null : agent.id)}
+                    onToggleEnabled={(v) => void toggleAgent(agent.id, v)}
+                  />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       )}

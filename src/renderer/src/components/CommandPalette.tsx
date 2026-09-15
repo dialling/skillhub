@@ -60,7 +60,7 @@ export function CommandPalette(): React.JSX.Element | null {
       id: 'cmd:lang',
       label: t('palette.toggleLang'),
       group: t('palette.commands'),
-      sub: lang === 'zh' ? '→ English' : '→ 中文',
+      sub: t('lang.switchTo'),
       icon: <Languages size={14} />,
       run: () => {
         void toggleLang()

@@ -74,6 +74,7 @@ export interface RepoMeta {
   taglineEn?: string
   /** the situation that should make you reach for this */
   useWhen?: string
+  useWhenEn?: string
   /** the older, longer repo-centric blurb, kept for the detail page */
   aboutZh?: string
   stars: number
@@ -307,12 +308,17 @@ export interface DiskStats {
   skillsOnDisk: number
 }
 
+/**
+ * Activity entries store an i18n CODE plus parameters rather than a finished
+ * sentence: they are persisted, so a translated string would freeze in whatever
+ * language happened to be active when it was written.
+ */
 export interface ActivityEvent {
   id: string
   at: number
   kind: 'add' | 'install' | 'uninstall' | 'remove' | 'sync' | 'settings'
-  title: string
-  detail?: string
+  code: string
+  params?: Record<string, string | number | undefined>
 }
 
 export interface CuratedCatalog {

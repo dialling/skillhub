@@ -18,7 +18,8 @@ import {
   Sparkles,
   Search,
   CircleAlert,
-  Languages
+  Languages,
+  X
 } from 'lucide-react'
 import { CATEGORY_LABELS, type AgentTarget } from '@shared/types'
 import { api, fmtStars, fmtRelative, gradientFor } from '../api'
@@ -50,6 +51,7 @@ export function DetailPanel(): React.JSX.Element | null {
   const [skillPreview, setSkillPreview] = useState<{ name: string; body: string } | null>(null)
   const [closing, setClosing] = useState(false)
   const [showAllAgents, setShowAllAgents] = useState(false)
+  const [showSecondary, setShowSecondary] = useState(false)
   const [agentQuery, setAgentQuery] = useState('')
   const bodyRef = useRef<HTMLDivElement>(null)
 
@@ -99,6 +101,7 @@ export function DetailPanel(): React.JSX.Element | null {
     setTargets(new Set(useStore.getState().agents.filter((a) => a.enabled).map((a) => a.id)))
     setShowAllAgents(false)
     setAgentQuery('')
+    setShowSecondary(false)
   }, [repoFullName])
 
   useEffect(() => {
@@ -208,7 +211,9 @@ export function DetailPanel(): React.JSX.Element | null {
             {tagline && <div className="hero-tagline">{tagline}</div>}
             {meta?.useWhen && (
               <div className="hero-usewhen">
-                {t('store.useWhen')}：{meta.useWhen}
+                {t('store.useWhen')}
+                {t('common.labelSeparator')}
+                {lang === 'zh' ? meta.useWhen : meta.useWhenEn || meta.useWhen}
               </div>
             )}
             <div className="hero-tags">
@@ -330,33 +335,58 @@ export function DetailPanel(): React.JSX.Element | null {
             >
               {detail.tab === 'overview' && (
                 <>
-                  <div className="panel">
-                    <div className="panel-head">
-                      <Sparkles size={13} />
-                      {t('detail.zhIntro')}
-                      <div className="right">
-                        <button
-                          className="btn ghost sm"
-                          disabled={translating || !descriptionEn}
-                          onClick={() => void onTranslate()}
-                          title={t('detail.translate')}
-                        >
-                          {translating ? <span className="spinner" /> : <Languages size={12} />}
-                          {t('detail.translate')}
-                        </button>
+                  {/* The secondary-language description is collapsed when it is
+                      not the UI language, so English mode never shows Chinese
+                      unprompted (and vice versa) while still keeping the
+                      bilingual text one click away. */}
+                  {(lang === 'zh' || showSecondary) && (
+                    <div className="panel">
+                      <div className="panel-head">
+                        <Sparkles size={13} />
+                        {lang === 'zh' ? t('detail.zhIntro') : t('detail.secondaryIntro')}
+                        <div className="right">
+                          <button
+                            className="btn ghost sm"
+                            disabled={translating || !descriptionEn}
+                            onClick={() => void onTranslate()}
+                            title={t('detail.translate')}
+                          >
+                            {translating ? <span className="spinner" /> : <Languages size={12} />}
+                            {t('detail.translate')}
+                          </button>
+                          {lang !== 'zh' && (
+                            <button className="btn ghost sm" onClick={() => setShowSecondary(false)}>
+                              <X size={12} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      <div className="panel-body">
+                        <div className="about-text zh">
+                          {isCJK(shownZh) ? (
+                            shownZh
+                          ) : shownZh ? (
+                            <em className="dim">{shownZh}</em>
+                          ) : (
+                            <span className="dim">{t('detail.noTranslation')}</span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <div className="panel-body">
-                      <div className="about-text zh">
-                        {isCJK(shownZh) ? shownZh : shownZh ? <em className="dim">{shownZh}</em> : <span className="dim">{t('detail.noTranslation')}</span>}
-                      </div>
-                    </div>
-                  </div>
+                  )}
 
                   <div className="panel">
                     <div className="panel-head">
                       <FileText size={13} />
                       {t('detail.enIntro')}
+                      {lang !== 'zh' && descriptionZh && !showSecondary && (
+                        <div className="right">
+                          <button className="btn ghost sm" onClick={() => setShowSecondary(true)}>
+                            <Languages size={12} />
+                            {t('detail.showSecondary')}
+                          </button>
+                        </div>
+                      )}
                     </div>
                     <div className="panel-body">
                       <div className="about-text">{descriptionEn || <span className="dim">—</span>}</div>

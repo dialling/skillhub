@@ -71,8 +71,76 @@ body {
   background: var(--bg-0);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  user-select: none;
   cursor: default;
+}
+
+/*
+  Selection policy
+  ----------------
+  Text is selectable by default: users need to copy skill descriptions, agent
+  paths, install commands and error messages. Only *chrome* — controls whose
+  drag gesture would fight the page — opts out, and the rule is applied to a
+  short explicit list rather than to <body>.
+*/
+button,
+.btn,
+.chip,
+.seg,
+.switch,
+.kbd,
+.act-item,
+.act-badge,
+.side-item,
+.side-section-title,
+.detail-tab,
+.status-item,
+.palette-item,
+.palette-group,
+.palette-input,
+.tile,
+.agent-glyph,
+.board-rank,
+.board-head,
+.scenario-card,
+.fn-tile,
+.titlebar,
+.statusbar,
+.empty h3,
+.jobbar,
+.progress {
+  user-select: none;
+}
+
+/* Content that must always be copyable, stated explicitly so a future
+   `user-select: none` on an ancestor can never take it away again. */
+.card-desc,
+.card-compact .sub,
+.trend-sub,
+.agent-path,
+.agent-pick-row .nm,
+.skill-desc,
+.skill-path,
+.skill-name,
+.hero-tagline,
+.hero-usewhen,
+.hero-owner,
+.hero-title,
+.about-text,
+.kv dd,
+.kv dt,
+.tl-title,
+.tl-detail,
+.toast .tm,
+.toast .td,
+.notice span,
+.board-name .n,
+.board-name .o,
+.modal-head,
+.modal-body,
+.mono,
+code,
+pre {
+  user-select: text;
 }
 
 button,
@@ -2469,4 +2537,70 @@ button.status-item:hover {
   font-family: var(--mono);
   font-size: 11px;
   color: var(--text-3);
+}
+
+/* Signed-in GitHub account row in Settings. */
+.gh-account {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-2);
+  background: linear-gradient(120deg, rgba(47, 129, 247, 0.1), rgba(139, 92, 246, 0.05));
+}
+.gh-account img {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid var(--border-3);
+  object-fit: cover;
+  flex: none;
+}
+.gh-account .who {
+  flex: 1;
+  min-width: 0;
+}
+.gh-account .nm {
+  font-size: 14px;
+  font-weight: 650;
+}
+.gh-account .lg {
+  font-size: 11.5px;
+  color: var(--text-2);
+}
+.gh-account .meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  flex: none;
+}
+
+/* Vendor group heading in the Agents view — groups agents by the company
+   that makes them, which is how people actually talk about them. */
+.vendor-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 9px;
+  padding-left: 2px;
+}
+.vendor-name {
+  font-size: 12.5px;
+  font-weight: 680;
+  letter-spacing: 0.2px;
+  color: var(--text-0);
+  white-space: nowrap;
+}
+.vendor-count {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.vendor-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--border-2), transparent);
 }

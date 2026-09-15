@@ -58,6 +58,7 @@ import {
 import { leaderboard, snapshotCoverage, topByStars, type GrowthWindow } from './core/leaderboard'
 import { testProvider, translate, translateBatch, translationAvailable } from './core/translate'
 import { expandPath, userDataDir as stateDir } from './core/paths'
+import { m } from './core/msg'
 import { buildRemoteSkills, parseSkillMd } from './core/skills'
 
 type Broadcast = (channel: string, payload: unknown) => void
@@ -107,20 +108,20 @@ export function registerIpc(send: Broadcast): void {
     const limit = await rateLimit(true)
     if (!limit.ok) {
       settings.set({ token: '' })
-      throw new Error(limit.error || 'Token 无效')
+      throw new Error(limit.error || m('auth.tokenInvalid'))
     }
     const me = await viewer()
     settings.set({ user: me, firstRunDone: true })
-    logActivity('settings', '已登录 GitHub', `@${me.login}`)
+    logActivity('settings', 'activity.loggedIn', { login: me.login })
     return me
   })
   handle('github:loginWithCli', async () => {
     clearCaches()
     const limit = await rateLimit(true)
-    if (!limit.ok) throw new Error(limit.error || '未找到可用的 GitHub 凭据（gh CLI 未登录）')
+    if (!limit.ok) throw new Error(limit.error || m('auth.noCredentials'))
     const me = await viewer()
     settings.set({ user: me })
-    logActivity('settings', '使用 gh CLI 凭据登录', `@${me.login}`)
+    logActivity('settings', 'activity.loggedInCli', { login: me.login })
     return me
   })
   handle('github:logout', () => {
@@ -137,7 +138,12 @@ export function registerIpc(send: Broadcast): void {
     'github:repoDetail',
     async (fullName: string, opts: { withSkills?: boolean; withReadme?: boolean } = {}) => {
       const trace = process.env.SKILLHUB_TRACE ? createTracer('repoDetail') : null
-      const meta = await getRepo(fullName, { force: true })
+      const live = await getRepo(fullName, { force: true })
+      // Live API metadata wins on facts (stars, pushed_at), but the bundled
+      // catalog carries the hand-written tagline, useWhen and about text that
+      // the API knows nothing about. Merging keeps both.
+      const catalogEntry = (await curatedCatalog()).find((r) => r.fullName === fullName)
+      const meta: RepoMeta = catalogEntry ? { ...catalogEntry, ...live } : live
       trace?.('repo')
       snapshotStars(fullName, meta.stars)
       const branch = meta.defaultBranch || 'main'
@@ -222,7 +228,7 @@ export function registerIpc(send: Broadcast): void {
   })
   handle('library:readme', async (id: string) => {
     const item = getItem(id)
-    if (!item) throw new Error('未找到库项')
+    if (!item) throw new Error(m('agent.notFound'))
     if (item.local) {
       return ''
     }
@@ -230,7 +236,7 @@ export function registerIpc(send: Broadcast): void {
   })
   handle('library:refreshSkills', async (id: string) => {
     const item = getItem(id)
-    if (!item) throw new Error('未找到库项')
+    if (!item) throw new Error(m('agent.notFound'))
     return syncItem(id)
   })
 
@@ -375,7 +381,7 @@ export function registerIpc(send: Broadcast): void {
   handle('system:pickDirectory', async () => {
     const res = await dialog.showOpenDialog({
       properties: ['openDirectory', 'createDirectory'],
-      title: '选择目录'
+      title: m('dialog.pickDirectory')
     })
     if (res.canceled || !res.filePaths.length) return null
     return res.filePaths[0]

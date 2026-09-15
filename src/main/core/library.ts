@@ -6,6 +6,7 @@ import { ensureDir, expandPath, libraryFolderName } from './paths'
 import { cache, installs, library, logActivity, settings } from './db'
 import { getRepo, listSkillDirs, activeToken, getRawFile } from './github'
 import { buildLocalSkills, buildRemoteSkills, parseSkillMd } from './skills'
+import { m } from './msg'
 
 export type ProgressSink = (p: JobProgress) => void
 
@@ -140,7 +141,7 @@ export async function addRepo(fullName: string, opts: AddOptions = {}): Promise<
     skills: []
   }
   upsert(item)
-  emit({ job: 'clone', id, phase: 'start', message: `正在入库 ${fullName}…`, percent: 2 })
+  emit({ job: 'clone', id, phase: 'start', message: m('library.cloning', { name: fullName }), percent: 2 })
 
   try {
     let remoteDirs: string[] = []
@@ -153,7 +154,7 @@ export async function addRepo(fullName: string, opts: AddOptions = {}): Promise<
     }
 
     if (existsSync(join(dir, '.git'))) {
-      emit({ job: 'clone', id, phase: 'progress', message: '检测到已有克隆，执行更新…', percent: 20 })
+      emit({ job: 'clone', id, phase: 'progress', message: m('library.alreadyCloned'), percent: 20 })
       await run('git', ['-C', dir, 'pull', '--ff-only', '--depth', '1'], {
         onLine: (l) => emit({ job: 'clone', id, phase: 'progress', message: l })
       }).catch(async () => {
@@ -176,7 +177,7 @@ export async function addRepo(fullName: string, opts: AddOptions = {}): Promise<
         // scrub the token from the stored remote.
         const token = activeToken()
         if (!token) throw err
-        emit({ job: 'clone', id, phase: 'progress', message: '公开克隆失败，使用 GitHub 凭据重试…' })
+        emit({ job: 'clone', id, phase: 'progress', message: m('library.retryAuth') })
         if (existsSync(dir)) rmSync(dir, { recursive: true, force: true })
         await run('git', [...args.filter((a) => a !== cleanUrl(fullName) && a !== dir), authedUrl(fullName), dir], {
           onLine: (l) => emit({ job: 'clone', id, phase: 'progress', message: l })
@@ -185,7 +186,7 @@ export async function addRepo(fullName: string, opts: AddOptions = {}): Promise<
       }
     }
 
-    emit({ job: 'clone', id, phase: 'progress', message: '正在解析技能…', percent: 85 })
+    emit({ job: 'clone', id, phase: 'progress', message: m('library.parsing'), percent: 85 })
     const skills = await enrichSkills(fullName, dir, meta, remoteDirs)
     const ready: LibraryItem = {
       ...item,
@@ -196,12 +197,12 @@ export async function addRepo(fullName: string, opts: AddOptions = {}): Promise<
       meta: { ...meta, skillDirs: remoteDirs.length ? remoteDirs : skills.map((s) => s.path), skillCount: skills.length }
     }
     upsert(ready)
-    logActivity('add', `入库 ${fullName}`, `${skills.length} 个技能`)
+    logActivity('add', 'activity.added', { name: fullName, count: skills.length })
     emit({
       job: 'clone',
       id,
       phase: 'done',
-      message: `${fullName} 入库完成（${skills.length} 个技能）`,
+      message: m('library.addedDone', { name: fullName, count: skills.length }),
       percent: 100
     })
     return ready
@@ -213,7 +214,7 @@ export async function addRepo(fullName: string, opts: AddOptions = {}): Promise<
       updatedAt: Date.now()
     }
     upsert(failed)
-    emit({ job: 'clone', id, phase: 'error', message: `${fullName} 入库失败：${failed.error}` })
+    emit({ job: 'clone', id, phase: 'error', message: m('library.addFailed', { name: fullName, error: failed.error }) })
     return failed
   }
 }
@@ -221,7 +222,7 @@ export async function addRepo(fullName: string, opts: AddOptions = {}): Promise<
 /** Register a local folder as a library source (no clone). */
 export async function addLocalDir(dir: string, name?: string): Promise<LibraryItem> {
   const abs = expandPath(dir)
-  if (!existsSync(abs)) throw new Error(`目录不存在：${abs}`)
+  if (!existsSync(abs)) throw new Error(m('library.dirMissing', { dir: abs }))
   const fullName = name || `local/${abs.split('/').filter(Boolean).pop()}`
   const skills = buildLocalSkills(fullName, abs)
   const item: LibraryItem = {
@@ -249,15 +250,15 @@ export async function addLocalDir(dir: string, name?: string): Promise<LibraryIt
     skills
   }
   upsert(item)
-  logActivity('add', `导入本地目录 ${abs}`, `${skills.length} 个技能`)
+  logActivity('add', 'activity.imported', { dir: abs, count: skills.length })
   return item
 }
 
 export async function syncItem(id: string): Promise<LibraryItem> {
   const item = getItem(id)
-  if (!item) throw new Error(`未找到库项 ${id}`)
+  if (!item) throw new Error(m('library.itemMissing', { id }))
   if (item.local) return item
-  emit({ job: 'sync', id, phase: 'start', message: `正在同步 ${id}…` })
+  emit({ job: 'sync', id, phase: 'start', message: m('library.syncing', { name: id }) })
   try {
     await run('git', ['-C', item.sourcePath, 'pull', '--ff-only', '--depth', '1'], {
       onLine: (l) => emit({ job: 'sync', id, phase: 'progress', message: l })
@@ -278,11 +279,11 @@ export async function syncItem(id: string): Promise<LibraryItem> {
       error: undefined
     }
     upsert(next)
-    logActivity('sync', `同步 ${id}`, `${skills.length} 个技能`)
-    emit({ job: 'sync', id, phase: 'done', message: `${id} 已更新` })
+    logActivity('sync', 'activity.synced', { name: id, count: skills.length })
+    emit({ job: 'sync', id, phase: 'done', message: m('library.synced', { name: id }) })
     return next
   } catch (err: any) {
-    emit({ job: 'sync', id, phase: 'error', message: `同步失败：${err?.message || err}` })
+    emit({ job: 'sync', id, phase: 'error', message: m('library.syncFailed', { error: err?.message || err }) })
     throw err
   }
 }
@@ -313,7 +314,7 @@ export function removeItem(id: string, deleteFiles = true): { removedInstalls: n
   library.update((d) => {
     d.items = d.items.filter((i) => i.id !== id)
   })
-  logActivity('remove', `移出库 ${id}`)
+  logActivity('remove', 'activity.removed', { name: id })
   return { removedInstalls }
 }
 

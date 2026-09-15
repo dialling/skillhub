@@ -12,7 +12,9 @@
     "app": "node scripts/run.mjs --electron .",
     "selftest": "npm run build && node out/main/selftest.js",
     "cli": "node out/main/cli.js",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "i18n": "node scripts/i18n-audit.mjs",
+    "verify": "npm run typecheck && npm run i18n && npm run build && node out/main/selftest.js"
   },
   "keywords": [
     "agent-skills",

@@ -395,6 +395,70 @@ const ENTRIES = {
   }
 }
 
+/** English counterpart of each `useWhen`, so English mode shows no Chinese. */
+const USE_WHEN_EN = {
+  'obra/superpowers': 'AI starts coding before thinking',
+  'OthmanAdi/planning-with-files': 'the task spans sessions and loses context',
+  'revfactory/harness': "one agent can't cover the whole job",
+  'jnMetaCode/superpowers-zh': 'you want superpowers without the English',
+  'Gentleman-Programming/gentle-ai': 'setting up a new machine or project',
+  'gotalab/cc-sdd': 'you want a spec before autonomous implementation',
+  'codeaholicguy/ai-devkit': 'config sprawl across several AI tools',
+  'anthropics/skills': 'you need to handle office documents',
+  'kepano/obsidian-skills': 'your notes live in Obsidian',
+  'anthropics/claude-plugins-official': 'you want official, maintained capabilities',
+  'vercel-labs/agent-skills': 'writing frontend code',
+  'googleworkspace/cli': 'scripting Google Workspace',
+  'openai/skills': 'you use Codex and want official skills',
+  'google/skills': 'building on Google Cloud',
+  'google-labs-code/stitch-skills': 'you have a design to implement',
+  'browser-act/skills': 'scraping or automating the web',
+  'microsoft/skill-recorder': 'you have a repetitive flow to teach',
+  'NVIDIA/skills': 'robotics, simulation or GPU work',
+  'microsoft/skills': 'building on Azure',
+  'cloudflare/skills': 'deploying to Cloudflare',
+  'oracle/skills': 'working with the Oracle stack',
+  'nextlevelbuilder/ui-ux-pro-max-skill': 'AI-generated UI looks templated',
+  'Imbad0202/academic-research-skills': 'writing a paper or doing research',
+  'K-Dense-AI/scientific-agent-skills': 'life-science or pharma research',
+  'mukul975/Anthropic-Cybersecurity-Skills': 'security testing or compliance',
+  'op7418/guizang-ppt-skill': 'you need a good-looking deck',
+  'Agents365-ai/drawio-skill': 'diagrams without dragging boxes',
+  'Vincentwei1021/video-shotcraft': 'you need a product demo video',
+  'trailofbits/skills': 'auditing code for security',
+  'addyosmani/web-quality-skills': 'the site is slow',
+  'antonbabenko/terraform-skill': 'managing cloud infrastructure',
+  'astronomer/agents': 'doing data engineering',
+  'addyosmani/agent-skills': 'you want better code quality',
+  'ComposioHQ/awesome-claude-skills': 'browsing before you pick',
+  'hesreallyhim/awesome-claude-code': 'learning what Claude Code can do',
+  'VoltAgent/awesome-openclaw-skills': 'you use OpenClaw',
+  'sickn33/agentic-awesome-skills': 'you want a large preinstalled library',
+  'wshobson/agents': 'you switch between agents',
+  'github/awesome-copilot': 'you use Copilot',
+  'VoltAgent/awesome-agent-skills': 'you want many community skills at once',
+  'alirezarezvani/claude-skills': 'you need non-engineering skills',
+  'KKKKhazix/khazix-skills': 'you want practical Chinese-language skills',
+  'anbeime/skill': 'looking for Chinese-localised packs',
+  'tech-leads-club/agent-skills': 'you worry about untrusted skills',
+  'libukai/awesome-agent-skills': 'getting oriented in the ecosystem',
+  'vercel-labs/skills': 'sharing skills across tools',
+  'NVIDIA/SkillSpector': 'installing something unfamiliar',
+  'yusufkaraaslan/Skill_Seekers': 'teaching the agent your internal docs',
+  'xingkongliang/skills-manager': 'skills scattered across directories',
+  'qufei1993/skills-hub': 'you want every tool on one set of skills',
+  'rohitg00/skillkit': 'you keep switching tools',
+  'MoizIbnYousaf/ai-agent-skills': 'deploying to several agents',
+  'jiweiyeah/Skills-Manager': 'you want a single source of truth',
+  'EverMind-AI/SkillCorpus': 'too many skills to find what you want',
+  'Kamalnrf/claude-plugins': 'finding plugins from the terminal',
+  'antfu/skills-npm': 'distributing skills through npm',
+  'agentskills/agentskills': 'learning how to write a SKILL.md',
+  'modelcontextprotocol/modelcontextprotocol': 'writing an MCP server',
+  'modelcontextprotocol/registry': 'finding an existing MCP server',
+  'sno-ai/mda': 'one source targeting several platforms'
+}
+
 /** Functional categories: what the user wants to do, not what the repo is. */
 const FN_LABELS = {
   docs: { zh: '文档与办公', en: 'Documents & Office', icon: 'FileText' },
@@ -423,9 +487,16 @@ for (const repo of doc.repos) {
   repo.taglineZh = entry.taglineZh
   repo.taglineEn = entry.taglineEn
   repo.useWhen = entry.useWhen
+  repo.useWhenEn = USE_WHEN_EN[repo.fullName]
   // The long repo-centric blurb moves to the detail page as `about`.
   repo.aboutZh = repo.descriptionZh
   patched++
+}
+
+const missingEn = doc.repos.filter((r) => !r.useWhenEn).map((r) => r.fullName)
+if (missingEn.length) {
+  console.error(`缺少英文 useWhen：\n  ${missingEn.join('\n  ')}`)
+  process.exit(1)
 }
 
 if (missing.length) {

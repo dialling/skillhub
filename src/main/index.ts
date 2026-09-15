@@ -1,10 +1,11 @@
-import { app, BrowserWindow, Menu, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron'
 import { join } from 'node:path'
 import { registerIpc } from './ipc'
 import { flushAll, settings, snapshotStars } from './core/db'
 import { libraryItems } from './core/library'
 import { curatedCatalog } from './core/catalog'
 import { ensureEnabledAgents } from './core/agents'
+import { m } from './core/msg'
 import { probeRawHost } from './core/github'
 
 // When ELECTRON_RUN_AS_NODE is present in the environment the Electron binary
@@ -118,38 +119,38 @@ function buildMenu(): void {
         ] as Electron.MenuItemConstructorOptions[])
       : []),
     {
-      label: '编辑',
+      label: m('menu.edit'),
       submenu: [
-        { role: 'undo', label: '撤销' },
-        { role: 'redo', label: '重做' },
+        { role: 'undo', label: m('menu.undo') },
+        { role: 'redo', label: m('menu.redo') },
         { type: 'separator' },
-        { role: 'cut', label: '剪切' },
-        { role: 'copy', label: '复制' },
-        { role: 'paste', label: '粘贴' },
-        { role: 'selectAll', label: '全选' }
+        { role: 'cut', label: m('menu.cut') },
+        { role: 'copy', label: m('menu.copy') },
+        { role: 'paste', label: m('menu.paste') },
+        { role: 'selectAll', label: m('menu.selectAll') }
       ]
     },
     {
-      label: '视图',
+      label: m('menu.view'),
       submenu: [
-        { role: 'reload', label: '重新加载' },
-        { role: 'toggleDevTools', label: '开发者工具' },
+        { role: 'reload', label: m('menu.reload') },
+        { role: 'toggleDevTools', label: m('menu.devtools') },
         { type: 'separator' },
-        { role: 'resetZoom', label: '实际大小' },
-        { role: 'zoomIn', label: '放大' },
-        { role: 'zoomOut', label: '缩小' },
+        { role: 'resetZoom', label: m('menu.actualSize') },
+        { role: 'zoomIn', label: m('menu.zoomIn') },
+        { role: 'zoomOut', label: m('menu.zoomOut') },
         { type: 'separator' },
-        { role: 'togglefullscreen', label: '全屏' }
+        { role: 'togglefullscreen', label: m('menu.fullscreen') }
       ]
     },
     {
-      label: '窗口',
+      label: m('menu.window'),
       submenu: [
-        { role: 'minimize', label: '最小化' },
-        { role: 'zoom', label: '缩放' },
+        { role: 'minimize', label: m('menu.minimize') },
+        { role: 'zoom', label: m('menu.zoomWindow') },
         ...(isMac
           ? ([{ type: 'separator' }, { role: 'front' }] as Electron.MenuItemConstructorOptions[])
-          : ([{ role: 'close', label: '关闭' }] as Electron.MenuItemConstructorOptions[]))
+          : ([{ role: 'close', label: m('menu.close') }] as Electron.MenuItemConstructorOptions[]))
       ]
     }
   ]
@@ -193,6 +194,13 @@ app.whenReady().then(() => {
       })
       .catch(() => {})
   }, 1500)
+
+  // The application menu is built from the current language, so rebuild it
+  // whenever the renderer switches language.
+  ipcMain.handle('menu:rebuild', () => {
+    buildMenu()
+    return true
+  })
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()

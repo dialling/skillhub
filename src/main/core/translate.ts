@@ -1,4 +1,5 @@
 import { cache, settings } from './db'
+import { m } from './msg'
 
 export interface TranslationProvider {
   baseUrl: string
@@ -88,7 +89,7 @@ function hash(s: string): string {
 /** Verify credentials against the configured endpoint. */
 export async function testProvider(): Promise<{ ok: boolean; message: string }> {
   const p = provider()
-  if (!p) return { ok: false, message: '未启用或缺少 API Key' }
+  if (!p) return { ok: false, message: m('translate.notConfigured') }
   try {
     const res = await fetch(`${p.baseUrl}/chat/completions`, {
       method: 'POST',
@@ -103,7 +104,7 @@ export async function testProvider(): Promise<{ ok: boolean; message: string }> 
       const txt = await res.text().catch(() => '')
       return { ok: false, message: `HTTP ${res.status} ${txt.slice(0, 200)}` }
     }
-    return { ok: true, message: '连接正常' }
+    return { ok: true, message: m('translate.ok') }
   } catch (err: any) {
     return { ok: false, message: err?.message || String(err) }
   }

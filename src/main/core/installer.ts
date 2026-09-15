@@ -15,6 +15,7 @@ import type { InstallMode, InstallProgress, InstallRecord, InstallRequest, Skill
 import { expandPath } from './paths'
 import { installs, library, logActivity, settings } from './db'
 import { agentDisplayName, resolveAgentDir } from './agents'
+import { m } from './msg'
 
 const MARKER = '.skillhub-install.json'
 
@@ -96,7 +97,7 @@ export function installSkills(
     const found = findSkill(skillId)
     if (!found) {
       for (const agentId of req.agentIds) {
-        outcome.errors.push({ skillId, agentId, reason: '技能不在库中，请先入库' })
+        outcome.errors.push({ skillId, agentId, reason: m('install.notInLibrary') })
       }
       current += req.agentIds.length
       continue
@@ -107,14 +108,14 @@ export function installSkills(
     const handledDirs = new Map<string, string>()
     if (!source) {
       for (const agentId of req.agentIds) {
-        outcome.errors.push({ skillId, agentId, reason: '本地文件缺失，请重新同步' })
+        outcome.errors.push({ skillId, agentId, reason: m('install.sourceMissing') })
       }
       current += req.agentIds.length
       continue
     }
     if (!existsSync(join(source, 'SKILL.md'))) {
       for (const agentId of req.agentIds) {
-        outcome.errors.push({ skillId, agentId, reason: '该目录下没有 SKILL.md' })
+        outcome.errors.push({ skillId, agentId, reason: m('install.noSkillFile') })
       }
       current += req.agentIds.length
       continue
@@ -125,8 +126,8 @@ export function installSkills(
       const agentDir = resolveAgentDir(agentId)
       const agentName = agentDisplayName(agentId)
       if (!agentDir) {
-        outcome.errors.push({ skillId, agentId, reason: '无法解析该 agent 的技能目录' })
-        report({ message: `跳过 ${agentName}` })
+        outcome.errors.push({ skillId, agentId, reason: m('install.noAgentDir') })
+        report({ message: m('install.skippedAgent', { agent: agentName }) })
         continue
       }
 
@@ -153,7 +154,7 @@ export function installSkills(
           d.records.push(record)
         })
         outcome.ok.push(record)
-        report({ skillId, skillName: skill.name, agentId, agentName, message: `共享目录 ${agentDir}` })
+        report({ skillId, skillName: skill.name, agentId, agentName, message: m('install.sharedDir', { dir: agentDir }) })
         continue
       }
 
@@ -168,12 +169,8 @@ export function installSkills(
           if (!existsSync(altPath)) {
             target = altPath
           } else if (!isManagedPath(altPath, libRoot)) {
-            outcome.skipped.push({
-              skillId,
-              agentId,
-              reason: `目标已存在且不是 SkillHub 管理的技能：${target}`
-            })
-            report({ message: `冲突：${target}` })
+            outcome.skipped.push({ skillId, agentId, reason: m('install.conflict', { path: target }) })
+            report({ message: m('install.conflictShort', { path: target }) })
             continue
           } else {
             target = altPath
@@ -226,28 +223,31 @@ export function installSkills(
           skillName: skill.name,
           agentId,
           agentName,
-          message: `已安装 ${skill.name} → ${agentName}`
+          message: m('install.done', { skill: skill.name, agent: agentName })
         })
       } catch (err: any) {
         outcome.errors.push({ skillId, agentId, reason: err?.message || String(err) })
-        report({ message: `安装失败 ${skill.name} → ${agentName}: ${err?.message || err}` })
+        report({ message: m('install.itemFailed', { skill: skill.name, agent: agentName, error: err?.message || err }) })
       }
     }
   }
 
   onProgress?.({
     phase: 'done',
-    message: `完成：成功 ${outcome.ok.length}，跳过 ${outcome.skipped.length}，失败 ${outcome.errors.length}`,
+    message: m('install.summary', {
+      ok: outcome.ok.length,
+      skipped: outcome.skipped.length,
+      failed: outcome.errors.length
+    }),
     current: total,
     total,
     ok: outcome.errors.length === 0
   })
   if (outcome.ok.length) {
-    logActivity(
-      'install',
-      `安装 ${outcome.ok.length} 项技能`,
-      [...new Set(outcome.ok.map((r) => r.agentName))].join('、')
-    )
+    logActivity('install', 'activity.installed', {
+      count: outcome.ok.length,
+      agents: [...new Set(outcome.ok.map((r) => r.agentName))].join(', ')
+    })
   }
   return outcome
 }
@@ -275,7 +275,7 @@ export function uninstall(skillId: string, agentId: string): boolean {
   installs.update((d) => {
     d.records = d.records.filter((r) => r.id !== rec.id)
   })
-  logActivity('uninstall', `卸载 ${rec.skillName}`, rec.agentName)
+  logActivity('uninstall', 'activity.uninstalled', { skill: rec.skillName, agent: rec.agentName })
   return true
 }
 

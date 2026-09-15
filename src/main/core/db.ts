@@ -61,14 +61,18 @@ export const cache = new JsonStore<{
 
 for (const s of [settings, library, installs, stars, activity, cache]) registerStore(s)
 
-export function logActivity(kind: ActivityEvent['kind'], title: string, detail?: string): void {
+export function logActivity(
+  kind: ActivityEvent['kind'],
+  code: string,
+  params?: Record<string, string | number | undefined>
+): void {
   activity.update((d) => {
     d.events.unshift({
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       at: Date.now(),
       kind,
-      title,
-      detail
+      code,
+      params
     })
     d.events = d.events.slice(0, 300)
   })

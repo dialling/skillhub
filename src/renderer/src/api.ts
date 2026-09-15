@@ -1,3 +1,4 @@
+import { translate } from './i18n'
 import type {
   AgentTarget,
   ActivityEvent,
@@ -133,6 +134,7 @@ export interface SkillHubApi {
     checkPaths(paths: string[]): Promise<{ path: string; abs: string; exists: boolean; isDir: boolean }[]>
     parseSkill(text: string): Promise<any>
     agentName(id: string): Promise<string>
+    rebuildMenu(): Promise<boolean>
   }
   on(channel: string, cb: (payload: any) => void): () => void
 }
@@ -163,14 +165,13 @@ export function fmtBytes(n: number): string {
 export function fmtRelative(ts: number, lang: 'zh' | 'en' = 'zh'): string {
   const diff = Date.now() - ts
   const min = Math.floor(diff / 60000)
-  if (min < 1) return lang === 'zh' ? '刚刚' : 'just now'
-  if (min < 60) return lang === 'zh' ? `${min} 分钟前` : `${min}m ago`
+  if (min < 1) return translate(lang, 'time.justNow')
+  if (min < 60) return translate(lang, 'time.minutesAgo', { n: min })
   const hr = Math.floor(min / 60)
-  if (hr < 24) return lang === 'zh' ? `${hr} 小时前` : `${hr}h ago`
+  if (hr < 24) return translate(lang, 'time.hoursAgo', { n: hr })
   const day = Math.floor(hr / 24)
-  if (day < 30) return lang === 'zh' ? `${day} 天前` : `${day}d ago`
-  const mo = Math.floor(day / 30)
-  return lang === 'zh' ? `${mo} 个月前` : `${mo}mo ago`
+  if (day < 30) return translate(lang, 'time.daysAgo', { n: day })
+  return translate(lang, 'time.monthsAgo', { n: Math.floor(day / 30) })
 }
 
 /** Deterministic colour pair derived from a repo name, for capsule art. */

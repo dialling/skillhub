@@ -63,9 +63,7 @@ export function AddLocalModal(): React.JSX.Element | null {
                 {t('agents.pickDir')}
               </button>
             </div>
-            <div className="hint">
-              SkillHub 会递归扫描该目录下所有包含 <code>SKILL.md</code> 的技能，加入你的库并可用于安装。
-            </div>
+            <div className="hint">{t('addLocal.hint')}</div>
           </div>
         </div>
         <div className="modal-foot">

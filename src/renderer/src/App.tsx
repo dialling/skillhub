@@ -24,11 +24,17 @@ export default function App(): React.JSX.Element {
   const setPalette = useStore((s) => s.setPalette)
   const paletteOpen = useStore((s) => s.paletteOpen)
   const loadGrowth = useStore((s) => s.loadTrending)
+  const lang = useStore((s) => s.lang)
 
   useEffect(() => {
     wireEvents()
     void boot()
   }, [boot])
+
+  // Reflect the UI language on <html> so font fallback and hyphenation follow.
+  useEffect(() => {
+    document.documentElement.lang = lang === 'en' ? 'en' : 'zh-CN'
+  }, [lang])
 
   // Kick off the growth leaderboard once, in the background, so the Store's
   // "trending" rail has data without blocking first paint.
