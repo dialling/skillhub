@@ -260,14 +260,13 @@ a:hover {
 }
 
 .brand-mark {
-  width: 22px;
-  height: 22px;
-  border-radius: 7px;
   display: grid;
   place-items: center;
-  background: linear-gradient(135deg, var(--accent) 0%, var(--violet) 100%);
-  box-shadow: 0 0 14px var(--accent-dim);
-  color: #fff;
+  flex: none;
+  border-radius: 7px;
+  /* the mark draws its own plate; the ring just separates it from the bar */
+  box-shadow: 0 0 0 1px var(--border-2), 0 2px 8px rgba(var(--shadow-rgb), 0.35);
+  transition: box-shadow 0.2s ease;
 }
 
 .brand-sub {
