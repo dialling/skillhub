@@ -103,6 +103,7 @@ const M: Record<string, [zh: string, en: string]> = {
   'launch.detailCliPrompt': ['{command} "<提示词>"', '{command} "<prompt>"'],
   'launch.detailApp': ['open -a "{app}" <工作区>', 'open -a "{app}" <workspace>'],
   'launch.noteTitle': ['## 已启用技能：{skill}', '## Active skill: {skill}'],
+  'launch.noteLocalSource': ['- 来源：本机已有技能 `{path}`', '- Source: skill already on this machine at `{path}`'],
   'launch.noteSource': ['- 来源：{repo}', '- Source: {repo}'],
   'launch.noteFolder': ['- 工作目录：`./{folder}/`', '- Working folder: `./{folder}/`'],
   'launch.notePurpose': ['- 用途：{text}', '- Purpose: {text}'],

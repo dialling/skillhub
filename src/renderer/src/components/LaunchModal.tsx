@@ -21,7 +21,7 @@ export function LaunchModal(): React.JSX.Element | null {
   const t = useStore((s) => s.t)
   const open = useStore((s) => s.showLaunchModal)
   const targets = useStore((s) => s.launchTargets)
-  const skillId = useStore((s) => s.launchSkillId)
+  const source = useStore((s) => s.launchSource)
   const plan = useStore((s) => s.launchPlan)
   const launching = useStore((s) => s.launching)
   const close = useStore((s) => s.closeLaunch)
@@ -33,7 +33,8 @@ export function LaunchModal(): React.JSX.Element | null {
   const [workspace, setWorkspace] = useState('')
   const [agentId, setAgentId] = useState('')
 
-  const skill = library.flatMap((i) => i.skills).find((s) => s.id === skillId)
+  const skill = source?.from === 'library' ? library.flatMap((i) => i.skills).find((s) => s.id === source.skillId) : undefined
+  const skillLabel = source?.from === 'library' ? skill?.name || '' : source?.name || ''
 
   useEffect(() => {
     if (!open) return
@@ -58,7 +59,7 @@ export function LaunchModal(): React.JSX.Element | null {
       <div className="modal" style={{ width: 'min(680px, 94vw)' }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
           <Rocket size={15} />
-          {t('launch.title', { skill: skill?.name || '' })}
+          {t('launch.title', { skill: skillLabel })}
           <button className="btn ghost sm" style={{ marginLeft: 'auto' }} onClick={close}>
             <X size={13} />
           </button>
@@ -68,6 +69,12 @@ export function LaunchModal(): React.JSX.Element | null {
           <p className="dim" style={{ fontSize: 12.5, marginBottom: 16, lineHeight: 1.65 }}>
             {t('launch.intro')}
           </p>
+          {source?.from === 'local' && (
+            <div className="notice notice-plain" style={{ marginBottom: 16 }}>
+              <Info size={14} />
+              <span>{t('launch.fromLocal', { path: source.path })}</span>
+            </div>
+          )}
 
           {/* 1. workspace ------------------------------------------------- */}
           <div className="side-section-title" style={{ padding: '0 0 8px' }}>

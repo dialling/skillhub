@@ -111,17 +111,45 @@ export function launchTargets(): LaunchTarget[] {
  *      startup, so it works even when the launch cannot pass a prompt
  */
 export function prepareLaunch(input: {
-  skillId: string
+  skillId?: string
+  /** set instead of skillId to launch a skill discovered on disk */
+  localPath?: string
+  localName?: string
+  localDescription?: string
   agentId: string
   workspace: string
 }): LaunchPlan {
-  const [repoFullName] = input.skillId.split('::')
-  const item = library.get().items.find((i) => i.id === repoFullName)
-  if (!item) throw new Error(m('launch.skillNotInLibrary'))
-  const skill = item.skills.find((s) => s.id === input.skillId)
-  if (!skill) throw new Error(m('launch.skillNotInLibrary'))
-  if (!skill.localPath || !existsSync(skill.localPath)) {
-    throw new Error(m('launch.skillFilesMissing'))
+  // Two sources, one flow. A skill the user already has on disk is just as
+  // launchable as one the library manages — making them import it first would
+  // be busywork.
+  let sourcePath: string
+  let skillName: string
+  let skillDescription: string | undefined
+  let skillId: string
+  let repoFullName: string
+  let fromLocal = false
+
+  if (input.localPath) {
+    sourcePath = expandPath(input.localPath)
+    if (!existsSync(join(sourcePath, 'SKILL.md'))) throw new Error(m('launch.skillFilesMissing'))
+    skillName = input.localName || sourcePath.split(/[\\/]/).filter(Boolean).pop() || 'skill'
+    skillDescription = input.localDescription
+    skillId = `local:${sourcePath}`
+    repoFullName = ''
+    fromLocal = true
+  } else {
+    if (!input.skillId) throw new Error(m('launch.skillNotInLibrary'))
+    const [repo] = input.skillId.split('::')
+    const item = library.get().items.find((i) => i.id === repo)
+    if (!item) throw new Error(m('launch.skillNotInLibrary'))
+    const skill = item.skills.find((s) => s.id === input.skillId)
+    if (!skill) throw new Error(m('launch.skillNotInLibrary'))
+    if (!skill.localPath || !existsSync(skill.localPath)) throw new Error(m('launch.skillFilesMissing'))
+    sourcePath = skill.localPath
+    skillName = skill.name
+    skillDescription = skill.descriptionEn
+    skillId = skill.id
+    repoFullName = item.fullName
   }
 
   const meta = launchMeta(input.agentId)
@@ -130,7 +158,7 @@ export function prepareLaunch(input: {
   const workspace = expandPath(input.workspace)
   mkdirSync(workspace, { recursive: true })
 
-  const folderName = safeSegment(skill.name)
+  const folderName = safeSegment(skillName)
   const workFolder = join(workspace, folderName)
   mkdirSync(workFolder, { recursive: true })
 
@@ -147,29 +175,37 @@ export function prepareLaunch(input: {
     }
     if (isWindows) {
       try {
-        symlinkSync(skill.localPath, projectSkillPath, 'junction')
+        symlinkSync(sourcePath, projectSkillPath, 'junction')
       } catch {
-        cpSync(skill.localPath, projectSkillPath, { recursive: true, dereference: true })
+        cpSync(sourcePath, projectSkillPath, { recursive: true, dereference: true })
       }
     } else {
-      symlinkSync(skill.localPath, projectSkillPath, 'dir')
+      symlinkSync(sourcePath, projectSkillPath, 'dir')
     }
   } catch {
-    cpSync(skill.localPath, projectSkillPath, { recursive: true, dereference: true })
+    cpSync(sourcePath, projectSkillPath, { recursive: true, dereference: true })
   }
 
   // 2. tell the agent, in a file it reads on startup
   const instructionFile = meta.instructionFile || 'AGENTS.md'
   const instructionPath = join(workspace, instructionFile)
-  writeInstruction(instructionPath, skill.name, skill.descriptionEn, folderName, item.fullName)
+  writeInstruction({
+    path: instructionPath,
+    skillName,
+    description: skillDescription,
+    folderName,
+    repoFullName,
+    sourcePath
+  })
 
   // 3. the prompt handed to the agent when the launcher supports one
-  const prompt = m('launch.prompt', { skill: skill.name, folder: folderName })
+  const prompt = m('launch.prompt', { skill: skillName, folder: folderName })
 
   const plan: LaunchPlan = {
-    skillId: input.skillId,
-    skillName: skill.name,
-    repoFullName: item.fullName,
+    skillId,
+    skillName,
+    repoFullName,
+    fromLocal,
     agentId: input.agentId,
     agentName: entry?.name || input.agentId,
     launchKind: meta.kind,
@@ -216,20 +252,24 @@ function summarize(text: string, max = 200): string {
   return (cut > 60 ? slice.slice(0, cut + 1) : slice.trimEnd() + '\u2026').trim()
 }
 
-function writeInstruction(
-  path: string,
-  skillName: string,
-  description: string | undefined,
-  folderName: string,
-  repo: string
-): void {
+function writeInstruction(input: {
+  path: string
+  skillName: string
+  description?: string
+  folderName: string
+  repoFullName: string
+  sourcePath: string
+}): void {
+  const { path, skillName, description, folderName, repoFullName, sourcePath } = input
   // Written into the workspace, so it follows the UI language like any other
   // user-facing text.
   const block = [
     MARK_START,
     m('launch.noteTitle', { skill: skillName }),
     '',
-    m('launch.noteSource', { repo }),
+    // A discovered skill has no repository; naming its real path is more
+    // useful than an empty "Source:" line.
+    repoFullName ? m('launch.noteSource', { repo: repoFullName }) : m('launch.noteLocalSource', { path: sourcePath }),
     m('launch.noteFolder', { folder: folderName }),
     description ? m('launch.notePurpose', { text: summarize(description) }) : '',
     '',

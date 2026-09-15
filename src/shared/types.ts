@@ -398,11 +398,27 @@ export interface LaunchTarget {
   detected: boolean
 }
 
+/**
+ * Where a launch takes its skill from.
+ *
+ * `library` is a skill SkillHub added and manages. `local` is a skill that was
+ * already sitting in one of the agent directories — the user's own work, or
+ * something another tool installed — which should be just as launchable
+ * without forcing them to import it first.
+ */
+export type LaunchSource =
+  | { from: 'library'; skillId: string }
+  | { from: 'local'; path: string; name: string; description?: string }
+
 /** Everything laid out before an agent is actually started. */
 export interface LaunchPlan {
+  /** library skill id, or the discovered directory this launch came from */
   skillId: string
   skillName: string
+  /** repo full name for library skills; empty for discovered ones */
   repoFullName: string
+  /** true when the skill was not added to the library */
+  fromLocal: boolean
   agentId: string
   agentName: string
   launchKind: 'cli' | 'app' | 'web'

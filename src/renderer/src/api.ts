@@ -125,7 +125,14 @@ export interface SkillHubApi {
   }
   launch: {
     targets(): Promise<LaunchTarget[]>
-    prepare(req: { skillId: string; agentId: string; workspace: string }): Promise<LaunchPlan>
+    prepare(req: {
+      skillId?: string
+      localPath?: string
+      localName?: string
+      localDescription?: string
+      agentId: string
+      workspace: string
+    }): Promise<LaunchPlan>
     run(plan: LaunchPlan): Promise<{ ok: boolean; message: string }>
     locations(skillName: string): Promise<string[]>
   }

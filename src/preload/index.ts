@@ -91,8 +91,14 @@ const api = {
   },
   launch: {
     targets: () => call<any[]>('launch:targets'),
-    prepare: (req: { skillId: string; agentId: string; workspace: string }) =>
-      call<any>('launch:prepare', req),
+    prepare: (req: {
+      skillId?: string
+      localPath?: string
+      localName?: string
+      localDescription?: string
+      agentId: string
+      workspace: string
+    }) => call<any>('launch:prepare', req),
     run: (plan: any) => call<{ ok: boolean; message: string }>('launch:run', plan),
     locations: (skillName: string) => call<string[]>('launch:locations', skillName)
   },

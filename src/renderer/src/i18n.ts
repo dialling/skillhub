@@ -152,6 +152,8 @@ const DICT: Dict = {
   'library.installedSkills': ['已安装的技能', 'Installed skills'],
   'library.installedSkillsHint': ['点「启动」选一个工作区和智能体，应用会把技能装到项目级、建好工作目录，并直接拉起智能体。', 'Hit Launch, pick a workspace and an agent: the skill is installed at project level, a working folder is created, and the agent is started for you.'],
   'launch.action': ['启动', 'Launch'],
+  'launch.fromLocal': ['这个技能不在库中，将直接从 {path} 启动 —— 不会改动你的原文件。', 'This skill is not in your library; it will be launched from {path} directly. Your original files are not modified.'],
+  'library.discoverLaunch': ['启动', 'Launch'],
   'launch.title': ['启动技能：{skill}', 'Launch: {skill}'],
   'launch.intro': ['选好工作区和智能体后，应用会在工作区里建好目录、把技能装到项目级，并在启动说明文件里写明使用这个技能。', 'Pick a workspace and an agent. The app creates the folders, installs the skill at project level, and records the instruction in a file the agent reads on startup.'],
   'launch.workspace': ['工作区', 'Workspace'],

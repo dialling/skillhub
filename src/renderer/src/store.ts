@@ -4,6 +4,7 @@ import type {
   AgentTarget,
   InstallTargetAdvice,
   LaunchPlan,
+  LaunchSource,
   LaunchTarget,
   LocalSkill,
   Scenario,
@@ -80,7 +81,7 @@ interface State {
   installTarget: InstallTargetAdvice | null
   showTargetModal: boolean
   launchTargets: LaunchTarget[]
-  launchSkillId: string | null
+  launchSource: LaunchSource | null
   launchPlan: LaunchPlan | null
   showLaunchModal: boolean
   launching: boolean
@@ -91,7 +92,7 @@ interface State {
   loadInstallTarget: () => Promise<void>
   applyInstallTarget: (path: string) => Promise<void>
   setShowTargetModal: (open: boolean) => void
-  openLaunch: (skillId: string) => Promise<void>
+  openLaunch: (source: LaunchSource) => Promise<void>
   closeLaunch: () => void
   buildLaunchPlan: (agentId: string, workspace: string) => Promise<LaunchPlan | null>
   runLaunch: (plan: LaunchPlan) => Promise<void>
@@ -173,7 +174,7 @@ export const useStore = create<State>((set, get) => ({
   installTarget: null,
   showTargetModal: false,
   launchTargets: [],
-  launchSkillId: null,
+  launchSource: null,
   launchPlan: null,
   showLaunchModal: false,
   launching: false,
@@ -217,18 +218,18 @@ export const useStore = create<State>((set, get) => ({
     set({ showTargetModal: open })
   },
 
-  /** Open the launch dialog for one installed skill. */
-  async openLaunch(skillId) {
+  /** Open the launch dialog for a skill — library-managed or found on disk. */
+  async openLaunch(source) {
     try {
       const launchTargets = await api.launch.targets()
-      set({ launchTargets, launchSkillId: skillId, launchPlan: null, showLaunchModal: true })
+      set({ launchTargets, launchSource: source, launchPlan: null, showLaunchModal: true })
     } catch (err: any) {
       get().toast('error', get().t('toast.failed', { msg: err?.message || err }))
     }
   },
 
   closeLaunch() {
-    set({ showLaunchModal: false, launchSkillId: null, launchPlan: null })
+    set({ showLaunchModal: false, launchSource: null, launchPlan: null })
   },
 
   /**
@@ -236,10 +237,16 @@ export const useStore = create<State>((set, get) => ({
    * exactly what will be created instead of surprising the user afterwards.
    */
   async buildLaunchPlan(agentId, workspace) {
-    const skillId = get().launchSkillId
-    if (!skillId || !workspace.trim()) return null
+    const source = get().launchSource
+    if (!source || !workspace.trim()) return null
     try {
-      const launchPlan = await api.launch.prepare({ skillId, agentId, workspace: workspace.trim() })
+      const launchPlan = await api.launch.prepare({
+        ...(source.from === 'library'
+          ? { skillId: source.skillId }
+          : { localPath: source.path, localName: source.name, localDescription: source.description }),
+        agentId,
+        workspace: workspace.trim()
+      })
       set({ launchPlan })
       return launchPlan
     } catch (err: any) {
@@ -255,7 +262,7 @@ export const useStore = create<State>((set, get) => ({
       const res = await api.launch.run(plan)
       if (res.ok) {
         get().toast('success', res.message, plan.workspace)
-        set({ showLaunchModal: false, launchPlan: null, launchSkillId: null })
+        set({ showLaunchModal: false, launchPlan: null, launchSource: null })
         await api.profile.activity().then((events) => useStore.setState({})).catch(() => {})
       } else {
         get().toast('error', res.message)

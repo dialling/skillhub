@@ -376,8 +376,16 @@ export function registerIpc(send: Broadcast): void {
 
   /* ------------------------------------------------------------------ launch */
   handle('launch:targets', () => launchTargets())
-  handle('launch:prepare', (req: { skillId: string; agentId: string; workspace: string }) =>
-    prepareLaunch(req)
+  handle(
+    'launch:prepare',
+    (req: {
+      skillId?: string
+      localPath?: string
+      localName?: string
+      localDescription?: string
+      agentId: string
+      workspace: string
+    }) => prepareLaunch(req)
   )
   handle('launch:run', (plan: LaunchPlan) => runLaunch(plan))
   handle('launch:locations', (skillName: string) => installLocations(skillName))

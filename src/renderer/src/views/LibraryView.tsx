@@ -219,7 +219,10 @@ function InstalledSkillsPanel(): React.JSX.Element | null {
               <button className="btn ghost sm danger" title={t('detail.uninstall')} onClick={() => void uninstall(skill.id, agentIds[0])}>
                 <Trash2 size={12} />
               </button>
-              <button className="btn primary sm" onClick={() => void openLaunch(skill.id)}>
+              <button
+                className="btn primary sm"
+                onClick={() => void openLaunch({ from: 'library', skillId: skill.id })}
+              >
                 <Rocket size={12} />
                 {t('launch.action')}
               </button>
@@ -242,6 +245,7 @@ function DiscoveryPanel(): React.JSX.Element | null {
   const scanLocal = useStore((s) => s.scanLocal)
   const addToLibrary = useStore((s) => s.addToLibrary)
   const library = useStore((s) => s.library)
+  const openLaunch = useStore((s) => s.openLaunch)
   const [open, setOpen] = useState(true)
 
   const matched = discovered.filter((d) => d.matchedRepo)
@@ -304,10 +308,26 @@ function DiscoveryPanel(): React.JSX.Element | null {
                       </div>
                     </div>
                     {d.matchedRepo && !inLibrary.has(d.matchedRepo) && (
-                      <button className="btn sm" onClick={() => void addToLibrary(d.matchedRepo!)}>
+                      <button className="btn ghost sm" onClick={() => void addToLibrary(d.matchedRepo!)}>
                         {t('library.discoverAdopt')}
                       </button>
                     )}
+                    {/* A skill sitting in an agent directory is launchable even
+                        when the library knows nothing about it. */}
+                    <button
+                      className="btn sm"
+                      title={t('launch.action')}
+                      onClick={() =>
+                        void openLaunch({
+                          from: 'local',
+                          path: d.realPath,
+                          name: d.folder,
+                          description: d.description
+                        })
+                      }
+                    >
+                      <Rocket size={12} />
+                    </button>
                   </div>
                 ))}
               </div>
