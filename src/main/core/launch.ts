@@ -16,6 +16,9 @@ const MARK_END = '<!-- skillhub:end -->'
 interface LaunchMeta {
   kind: 'cli' | 'app' | 'web'
   command?: string
+  promptStyle?: 'positional' | 'flag' | 'none'
+  promptFlag?: string
+  /** legacy boolean, still honoured so existing registry data keeps working */
   promptArg?: boolean
   appName?: string
   url?: string
@@ -60,6 +63,20 @@ function appInstalled(name: string | undefined, command: string | undefined): bo
 }
 
 /** Agents the user can actually start, best first. */
+/**
+ * The command line as the user will see it, with the prompt put where that tool
+ * actually wants it.
+ */
+function describeCli(meta: LaunchMeta): string {
+  const command = meta.command || ''
+  const style = meta.promptStyle || (meta.promptArg ? 'positional' : 'none')
+  if (style === 'positional') return m('launch.detailCliPrompt', { command })
+  if (style === 'flag' && meta.promptFlag) {
+    return m('launch.detailCliFlag', { command, flag: meta.promptFlag })
+  }
+  return m('launch.detailCli', { command })
+}
+
 export function launchTargets(): LaunchTarget[] {
   const out: LaunchTarget[] = []
   for (const agent of listAgents()) {
@@ -81,9 +98,10 @@ export function launchTargets(): LaunchTarget[] {
       kind: meta.kind,
       detail:
         meta.kind === 'cli'
-          ? meta.promptArg
-            ? m('launch.detailCliPrompt', { command: meta.command || '' })
-            : m('launch.detailCli', { command: meta.command || '' })
+          ? // Show the command as it will actually be typed, flag included: the
+            // whole point of the prompt style is that it differs per tool, and a
+            // single "dsh <prompt>" shape hid the cases where it was wrong.
+            describeCli(meta)
           : meta.kind === 'app'
             ? m('launch.detailApp', { app: meta.appName || '' })
             : (meta.url ?? ''),
@@ -216,7 +234,8 @@ export function prepareLaunch(input: {
     instructionPath,
     prompt,
     command: meta.command,
-    promptArg: !!meta.promptArg,
+    promptStyle: meta.promptStyle || (meta.promptArg ? 'positional' : 'none'),
+    promptFlag: meta.promptFlag,
     appName: meta.appName,
     url: meta.url
   }
@@ -362,8 +381,17 @@ export async function runLaunch(plan: LaunchPlan): Promise<{ ok: boolean; messag
     if (plan.launchKind === 'cli' && plan.command) {
       // Every interpolated value is quoted for the shell, not merely for
       // AppleScript: `do script` hands this line to `sh`.
-      const prompt = plan.promptArg ? ` ${shellQuote(plan.prompt)}` : ''
       const command = plan.command.replace(/[^\w./-]/g, '')
+      // The prompt goes in differently per tool: as the last argument, behind a
+      // flag, or not at all. The flag itself is validated against a safe charset
+      // because it is interpolated into a shell line.
+      const flag = (plan.promptFlag || '').replace(/[^\w-]/g, '')
+      const prompt =
+        plan.promptStyle === 'positional'
+          ? ` ${shellQuote(plan.prompt)}`
+          : plan.promptStyle === 'flag' && flag
+            ? ` ${flag} ${shellQuote(plan.prompt)}`
+            : ''
       const line = `cd ${shellQuote(plan.workspace)} && ${command}${prompt}`
       if (process.platform === 'darwin') {
         await openTerminal(line)

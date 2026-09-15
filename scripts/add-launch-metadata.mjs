@@ -27,6 +27,9 @@ const LAUNCH = {
   codex: { kind: 'cli', command: 'codex', promptArg: true, instructionFile: 'AGENTS.md' },
   cursor: { kind: 'app', appName: 'Cursor', command: 'cursor', instructionFile: 'AGENTS.md' },
   'gemini-cli': { kind: 'cli', command: 'gemini', promptArg: true, instructionFile: 'GEMINI.md' },
+  // Usage ends in `[messages...]`, so the prompt IS positional. The table had it
+  // as promptArg: false, which meant the prompt was never passed at all.
+  pi: { kind: 'cli', command: 'pi', promptStyle: 'positional', instructionFile: 'AGENTS.md' },
   'github-copilot': { kind: 'cli', command: 'copilot', promptArg: true, instructionFile: 'AGENTS.md' },
   windsurf: { kind: 'app', appName: 'Windsurf', command: 'windsurf', instructionFile: 'AGENTS.md' },
   cline: { kind: 'app', appName: 'Visual Studio Code', command: 'code', instructionFile: 'AGENTS.md' },
@@ -41,8 +44,10 @@ const LAUNCH = {
   warp: { kind: 'app', appName: 'Warp', instructionFile: 'AGENTS.md' },
   kiro: { kind: 'app', appName: 'Kiro', instructionFile: 'AGENTS.md' },
   continue: { kind: 'app', appName: 'Visual Studio Code', command: 'code', instructionFile: 'AGENTS.md' },
-  'kimi-code': { kind: 'cli', command: 'kimi', promptArg: true, instructionFile: 'AGENTS.md' },
-  'kimi-cli': { kind: 'cli', command: 'kimi', promptArg: true, instructionFile: 'AGENTS.md' },
+  // Usage is `kimi [options] [command]`: a bare string is read as a subcommand and
+  // fails with "unknown command". Verified on this machine. The prompt needs -p.
+  'kimi-code': { kind: 'cli', command: 'kimi', promptStyle: 'flag', promptFlag: '-p', instructionFile: 'AGENTS.md' },
+  'kimi-cli': { kind: 'cli', command: 'kimi', promptStyle: 'flag', promptFlag: '-p', instructionFile: 'AGENTS.md' },
   // DSH's desktop client, not its CLI. `dsh` on PATH is "profile boot, plugin
   // management, and the browser UI alias" — it does not take a prompt, and the
   // form people actually work in is the app. Launching the CLI opened a terminal

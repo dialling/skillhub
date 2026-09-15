@@ -529,6 +529,19 @@ export interface LaunchPlan {
   instructionPath: string
   prompt: string
   command?: string
+  /**
+   * How the tool takes a one-shot prompt.
+   *
+   * A boolean was the wrong shape. Tools differ in three ways, and the difference
+   * is not cosmetic: `kimi "text"` fails with "unknown command 'text'" because its
+   * usage is `kimi [options] [command]` — a bare string is read as a subcommand —
+   * while `pi "text"` works because its usage ends in `[messages...]`. Treating
+   * both as `promptArg: true` produced one launch that did nothing.
+   */
+  promptStyle?: 'positional' | 'flag' | 'none'
+  /** the flag to use when promptStyle is 'flag' */
+  promptFlag?: string
+  /** legacy boolean, still read when promptStyle is absent */
   promptArg?: boolean
   appName?: string
   url?: string

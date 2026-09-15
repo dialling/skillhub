@@ -145,7 +145,8 @@
       "launch": {
         "kind": "cli",
         "command": "copilot",
-        "promptArg": true,
+        "promptStyle": "flag",
+        "promptFlag": "-p",
         "instructionFile": "AGENTS.md"
       }
     },
@@ -178,7 +179,8 @@
       "launch": {
         "kind": "cli",
         "command": "kimi",
-        "promptArg": true,
+        "promptStyle": "flag",
+        "promptFlag": "-p",
         "instructionFile": "AGENTS.md"
       }
     },
@@ -202,13 +204,7 @@
       "supportsSymlink": false,
       "confidence": "high",
       "sourceUrl": "https://moonshotai.github.io/kimi-cli/zh/customization/skills.html",
-      "notes": "注意：kimi-cli 与 kimi-code 的二进制同名（都叫 kimi），因此 binary 检测不可用 —— 本条目只按目录 ~/.kimi 检测。",
-      "launch": {
-        "kind": "cli",
-        "command": "kimi",
-        "promptArg": true,
-        "instructionFile": "AGENTS.md"
-      }
+      "notes": "注意：kimi-cli 与 kimi-code 的二进制同名（都叫 kimi），因此 binary 检测不可用 —— 本条目只按目录 ~/.kimi 检测。"
     },
     {
       "id": "windsurf",
@@ -1359,7 +1355,8 @@
       "launch": {
         "kind": "cli",
         "command": "crush",
-        "promptArg": true,
+        "promptStyle": "flag",
+        "promptFlag": "run",
         "instructionFile": "AGENTS.md"
       }
     },
@@ -1651,7 +1648,7 @@
       "launch": {
         "kind": "cli",
         "command": "pi",
-        "promptArg": false,
+        "promptStyle": "positional",
         "instructionFile": "AGENTS.md"
       }
     },
