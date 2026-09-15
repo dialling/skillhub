@@ -86,6 +86,11 @@ const api = {
     refresh: () => call<any>('profile:refresh'),
     starred: () => call<any[]>('profile:starred')
   },
+  sandbox: {
+    for: (skillName: string) => call<string>('sandbox:for', skillName),
+    root: () => call<string>('sandbox:root'),
+    clear: () => call<number>('sandbox:clear')
+  },
   submit: {
     list: () => call<any[]>('submit:list'),
     skill: (input: { localPath: string; name: string; origin?: string }) => call<any>('submit:skill', input)

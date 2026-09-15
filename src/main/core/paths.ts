@@ -36,6 +36,32 @@ export function skillhubRoot(): string {
   return dir
 }
 
+/**
+ * Where a launched skill runs by default.
+ *
+ * Launching writes into the chosen directory: an AGENTS.md instruction block and
+ * a copy of the skill. Pointing that at a folder the user already works in means
+ * modifying something that was not ours to modify — during development a test
+ * launch put an AGENTS.md and a skill folder into a real projects directory.
+ *
+ * The sandbox gives every skill its own folder under SkillHub's own home, so a
+ * launch touches nothing the user did not hand over. One folder per skill, not
+ * one shared folder, because two skills would otherwise both want to own
+ * AGENTS.md.
+ */
+export function sandboxDir(): string {
+  const dir = join(skillhubRoot(), 'sandbox')
+  ensureDir(dir)
+  return dir
+}
+
+/** The sandbox folder for one skill, created on demand. */
+export function sandboxFor(skillName: string): string {
+  const dir = join(sandboxDir(), safeSegment(skillName) || 'skill')
+  ensureDir(dir)
+  return dir
+}
+
 /** Where git checkouts of "入库" repositories live. */
 export function defaultLibraryDir(): string {
   return join(skillhubRoot(), 'library')

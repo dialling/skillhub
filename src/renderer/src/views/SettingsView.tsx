@@ -13,13 +13,20 @@ import {
   HardDriveDownload,
   Terminal,
   LogOut,
-  Palette
+  Palette,
+  Trash2
 } from 'lucide-react'
 import { THEMES, THEME_ORDER } from '../theme'
 import { api } from '../api'
 import { useStore } from '../store'
 
 export function SettingsView(): React.JSX.Element {
+  const [sandbox, setSandbox] = useState('')
+  const [clearing, setClearing] = useState(false)
+  useEffect(() => {
+    void api.sandbox.root().then(setSandbox).catch(() => {})
+  }, [])
+
   const t = useStore((s) => s.t)
   const lang = useStore((s) => s.lang)
   const settings = useStore((s) => s.settings)
@@ -285,6 +292,40 @@ export function SettingsView(): React.JSX.Element {
             </div>
             <div className="hint">{t('settings.projectHint')}</div>
           </div>
+
+          {/*
+            The sandbox is where a launch runs by default. Each skill gets its
+            own folder because a launch writes an AGENTS.md, and two skills
+            sharing one folder would both want to own that file.
+          */}
+          <div className="field">
+            <label>{t('settings.sandbox')}</label>
+            <div className="row">
+              <input className="input mono" value={sandbox} readOnly />
+              <button className="btn" onClick={() => void api.system.openExternal(sandbox)}>
+                <FolderOpen size={13} />
+                {t('settings.openSandbox')}
+              </button>
+              <button
+                className="btn"
+                disabled={clearing}
+                onClick={async () => {
+                  setClearing(true)
+                  try {
+                    const n = await api.sandbox.clear()
+                    toast('success', t('settings.sandboxCleared', { n }))
+                  } finally {
+                    setClearing(false)
+                  }
+                }}
+              >
+                <Trash2 size={13} />
+                {t('settings.clearSandbox')}
+              </button>
+            </div>
+            <div className="hint">{t('settings.sandboxHint')}</div>
+          </div>
+
 
           <div className="field">
             <label>{t('settings.installLocation')}</label>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Rocket, FolderOpen, Terminal, AppWindow, Globe, Check, X, Info } from 'lucide-react'
+import { Rocket, FolderOpen, Terminal, AppWindow, Globe, Check, X, Info, TriangleAlert } from 'lucide-react'
 import { api } from '../api'
 import { useStore } from '../store'
 import type { LaunchTarget } from '@shared/types'
@@ -38,12 +38,31 @@ export function LaunchModal(): React.JSX.Element | null {
   const skill = source?.from === 'library' ? library.flatMap((i) => i.skills).find((s) => s.id === source.skillId) : undefined
   const skillLabel = source?.from === 'library' ? skill?.name || '' : source?.name || ''
 
+  /*
+    Default to the sandbox, not to wherever the user last launched from.
+
+    Launching writes an AGENTS.md and a copy of the skill into the chosen folder.
+    Reusing the previous workspace made that folder sticky — a test launch put
+    those files into a real projects directory, because "last used" had become
+    it. The sandbox belongs to SkillHub, so the default cannot land on anything
+    that is not ours. Recent folders stay available as suggestions.
+  */
+  const [sandboxRoot, setSandboxRoot] = useState('')
+  useEffect(() => {
+    void api.sandbox.root().then(setSandboxRoot).catch(() => {})
+  }, [])
+
   useEffect(() => {
     if (!open) return
-    setWorkspace(settings?.recentWorkspaces?.[0] || settings?.projectDir || '')
     const firstReady = targets.find((x) => x.ready && x.detected) || targets.find((x) => x.ready)
     setAgentId(firstReady?.agentId || '')
-  }, [open, settings, targets])
+    if (!skillLabel) return
+    // One folder per skill: two skills in one folder would both want AGENTS.md.
+    void api.sandbox
+      .for(skillLabel)
+      .then(setWorkspace)
+      .catch(() => setWorkspace(settings?.recentWorkspaces?.[0] || settings?.projectDir || ''))
+  }, [open, settings, targets, skillLabel])
 
   // Rebuild the preview whenever either choice changes.
   useEffect(() => {
@@ -128,7 +147,21 @@ export function LaunchModal(): React.JSX.Element | null {
               <FolderOpen size={13} />
               {t('agents.pickDir')}
             </button>
+            {sandboxRoot && (
+              <button className="btn" title={t('launch.openSandbox')} onClick={() => void api.system.openExternal(sandboxRoot)}>
+                {t('launch.sandbox')}
+              </button>
+            )}
           </div>
+          {/* Writing into a folder that is not the sandbox is the case worth
+              flagging: that is the user's own directory, and a launch adds
+              AGENTS.md plus a skill folder to it. */}
+          {workspace.trim() && sandboxRoot && !workspace.trim().startsWith(sandboxRoot) && (
+            <div className="notice" style={{ marginBottom: 14 }}>
+              <TriangleAlert size={14} />
+              <span>{t('launch.notSandbox', { path: workspace.trim() })}</span>
+            </div>
+          )}
           {recent.length > 0 && (
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
               {recent.slice(0, 4).map((w) => (

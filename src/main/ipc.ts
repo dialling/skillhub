@@ -70,6 +70,8 @@ import { liveStatus, refreshLiveData } from './core/live'
 import { searchSkillIndex, skillIndex, skillShard } from './core/skillsindex'
 import { listStarred, setStar, starState } from './core/starring'
 import { listSubmissions, submitSkill } from './core/submit'
+import { sandboxDir, sandboxFor } from './core/paths'
+import { clearSandbox } from './core/launch'
 
 type Broadcast = (channel: string, payload: unknown) => void
 let broadcast: Broadcast = () => {}
@@ -392,6 +394,13 @@ export function registerIpc(send: Broadcast): void {
   // is involved and a fresh install still gets real history.
   handle('live:refresh', () => refreshLiveData())
   handle('live:status', () => liveStatus())
+
+  /* -------------------------------------------------------------- sandbox -- */
+  // Launching writes AGENTS.md and a copy of the skill into the chosen folder,
+  // so the default is a folder SkillHub owns rather than one the user works in.
+  handle('sandbox:for', (skillName: string) => sandboxFor(skillName))
+  handle('sandbox:root', () => sandboxDir())
+  handle('sandbox:clear', () => clearSandbox())
 
   /* ---------------------------------------------------------- submissions -- */
   // Local skills that are not in the store go to the repository's submissions

@@ -1,10 +1,10 @@
 import { execFile, execFileSync } from 'node:child_process'
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { cpSync, readdirSync, existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { homedir } from 'node:os'
 import { clipboard, shell } from 'electron'
 import type { LaunchPlan, LaunchTarget } from '../../shared/types'
-import { expandPath, tildify, safeSegment } from './paths'
+import { expandPath, sandboxDir, tildify, safeSegment } from './paths'
 import { library, logActivity, settings } from './db'
 import { loadRegistry, listAgents, resolveAgentDir } from './agents'
 import { isWindows, which } from './platform'
@@ -294,6 +294,29 @@ function writeInstruction(input: {
         ? `${existing.trimEnd()}\n\n${block}\n`
         : `${block}\n`
   writeFileSync(path, next, 'utf8')
+}
+
+/**
+ * Empty the sandbox.
+ *
+ * Nothing in here was authored by the user: every folder is a layout this app
+ * wrote for a launch. Removing them is safe by construction, which is the point
+ * of keeping launches out of the user's own directories. Returns how many skill
+ * folders were removed.
+ */
+export function clearSandbox(): number {
+  const root = sandboxDir()
+  let removed = 0
+  try {
+    for (const entry of readdirSync(root, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue
+      rmSync(join(root, entry.name), { recursive: true, force: true })
+      removed++
+    }
+  } catch {
+    /* nothing to clear */
+  }
+  return removed
 }
 
 /**

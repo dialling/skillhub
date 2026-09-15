@@ -123,6 +123,11 @@ export interface SkillHubApi {
     refresh(): Promise<GitHubUser | null>
     starred(): Promise<{ fullName: string; stars: number; avatarUrl?: string; descriptionEn?: string }[]>
   }
+  sandbox: {
+    for(skillName: string): Promise<string>
+    root(): Promise<string>
+    clear(): Promise<number>
+  }
   submit: {
     list(): Promise<SubmissionRecord[]>
     skill(input: { localPath: string; name: string; origin?: string }): Promise<SubmissionResult>
