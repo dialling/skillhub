@@ -89,6 +89,13 @@ const api = {
     refresh: () => call<any>('profile:refresh'),
     starred: () => call<any[]>('profile:starred')
   },
+  launch: {
+    targets: () => call<any[]>('launch:targets'),
+    prepare: (req: { skillId: string; agentId: string; workspace: string }) =>
+      call<any>('launch:prepare', req),
+    run: (plan: any) => call<{ ok: boolean; message: string }>('launch:run', plan),
+    locations: (skillName: string) => call<string[]>('launch:locations', skillName)
+  },
   discover: {
     localSkills: () => call<any[]>('discover:localSkills'),
     audit: () => call<any[]>('discover:audit'),

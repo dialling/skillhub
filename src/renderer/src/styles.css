@@ -2914,3 +2914,138 @@ button.status-item:hover {
 .notice.notice-plain svg {
   color: var(--text-2);
 }
+
+/* Launch dialog: agent list + the "here is exactly what will happen" preview. */
+.launch-agents {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 210px;
+  overflow-y: auto;
+}
+.launch-agent {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 11px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s, border-color 0.12s;
+}
+.launch-agent:hover:not(.disabled) {
+  background: var(--bg-4);
+  border-color: var(--border-3);
+}
+.launch-agent.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.launch-agent.disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+.launch-agent .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: none;
+}
+.launch-agent .la-name {
+  font-size: 12.5px;
+  font-weight: 580;
+  color: var(--text-0);
+  flex: none;
+}
+.launch-agent .la-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  color: var(--text-2);
+  border: 1px solid var(--border-2);
+  border-radius: 999px;
+  padding: 1px 7px;
+  flex: none;
+}
+.launch-agent .la-detail {
+  margin-left: auto;
+  font-size: 10.5px;
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.launch-agent .la-check {
+  color: var(--accent-hi);
+  flex: none;
+}
+
+.launch-plan {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-size: 11.5px;
+  line-height: 1.9;
+  color: var(--text-1);
+}
+.launch-plan code {
+  color: var(--text-0);
+  background: rgba(var(--tint-rgb), 0.06);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 10.5px;
+}
+.launch-prompt {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-2);
+  font-size: 11.5px;
+  line-height: 1.65;
+  color: var(--text-1);
+}
+.launch-prompt .dim {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 10.5px;
+}
+
+/* Installed skills, each with its Launch button. */
+.installed-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
+  gap: 8px;
+}
+.installed-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 11px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--bg-3), var(--bg-2));
+  transition: border-color 0.14s;
+}
+.installed-card:hover {
+  border-color: var(--border-3);
+}
+.installed-card .ic-main {
+  min-width: 0;
+  flex: 1;
+}
+.installed-card .ic-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-0);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.installed-card .ic-meta {
+  font-size: 10.5px;
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

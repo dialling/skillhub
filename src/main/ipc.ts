@@ -3,6 +3,7 @@ import { existsSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import type {
   AgentTarget,
+  LaunchPlan,
   DiskStats,
   InstallProgress,
   InstallRequest,
@@ -67,6 +68,7 @@ import {
   recommendInstallTarget,
   setInstallRoot
 } from './core/discover'
+import { installLocations, launchTargets, prepareLaunch, runLaunch } from './core/launch'
 
 type Broadcast = (channel: string, payload: unknown) => void
 let broadcast: Broadcast = () => {}
@@ -371,6 +373,14 @@ export function registerIpc(send: Broadcast): void {
   handle('discover:installTarget', () => recommendInstallTarget())
   handle('discover:setInstallTarget', (path: string) => setInstallRoot(path))
   handle('discover:adopt', (repoFullName: string) => addRepo(repoFullName))
+
+  /* ------------------------------------------------------------------ launch */
+  handle('launch:targets', () => launchTargets())
+  handle('launch:prepare', (req: { skillId: string; agentId: string; workspace: string }) =>
+    prepareLaunch(req)
+  )
+  handle('launch:run', (plan: LaunchPlan) => runLaunch(plan))
+  handle('launch:locations', (skillName: string) => installLocations(skillName))
 
   /* ------------------------------------------------------------------ system */
   handle('system:boot', () => ({

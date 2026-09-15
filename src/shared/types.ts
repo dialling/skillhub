@@ -284,6 +284,8 @@ export interface Settings {
   theme?: string
   /** where newly added skills are materialised; auto-detected when unset */
   installRoot?: string
+  /** recently used workspace folders, most recent first */
+  recentWorkspaces?: string[]
   curatedUpdatedAt?: number
   firstRunDone?: boolean
 }
@@ -382,10 +384,46 @@ export interface InstallTargetAdvice {
   candidates: InstallTargetCandidate[]
 }
 
+/** An agent that can be started with a skill, and how. */
+export interface LaunchTarget {
+  agentId: string
+  name: string
+  vendor?: string
+  color?: string
+  kind: 'cli' | 'app' | 'web'
+  /** human-readable summary of what launching will do */
+  detail: string
+  /** the command/app was found on this machine */
+  ready: boolean
+  detected: boolean
+}
+
+/** Everything laid out before an agent is actually started. */
+export interface LaunchPlan {
+  skillId: string
+  skillName: string
+  repoFullName: string
+  agentId: string
+  agentName: string
+  launchKind: 'cli' | 'app' | 'web'
+  workspace: string
+  /** the folder created inside the workspace for this skill's inputs/outputs */
+  workFolder: string
+  /** where the skill was installed at project level, if anywhere */
+  projectSkillPath: string | null
+  instructionFile: string
+  instructionPath: string
+  prompt: string
+  command?: string
+  promptArg?: boolean
+  appName?: string
+  url?: string
+}
+
 export interface ActivityEvent {
   id: string
   at: number
-  kind: 'add' | 'install' | 'uninstall' | 'remove' | 'sync' | 'settings'
+  kind: 'add' | 'install' | 'uninstall' | 'remove' | 'sync' | 'settings' | 'launch'
   code: string
   params?: Record<string, string | number | undefined>
 }

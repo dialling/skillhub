@@ -32,10 +32,29 @@ function flag(name: string): string | null {
   return null
 }
 function has(name: string): boolean {
-  return argv.includes(`--${name}`)
+  // Must also recognise the `--flag=value` form. Checking only `--flag` meant
+  // `--agents=x` was silently ignored and the command fell back to installing
+  // into every enabled agent.
+  return argv.some((a) => a === `--${name}` || a.startsWith(`--${name}=`))
 }
+/**
+ * Positional arguments only.
+ *
+ * Skipping every `--flag` was not enough: the *value* of `--agents x,y` is a
+ * bare word, so it was being collected as an extra positional — which made
+ * `install <skill> --agents foo` try to install a skill literally named "foo".
+ */
 function positional(): string[] {
-  return argv.slice(1).filter((a) => !a.startsWith('--'))
+  const out: string[] = []
+  for (let i = 1; i < argv.length; i++) {
+    const a = argv[i]
+    if (a.startsWith('--')) {
+      if (!a.includes('=') && argv[i + 1] && !argv[i + 1].startsWith('--')) i++
+      continue
+    }
+    out.push(a)
+  }
+  return out
 }
 
 const C = {

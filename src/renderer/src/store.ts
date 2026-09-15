@@ -3,6 +3,8 @@ import { api } from './api'
 import type {
   AgentTarget,
   InstallTargetAdvice,
+  LaunchPlan,
+  LaunchTarget,
   LocalSkill,
   Scenario,
   GrowthRow,
@@ -77,6 +79,11 @@ interface State {
   discovering: boolean
   installTarget: InstallTargetAdvice | null
   showTargetModal: boolean
+  launchTargets: LaunchTarget[]
+  launchSkillId: string | null
+  launchPlan: LaunchPlan | null
+  showLaunchModal: boolean
+  launching: boolean
 
   t: (key: string, vars?: Record<string, string | number | undefined>) => string
   setChartMode: (m: 'stars' | 'growth') => void
@@ -84,6 +91,10 @@ interface State {
   loadInstallTarget: () => Promise<void>
   applyInstallTarget: (path: string) => Promise<void>
   setShowTargetModal: (open: boolean) => void
+  openLaunch: (skillId: string) => Promise<void>
+  closeLaunch: () => void
+  buildLaunchPlan: (agentId: string, workspace: string) => Promise<LaunchPlan | null>
+  runLaunch: (plan: LaunchPlan) => Promise<void>
   loadScenarios: () => Promise<void>
   openScenario: (id: string | null) => Promise<void>
   goToScenarios: () => void
@@ -161,6 +172,11 @@ export const useStore = create<State>((set, get) => ({
   discovering: false,
   installTarget: null,
   showTargetModal: false,
+  launchTargets: [],
+  launchSkillId: null,
+  launchPlan: null,
+  showLaunchModal: false,
+  launching: false,
 
   t: makeT('zh'),
 
@@ -199,6 +215,56 @@ export const useStore = create<State>((set, get) => ({
 
   setShowTargetModal(open) {
     set({ showTargetModal: open })
+  },
+
+  /** Open the launch dialog for one installed skill. */
+  async openLaunch(skillId) {
+    try {
+      const launchTargets = await api.launch.targets()
+      set({ launchTargets, launchSkillId: skillId, launchPlan: null, showLaunchModal: true })
+    } catch (err: any) {
+      get().toast('error', get().t('toast.failed', { msg: err?.message || err }))
+    }
+  },
+
+  closeLaunch() {
+    set({ showLaunchModal: false, launchSkillId: null, launchPlan: null })
+  },
+
+  /**
+   * Lay the workspace out before anything is started, so the dialog can show
+   * exactly what will be created instead of surprising the user afterwards.
+   */
+  async buildLaunchPlan(agentId, workspace) {
+    const skillId = get().launchSkillId
+    if (!skillId || !workspace.trim()) return null
+    try {
+      const launchPlan = await api.launch.prepare({ skillId, agentId, workspace: workspace.trim() })
+      set({ launchPlan })
+      return launchPlan
+    } catch (err: any) {
+      set({ launchPlan: null })
+      get().toast('error', err?.message || String(err))
+      return null
+    }
+  },
+
+  async runLaunch(plan) {
+    set({ launching: true })
+    try {
+      const res = await api.launch.run(plan)
+      if (res.ok) {
+        get().toast('success', res.message, plan.workspace)
+        set({ showLaunchModal: false, launchPlan: null, launchSkillId: null })
+        await api.profile.activity().then((events) => useStore.setState({})).catch(() => {})
+      } else {
+        get().toast('error', res.message)
+      }
+    } catch (err: any) {
+      get().toast('error', get().t('toast.failed', { msg: err?.message || err }))
+    } finally {
+      set({ launching: false })
+    }
   },
 
   async loadScenarios() {

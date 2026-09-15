@@ -28,6 +28,7 @@ export const DEFAULT_SETTINGS: Settings = {
   sidebarOpen: true,
   theme: 'azure',
   installRoot: undefined,
+  recentWorkspaces: [],
   firstRunDone: false
 }
 

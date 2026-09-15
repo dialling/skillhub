@@ -9,6 +9,8 @@ import type {
   InstallRecord,
   JobProgress,
   InstallTargetAdvice,
+  LaunchPlan,
+  LaunchTarget,
   LibraryItem,
   LocalSkill,
   RateLimit,
@@ -120,6 +122,12 @@ export interface SkillHubApi {
     activity(): Promise<ActivityEvent[]>
     refresh(): Promise<GitHubUser | null>
     starred(): Promise<{ fullName: string; stars: number; avatarUrl?: string; descriptionEn?: string }[]>
+  }
+  launch: {
+    targets(): Promise<LaunchTarget[]>
+    prepare(req: { skillId: string; agentId: string; workspace: string }): Promise<LaunchPlan>
+    run(plan: LaunchPlan): Promise<{ ok: boolean; message: string }>
+    locations(skillName: string): Promise<string[]>
   }
   discover: {
     localSkills(): Promise<LocalSkill[]>

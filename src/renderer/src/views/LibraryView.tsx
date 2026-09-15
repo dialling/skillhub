@@ -14,7 +14,8 @@ import {
   Search,
   Plus,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Rocket
 } from 'lucide-react'
 import type { LibraryItem } from '@shared/types'
 import { fmtRelative, fmtStars, gradientFor } from '../api'
@@ -119,6 +120,8 @@ export function LibraryView(): React.JSX.Element {
         </div>
       </div>
 
+      <InstalledSkillsPanel />
+
       <DiscoveryPanel />
 
       {library.length === 0 ? (
@@ -158,6 +161,72 @@ export function LibraryView(): React.JSX.Element {
           ))}
         </div>
       )}
+    </div>
+  )
+}
+
+/**
+ * Every installed skill, with a Launch button.
+ *
+ * This is the payoff of the whole app: pick a skill, pick a workspace and an
+ * agent, and start working — no manual folder shuffling.
+ */
+function InstalledSkillsPanel(): React.JSX.Element | null {
+  const t = useStore((s) => s.t)
+  const library = useStore((s) => s.library)
+  const installMap = useStore((s) => s.installMap)
+  const agents = useStore((s) => s.agents)
+  const openLaunch = useStore((s) => s.openLaunch)
+  const uninstall = useStore((s) => s.uninstall)
+
+  const rows = useMemo(() => {
+    const out: { skill: (typeof library)[number]['skills'][number]; repo: string; agentIds: string[] }[] = []
+    for (const item of library) {
+      for (const skill of item.skills) {
+        const agentIds = installMap[skill.id] || []
+        if (agentIds.length) out.push({ skill, repo: item.fullName, agentIds })
+      }
+    }
+    return out.sort((a, b) => a.skill.name.localeCompare(b.skill.name))
+  }, [library, installMap])
+
+  if (!rows.length) return null
+
+  return (
+    <div className="panel" style={{ marginBottom: 18 }}>
+      <div className="panel-head">
+        <Rocket size={13} />
+        {t('library.installedSkills')}
+        <div className="right">
+          <span className="chip mono">{rows.length}</span>
+        </div>
+      </div>
+      <div className="panel-body">
+        <div className="dim" style={{ fontSize: 12, marginBottom: 12, lineHeight: 1.6 }}>
+          {t('library.installedSkillsHint')}
+        </div>
+        <div className="installed-grid">
+          {rows.map(({ skill, repo, agentIds }) => (
+            <div className="installed-card" key={skill.id}>
+              <div className="ic-main">
+                <div className="ic-name">{skill.name}</div>
+                <div className="ic-meta" title={repo}>
+                  {agentIds
+                    .map((id) => agents.find((a) => a.id === id)?.name || id)
+                    .join(t('common.listSeparator'))}
+                </div>
+              </div>
+              <button className="btn ghost sm danger" title={t('detail.uninstall')} onClick={() => void uninstall(skill.id, agentIds[0])}>
+                <Trash2 size={12} />
+              </button>
+              <button className="btn primary sm" onClick={() => void openLaunch(skill.id)}>
+                <Rocket size={12} />
+                {t('launch.action')}
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

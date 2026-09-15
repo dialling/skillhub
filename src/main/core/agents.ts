@@ -21,6 +21,14 @@ interface RegistryEntry {
   readsUniversalDir?: boolean
   supportsSymlink?: boolean
   projectOnly?: boolean
+  launch?: {
+    kind: 'cli' | 'app' | 'web'
+    command?: string
+    promptArg?: boolean
+    appName?: string
+    url?: string
+    instructionFile?: string
+  }
 }
 
 const FALLBACK_REGISTRY: RegistryEntry[] = [

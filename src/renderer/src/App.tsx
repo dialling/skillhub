@@ -8,6 +8,7 @@ import { Toasts, JobBar } from './components/Toasts'
 import { CommandPalette } from './components/CommandPalette'
 import { AddLocalModal } from './components/AddLocalModal'
 import { InstallTargetModal } from './components/InstallTargetModal'
+import { LaunchModal } from './components/LaunchModal'
 import { DetailPanel } from './components/DetailPanel'
 import { StoreView } from './views/StoreView'
 import { LibraryView } from './views/LibraryView'
@@ -87,6 +88,7 @@ export default function App(): React.JSX.Element {
       <CommandPalette />
       <AddLocalModal />
       <InstallTargetModal />
+      <LaunchModal />
       <Toasts />
       <JobBar />
     </div>
