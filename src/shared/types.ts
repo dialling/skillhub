@@ -68,9 +68,9 @@ export interface Scenario {
 export type RepoKind = 'skills' | 'software' | 'reference'
 
 export const REPO_KIND_LABELS: Record<RepoKind, { zh: string; en: string }> = {
-  skills: { zh: '技能包', en: 'Skills' },
-  software: { zh: '软件项目', en: 'Software' },
-  reference: { zh: '资料规范', en: 'Reference' }
+  skills: { zh: '技能包', en: 'Skills pack' },
+  software: { zh: '软件项目', en: 'Software project' },
+  reference: { zh: '不含技能', en: 'No skills' }
 }
 
 /** A GitHub repository that can act as a skill source (or a tooling repo). */

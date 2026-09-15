@@ -172,10 +172,14 @@ export function RepoRow({ repo }: { repo: RepoMeta }): React.JSX.Element {
         </div>
       </div>
       {repo.repoKind === 'reference' && (
-        <span className="chip kind-ref">{lang === 'zh' ? '不含技能' : 'no skills'}</span>
+        <span className="chip kind-ref">
+          {lang === 'zh' ? REPO_KIND_LABELS.reference.zh : REPO_KIND_LABELS.reference.en}
+        </span>
       )}
       {repo.repoKind === 'software' && (
-        <span className="chip kind-sw">{lang === 'zh' ? '软件项目' : 'software'}</span>
+        <span className="chip kind-sw">
+          {lang === 'zh' ? REPO_KIND_LABELS.software.zh : REPO_KIND_LABELS.software.en}
+        </span>
       )}
       <span className="stat strong">
         <Star size={11} />
