@@ -161,7 +161,18 @@
       ],
       "skillCount": 124,
       "skillDirsAll": 124,
-      "installHint": "npx skills add openclaw/openclaw"
+      "installHint": "npx skills add openclaw/openclaw",
+      "repoKind": "software",
+      "repoFacts": {
+        "language": "TypeScript",
+        "markdown": 1922,
+        "codeFiles": 37358,
+        "srcFiles": 20186,
+        "manifests": [
+          "package.json",
+          "tsconfig.json"
+        ]
+      }
     },
     {
       "fullName": "obra/superpowers",
@@ -215,7 +226,17 @@
       "useWhen": "想让 AI 别一上来就乱写代码",
       "aboutZh": "为 AI 编程智能体打造的技能框架与开发方法论，把头脑风暴、计划、子智能体执行和代码审查串成可复用工作流。",
       "skillDirsAll": 14,
-      "useWhenEn": "AI starts coding before thinking"
+      "useWhenEn": "AI starts coding before thinking",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Shell",
+        "markdown": 94,
+        "codeFiles": 21,
+        "srcFiles": 0,
+        "manifests": [
+          "package.json"
+        ]
+      }
     },
     {
       "fullName": "mattpocock/skills",
@@ -283,7 +304,17 @@
       "skillDirsAll": 37,
       "gapFilled": "编程与开发 — 把资深工程师的评审与重构经验变成可执行流程",
       "installHint": "npx skills add mattpocock/skills",
-      "aboutZh": "Skills for Real Engineers. Straight from my .agents directory."
+      "aboutZh": "Skills for Real Engineers. Straight from my .agents directory.",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Shell",
+        "markdown": 112,
+        "codeFiles": 2,
+        "srcFiles": 0,
+        "manifests": [
+          "package.json"
+        ]
+      }
     },
     {
       "fullName": "affaan-m/ECC",
@@ -615,7 +646,18 @@
       ],
       "skillCount": 294,
       "skillDirsAll": 903,
-      "installHint": "npx skills add affaan-m/ECC"
+      "installHint": "npx skills add affaan-m/ECC",
+      "repoKind": "software",
+      "repoFacts": {
+        "language": "JavaScript",
+        "markdown": 2527,
+        "codeFiles": 803,
+        "srcFiles": 20,
+        "manifests": [
+          "package.json",
+          "pyproject.toml"
+        ]
+      }
     },
     {
       "fullName": "multica-ai/andrej-karpathy-skills",
@@ -645,7 +687,15 @@
       ],
       "skillCount": 1,
       "skillDirsAll": 1,
-      "installHint": "npx skills add multica-ai/andrej-karpathy-skills"
+      "installHint": "npx skills add multica-ai/andrej-karpathy-skills",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": null,
+        "markdown": 6,
+        "codeFiles": 0,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "anthropics/skills",
@@ -697,7 +747,15 @@
       "useWhen": "要处理办公文档",
       "aboutZh": "Anthropic 官方 Agent Skills 示例仓库，提供文档处理、创意设计、企业沟通等可直接安装的官方技能实现。",
       "skillDirsAll": 20,
-      "useWhenEn": "you need to handle office documents"
+      "useWhenEn": "you need to handle office documents",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 115,
+        "codeFiles": 71,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "DietrichGebert/ponytail",
@@ -745,7 +803,17 @@
       "skillDirsAll": 12,
       "gapFilled": "编程与开发 — 反向克制，专治 AI 过度设计与代码膨胀",
       "installHint": "npx skills add DietrichGebert/ponytail",
-      "aboutZh": "Makes your AI agent think like the laziest senior dev in the room. The best code is the code you never wrote."
+      "aboutZh": "Makes your AI agent think like the laziest senior dev in the room. The best code is the code you never wrote.",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "JavaScript",
+        "markdown": 57,
+        "codeFiles": 54,
+        "srcFiles": 0,
+        "manifests": [
+          "package.json"
+        ]
+      }
     },
     {
       "fullName": "garrytan/gstack",
@@ -835,7 +903,17 @@
       ],
       "skillCount": 61,
       "skillDirsAll": 61,
-      "installHint": "npx skills add garrytan/gstack"
+      "installHint": "npx skills add garrytan/gstack",
+      "repoKind": "software",
+      "repoFacts": {
+        "language": "TypeScript",
+        "markdown": 254,
+        "codeFiles": 1378,
+        "srcFiles": 74,
+        "manifests": [
+          "package.json"
+        ]
+      }
     },
     {
       "fullName": "nextlevelbuilder/ui-ux-pro-max-skill",
@@ -893,7 +971,15 @@
       "useWhen": "AI 生成的前端太丑太像模板",
       "aboutZh": "为跨平台界面设计注入设计智能的技能，帮助智能体产出更专业的 UI/UX 方案与前端实现。",
       "skillDirsAll": 13,
-      "useWhenEn": "AI-generated UI looks templated"
+      "useWhenEn": "AI-generated UI looks templated",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 145,
+        "codeFiles": 167,
+        "srcFiles": 18,
+        "manifests": []
+      }
     },
     {
       "fullName": "JuliusBrussee/caveman",
@@ -953,7 +1039,18 @@
       ],
       "skillCount": 20,
       "skillDirsAll": 24,
-      "installHint": "npx skills add JuliusBrussee/caveman"
+      "installHint": "npx skills add JuliusBrussee/caveman",
+      "repoKind": "software",
+      "repoFacts": {
+        "language": "Go",
+        "markdown": 171,
+        "codeFiles": 1042,
+        "srcFiles": 324,
+        "manifests": [
+          "go.mod",
+          "package.json"
+        ]
+      }
     },
     {
       "fullName": "nexu-io/open-design",
@@ -1390,7 +1487,17 @@
       "skillDirsAll": 537,
       "gapFilled": "设计与前端 — 打通从设计稿到前端交付的完整链路",
       "installHint": "npx skills add nexu-io/open-design",
-      "aboutZh": "🎨 Best DeepSeek Harness Design Plugin. The open-source Claude Design alternative. 🖥️ Local-first desktop app. 🖼️ Your coding agent becomes the design engine: prototypes, landing pages, dashboards, slides, images & video — real files, HTML/PDF/PPTX/MP4 export. 🤖 Claude Code / Codex / Cursor / DeepSeek Harness / OpenCode & 20+ CLIs via BYOK."
+      "aboutZh": "🎨 Best DeepSeek Harness Design Plugin. The open-source Claude Design alternative. 🖥️ Local-first desktop app. 🖼️ Your coding agent becomes the design engine: prototypes, landing pages, dashboards, slides, images & video — real files, HTML/PDF/PPTX/MP4 export. 🤖 Claude Code / Codex / Cursor / DeepSeek Harness / OpenCode & 20+ CLIs via BYOK.",
+      "repoKind": "software",
+      "repoFacts": {
+        "language": "TypeScript",
+        "markdown": 2241,
+        "codeFiles": 4640,
+        "srcFiles": 373,
+        "manifests": [
+          "package.json"
+        ]
+      }
     },
     {
       "fullName": "addyosmani/agent-skills",
@@ -1453,7 +1560,15 @@
       "useWhen": "想把代码写得更像样",
       "aboutZh": "面向 AI 编程智能体的生产级工程技能集，涵盖代码质量、测试、性能与架构等一线工程实践。",
       "skillDirsAll": 25,
-      "useWhenEn": "you want better code quality"
+      "useWhenEn": "you want better code quality",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "JavaScript",
+        "markdown": 95,
+        "codeFiles": 35,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "thedotmack/claude-mem",
@@ -1527,7 +1642,18 @@
       ],
       "skillCount": 24,
       "skillDirsAll": 30,
-      "installHint": "npx skills add thedotmack/claude-mem"
+      "installHint": "npx skills add thedotmack/claude-mem",
+      "repoKind": "software",
+      "repoFacts": {
+        "language": "TypeScript",
+        "markdown": 228,
+        "codeFiles": 785,
+        "srcFiles": 353,
+        "manifests": [
+          "package.json",
+          "tsconfig.json"
+        ]
+      }
     },
     {
       "fullName": "Leonxlnx/taste-skill",
@@ -1583,7 +1709,15 @@
       ],
       "skillCount": 13,
       "skillDirsAll": 13,
-      "installHint": "npx skills add Leonxlnx/taste-skill"
+      "installHint": "npx skills add Leonxlnx/taste-skill",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "JavaScript",
+        "markdown": 29,
+        "codeFiles": 4,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "Egonex-AI/Understand-Anything",
@@ -1639,7 +1773,18 @@
       ],
       "skillCount": 9,
       "skillDirsAll": 9,
-      "installHint": "npx skills add Egonex-AI/Understand-Anything"
+      "installHint": "npx skills add Egonex-AI/Understand-Anything",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "TypeScript",
+        "markdown": 120,
+        "codeFiles": 310,
+        "srcFiles": 0,
+        "manifests": [
+          "package.json",
+          "tsconfig.json"
+        ]
+      }
     },
     {
       "fullName": "Panniantong/Agent-Reach",
@@ -1687,7 +1832,17 @@
       ],
       "skillCount": 1,
       "skillDirsAll": 1,
-      "installHint": "npx skills add Panniantong/Agent-Reach"
+      "installHint": "npx skills add Panniantong/Agent-Reach",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 27,
+        "codeFiles": 69,
+        "srcFiles": 0,
+        "manifests": [
+          "pyproject.toml"
+        ]
+      }
     },
     {
       "fullName": "shareAI-lab/learn-claude-code",
@@ -1731,7 +1886,17 @@
       ],
       "skillCount": 4,
       "skillDirsAll": 4,
-      "installHint": "npx skills add shareAI-lab/learn-claude-code"
+      "installHint": "npx skills add shareAI-lab/learn-claude-code",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 97,
+        "codeFiles": 114,
+        "srcFiles": 0,
+        "manifests": [
+          "requirements.txt"
+        ]
+      }
     },
     {
       "fullName": "ComposioHQ/awesome-claude-skills",
@@ -2644,7 +2809,15 @@
       "useWhen": "不知道装什么，先逛一遍",
       "aboutZh": "精选的 Claude Skills 与工具资源清单，收录可定制 Claude 工作流的技能、教程和配套项目。",
       "skillDirsAll": 864,
-      "useWhenEn": "browsing before you pick"
+      "useWhenEn": "browsing before you pick",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 892,
+        "codeFiles": 63,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "career-ops-hq/career-ops",
@@ -2695,7 +2868,17 @@
       ],
       "skillCount": 1,
       "skillDirsAll": 8,
-      "installHint": "npx skills add career-ops-hq/career-ops"
+      "installHint": "npx skills add career-ops-hq/career-ops",
+      "repoKind": "software",
+      "repoFacts": {
+        "language": "JavaScript",
+        "markdown": 305,
+        "codeFiles": 886,
+        "srcFiles": 15,
+        "manifests": [
+          "package.json"
+        ]
+      }
     },
     {
       "fullName": "stablyai/orca",
@@ -2751,7 +2934,18 @@
       ],
       "skillCount": 8,
       "skillDirsAll": 8,
-      "installHint": "npx skills add stablyai/orca"
+      "installHint": "npx skills add stablyai/orca",
+      "repoKind": "software",
+      "repoFacts": {
+        "language": "TypeScript",
+        "markdown": 148,
+        "codeFiles": 25299,
+        "srcFiles": 21779,
+        "manifests": [
+          "package.json",
+          "tsconfig.json"
+        ]
+      }
     },
     {
       "fullName": "tt-a1i/archify",
@@ -2802,7 +2996,15 @@
       ],
       "skillCount": 1,
       "skillDirsAll": 1,
-      "installHint": "npx skills add tt-a1i/archify"
+      "installHint": "npx skills add tt-a1i/archify",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "JavaScript",
+        "markdown": 106,
+        "codeFiles": 201,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "mvanhorn/last30days-skill",
@@ -2853,7 +3055,17 @@
       ],
       "skillCount": 1,
       "skillDirsAll": 1,
-      "installHint": "npx skills add mvanhorn/last30days-skill"
+      "installHint": "npx skills add mvanhorn/last30days-skill",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 72,
+        "codeFiles": 360,
+        "srcFiles": 0,
+        "manifests": [
+          "pyproject.toml"
+        ]
+      }
     },
     {
       "fullName": "hesreallyhim/awesome-claude-code",
@@ -2903,7 +3115,18 @@
       "useWhen": "想系统了解 Claude Code 能做什么",
       "aboutZh": "精心整理的 Claude Code 资源大全，涵盖技能、子智能体、状态栏与插件等社区优质工具。",
       "skillDirsAll": 0,
-      "useWhenEn": "learning what Claude Code can do"
+      "useWhenEn": "learning what Claude Code can do",
+      "repoKind": "reference",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 9,
+        "codeFiles": 27,
+        "srcFiles": 0,
+        "manifests": [
+          "Makefile",
+          "requirements.txt"
+        ]
+      }
     },
     {
       "fullName": "VoltAgent/awesome-openclaw-skills",
@@ -2946,7 +3169,15 @@
       "useWhen": "用 OpenClaw 想找现成技能",
       "aboutZh": "从官方 OpenClaw 技能注册表筛选分类的五千多个技能合集，便于 OpenClaw 用户按需挑选安装。",
       "skillDirsAll": 0,
-      "useWhenEn": "you use OpenClaw"
+      "useWhenEn": "you use OpenClaw",
+      "repoKind": "reference",
+      "repoFacts": {
+        "language": null,
+        "markdown": 32,
+        "codeFiles": 0,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "coreyhaines31/marketingskills",
@@ -3031,7 +3262,15 @@
       "skillDirsAll": 50,
       "gapFilled": "内容与创意 — 补齐营销转化、投放与增长这一空白",
       "installHint": "npx skills add coreyhaines31/marketingskills",
-      "aboutZh": "Marketing skills for Claude Code and AI agents. CRO, copywriting, SEO, analytics, and growth engineering."
+      "aboutZh": "Marketing skills for Claude Code and AI agents. CRO, copywriting, SEO, analytics, and growth engineering.",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "JavaScript",
+        "markdown": 335,
+        "codeFiles": 66,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "heygen-com/hyperframes",
@@ -3100,7 +3339,17 @@
       "skillDirsAll": 32,
       "gapFilled": "内容与创意 — 补齐视频成片制作（字幕、运镜、音效）",
       "installHint": "npx skills add heygen-com/hyperframes",
-      "aboutZh": "Write HTML. Render video. Built for agents."
+      "aboutZh": "Write HTML. Render video. Built for agents.",
+      "repoKind": "software",
+      "repoFacts": {
+        "language": "TypeScript",
+        "markdown": 722,
+        "codeFiles": 3131,
+        "srcFiles": 2769,
+        "manifests": [
+          "package.json"
+        ]
+      }
     },
     {
       "fullName": "kepano/obsidian-skills",
@@ -3154,7 +3403,15 @@
       "useWhen": "笔记在 Obsidian，想让 AI 读写",
       "aboutZh": "Obsidian 官方推出的技能集，教会智能体使用 Obsidian CLI 命令行，以及 Markdown、Bases、JSON Canvas 等开放格式，适合笔记知识库用户。",
       "skillDirsAll": 6,
-      "useWhenEn": "your notes live in Obsidian"
+      "useWhenEn": "your notes live in Obsidian",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": null,
+        "markdown": 12,
+        "codeFiles": 0,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "blader/humanizer",
@@ -3194,7 +3451,15 @@
       "skillDirsAll": 1,
       "gapFilled": "内容与创意 — 补齐中文/英文文本去 AI 味这一空白",
       "installHint": "npx skills add blader/humanizer",
-      "aboutZh": "Agent skill that removes signs of AI-generated writing from text"
+      "aboutZh": "Agent skill that removes signs of AI-generated writing from text",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 3,
+        "codeFiles": 1,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "Imbad0202/academic-research-skills",
@@ -3238,7 +3503,18 @@
       "useWhen": "写论文、做学术研究",
       "aboutZh": "面向 Claude Code 的学术研究技能，覆盖选题调研、写作、同行评审、修改到定稿的完整论文流程。",
       "skillDirsAll": 4,
-      "useWhenEn": "writing a paper or doing research"
+      "useWhenEn": "writing a paper or doing research",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 1080,
+        "codeFiles": 445,
+        "srcFiles": 0,
+        "manifests": [
+          "package.json",
+          "pyproject.toml"
+        ]
+      }
     },
     {
       "fullName": "zhayujie/CowAgent",
@@ -3287,7 +3563,18 @@
       ],
       "skillCount": 3,
       "skillDirsAll": 3,
-      "installHint": "npx skills add zhayujie/CowAgent"
+      "installHint": "npx skills add zhayujie/CowAgent",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 30,
+        "codeFiles": 575,
+        "srcFiles": 0,
+        "manifests": [
+          "pyproject.toml",
+          "requirements.txt"
+        ]
+      }
     },
     {
       "fullName": "sickn33/agentic-awesome-skills",
@@ -5458,7 +5745,17 @@
       "useWhen": "想要一个装好就有一大堆技能的环境",
       "aboutZh": "以智能体为中心的本地技能控制面，内置两千多个技能目录、CLI、本地 MCP 与工作台，便于检索选型与校验。",
       "skillDirsAll": 6670,
-      "useWhenEn": "you want a large preinstalled library"
+      "useWhenEn": "you want a large preinstalled library",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 16429,
+        "codeFiles": 2922,
+        "srcFiles": 0,
+        "manifests": [
+          "package.json"
+        ]
+      }
     },
     {
       "fullName": "ayghri/i-have-adhd",
@@ -5495,7 +5792,17 @@
       ],
       "skillCount": 1,
       "skillDirsAll": 2,
-      "installHint": "npx skills add ayghri/i-have-adhd"
+      "installHint": "npx skills add ayghri/i-have-adhd",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 25,
+        "codeFiles": 15,
+        "srcFiles": 0,
+        "manifests": [
+          "package.json"
+        ]
+      }
     },
     {
       "fullName": "K-Dense-AI/scientific-agent-skills",
@@ -5710,7 +6017,17 @@
       "useWhen": "做生命科学或药物研究",
       "aboutZh": "把通用智能体变成科研助手的一百六十多个经校验技能，覆盖生物、化学、医学与药物发现等领域。",
       "skillDirsAll": 166,
-      "useWhenEn": "life-science or pharma research"
+      "useWhenEn": "life-science or pharma research",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 1269,
+        "codeFiles": 692,
+        "srcFiles": 0,
+        "manifests": [
+          "pyproject.toml"
+        ]
+      }
     },
     {
       "fullName": "Yuan1z0825/nature-skills",
@@ -5765,7 +6082,15 @@
       "skillDirsAll": 20,
       "gapFilled": "科研与数据 — 补齐顶刊投稿级的图表与引文规范",
       "installHint": "npx skills add Yuan1z0825/nature-skills",
-      "aboutZh": "符合nature论文学术表达和科研绘图的Skill"
+      "aboutZh": "符合nature论文学术表达和科研绘图的Skill",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 412,
+        "codeFiles": 222,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "cathrynlavery/diagram-design",
@@ -5806,7 +6131,15 @@
       "skillDirsAll": 1,
       "gapFilled": "文档与办公 — 补齐信息图与示意图的成品化产出",
       "installHint": "npx skills add cathrynlavery/diagram-design",
-      "aboutZh": "38 editorial diagram types for Claude Code, Codex, and Pi. Self-contained HTML + SVG. No shadows. No Mermaid slop."
+      "aboutZh": "38 editorial diagram types for Claude Code, Codex, and Pi. Self-contained HTML + SVG. No shadows. No Mermaid slop.",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "HTML",
+        "markdown": 89,
+        "codeFiles": 64,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "wshobson/agents",
@@ -6041,7 +6374,17 @@
       "useWhen": "在多个 agent 之间来回切",
       "aboutZh": "面向多种智能体运行时的插件市场，统一为 Claude Code、Codex、Cursor、Copilot 等提供技能与代理。",
       "skillDirsAll": 183,
-      "useWhenEn": "you switch between agents"
+      "useWhenEn": "you switch between agents",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 767,
+        "codeFiles": 67,
+        "srcFiles": 0,
+        "manifests": [
+          "Makefile"
+        ]
+      }
     },
     {
       "fullName": "github/awesome-copilot",
@@ -6516,7 +6859,17 @@
       "useWhen": "用 Copilot 想找官方资源",
       "aboutZh": "GitHub 官方社区合集，提供面向 Copilot 的指令、智能体、技能与配置，帮助开发者用好 Copilot。",
       "skillDirsAll": 435,
-      "useWhenEn": "you use Copilot"
+      "useWhenEn": "you use Copilot",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "JavaScript",
+        "markdown": 1800,
+        "codeFiles": 310,
+        "srcFiles": 0,
+        "manifests": [
+          "package.json"
+        ]
+      }
     },
     {
       "fullName": "emilkowalski/skills",
@@ -6559,7 +6912,15 @@
       "skillDirsAll": 12,
       "gapFilled": "设计与前端 — 补齐动效与交互手感这一细分方向",
       "installHint": "npx skills add emilkowalski/skills",
-      "aboutZh": "Skills for Designers and Engineers."
+      "aboutZh": "Skills for Designers and Engineers.",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Markdown",
+        "markdown": 20,
+        "codeFiles": 0,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "anthropics/claude-plugins-official",
@@ -6621,7 +6982,15 @@
       "useWhen": "想找官方维护的现成能力",
       "aboutZh": "Anthropic 官方维护的 Claude Code 高质量插件目录，便于发现并安装经过审核的插件与技能。",
       "skillDirsAll": 31,
-      "useWhenEn": "you want official, maintained capabilities"
+      "useWhenEn": "you want official, maintained capabilities",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 228,
+        "codeFiles": 66,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "zhaoxuya520/reverse-skill",
@@ -6741,7 +7110,15 @@
       "skillDirsAll": 89,
       "gapFilled": "安全与合规 — 补齐逆向工程与授权渗透测试方向",
       "installHint": "npx skills add zhaoxuya520/reverse-skill",
-      "aboutZh": "Reverse Engineering / Authorized Penetration Testing / Security Research Skill Router Pack AI-powered routing + On-demand toolchain bootstrapping + Self-evolving knowledge base  Supports Claude Code, Kiro, Cursor, Cline, and other AI coding clients 逆向/渗透/安全技能路由包 - AI 自动路由 + 按需自举工具链 + 自动进化经验库 | 支持 Claude Code / Kiro / Cursor / Cline 等代码 AI 客户端"
+      "aboutZh": "Reverse Engineering / Authorized Penetration Testing / Security Research Skill Router Pack AI-powered routing + On-demand toolchain bootstrapping + Self-evolving knowledge base  Supports Claude Code, Kiro, Cursor, Cline, and other AI coding clients 逆向/渗透/安全技能路由包 - AI 自动路由 + 按需自举工具链 + 自动进化经验库 | 支持 Claude Code / Kiro / Cursor / Cline 等代码 AI 客户端",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "PowerShell",
+        "markdown": 445,
+        "codeFiles": 12,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "VoltAgent/awesome-agent-skills",
@@ -6784,7 +7161,15 @@
       "useWhen": "想一次拿到大量社区技能",
       "aboutZh": "汇集官方团队与社区的上千个智能体技能，兼容 Claude Code、Codex、Gemini CLI、Cursor 等主流工具。",
       "skillDirsAll": 0,
-      "useWhenEn": "you want many community skills at once"
+      "useWhenEn": "you want many community skills at once",
+      "repoKind": "reference",
+      "repoFacts": {
+        "language": null,
+        "markdown": 2,
+        "codeFiles": 0,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "mukul975/Anthropic-Cybersecurity-Skills",
@@ -7654,7 +8039,15 @@
       "useWhen": "做安全测试或合规",
       "aboutZh": "面向 AI 智能体的八百多个结构化网络安全技能，映射 MITRE ATT&CK、NIST 等六大框架，覆盖二十九个安全领域。",
       "skillDirsAll": 818,
-      "useWhenEn": "security testing or compliance"
+      "useWhenEn": "security testing or compliance",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 2588,
+        "codeFiles": 1103,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "alchaincyf/nuwa-skill",
@@ -7701,7 +8094,15 @@
       "skillDirsAll": 16,
       "gapFilled": "内容与创意 — 补齐人物思维蒸馏与风格复刻",
       "installHint": "npx skills add alchaincyf/nuwa-skill",
-      "aboutZh": "你想蒸馏的下一个员工，何必是同事。蒸馏任何人的思维方式——心智模型、决策启发式、表达DNA。Distill how anyone thinks."
+      "aboutZh": "你想蒸馏的下一个员工，何必是同事。蒸馏任何人的思维方式——心智模型、决策启发式、表达DNA。Distill how anyone thinks.",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 133,
+        "codeFiles": 7,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "vercel-labs/skills",
@@ -7733,7 +8134,18 @@
       "useWhen": "想在多个工具之间共用技能",
       "aboutZh": "Vercel 出品的开放智能体技能工具，一条 npx skills 命令即可发现、安装并管理各类技能。",
       "skillDirsAll": 1,
-      "useWhenEn": "sharing skills across tools"
+      "useWhenEn": "sharing skills across tools",
+      "repoKind": "software",
+      "repoFacts": {
+        "language": "TypeScript",
+        "markdown": 4,
+        "codeFiles": 103,
+        "srcFiles": 51,
+        "manifests": [
+          "package.json",
+          "tsconfig.json"
+        ]
+      }
     },
     {
       "fullName": "vercel-labs/agent-skills",
@@ -7773,7 +8185,17 @@
       "useWhen": "写前端想少踩坑",
       "aboutZh": "Vercel 官方维护的智能体技能合集，围绕其平台与前端框架的最佳实践编写。",
       "skillDirsAll": 9,
-      "useWhenEn": "writing frontend code"
+      "useWhenEn": "writing frontend code",
+      "repoKind": "software",
+      "repoFacts": {
+        "language": "JavaScript",
+        "markdown": 210,
+        "codeFiles": 164,
+        "srcFiles": 73,
+        "manifests": [
+          "package.json"
+        ]
+      }
     },
     {
       "fullName": "googleworkspace/cli",
@@ -7916,7 +8338,18 @@
       "useWhen": "要脚本化操作 Google Workspace",
       "aboutZh": "Google Workspace 官方命令行工具，用一个命令统一操作 Drive、Gmail、日历、文档与后台管理，并附带 AI 智能体技能。",
       "skillDirsAll": 95,
-      "useWhenEn": "scripting Google Workspace"
+      "useWhenEn": "scripting Google Workspace",
+      "repoKind": "software",
+      "repoFacts": {
+        "language": "Rust",
+        "markdown": 113,
+        "codeFiles": 51,
+        "srcFiles": 48,
+        "manifests": [
+          "Cargo.toml",
+          "package.json"
+        ]
+      }
     },
     {
       "fullName": "virgiliojr94/book-to-skill",
@@ -7962,7 +8395,17 @@
       "skillDirsAll": 1,
       "gapFilled": "文档与办公 — 把长文档转成可长期复用的知识资产",
       "installHint": "npx skills add virgiliojr94/book-to-skill",
-      "aboutZh": "Turn any technical book PDF into a Claude Code skill — ready to study, reference, and use while you work."
+      "aboutZh": "Turn any technical book PDF into a Claude Code skill — ready to study, reference, and use while you work.",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 24,
+        "codeFiles": 62,
+        "srcFiles": 0,
+        "manifests": [
+          "pyproject.toml"
+        ]
+      }
     },
     {
       "fullName": "iOfficeAI/OfficeCLI",
@@ -8020,7 +8463,15 @@
       "skillDirsAll": 12,
       "gapFilled": "文档与办公 — 补齐对现成 Office 文件的直接读写改动",
       "installHint": "npx skills add iOfficeAI/OfficeCLI",
-      "aboutZh": "OfficeCLI is the first and best Office suite  purpose-built for AI agents to read, edit, and automate Word, Excel, and PowerPoint files. Free, open-source, single binary, no Office installation required."
+      "aboutZh": "OfficeCLI is the first and best Office suite  purpose-built for AI agents to read, edit, and automate Word, Excel, and PowerPoint files. Free, open-source, single binary, no Office installation required.",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "C#",
+        "markdown": 165,
+        "codeFiles": 458,
+        "srcFiles": 363,
+        "manifests": []
+      }
     },
     {
       "fullName": "zarazhangrui/frontend-slides",
@@ -8064,7 +8515,15 @@
       "skillDirsAll": 2,
       "gapFilled": "设计与前端 — 补齐网页演示稿这一产出形态",
       "installHint": "npx skills add zarazhangrui/frontend-slides",
-      "aboutZh": "Create beautiful slides on the web using a coding agent's frontend skills"
+      "aboutZh": "Create beautiful slides on the web using a coding agent's frontend skills",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "JavaScript",
+        "markdown": 147,
+        "codeFiles": 4,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "openai/skills",
@@ -8138,7 +8597,15 @@
       "useWhen": "用 Codex，想装官方技能",
       "aboutZh": "OpenAI 官方 Codex 技能目录，收录可直接安装的官方技能，帮助 Codex 完成各类专业任务。",
       "skillDirsAll": 44,
-      "useWhenEn": "you use Codex and want official skills"
+      "useWhenEn": "you use Codex and want official skills",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 531,
+        "codeFiles": 60,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "OthmanAdi/planning-with-files",
@@ -8196,7 +8663,15 @@
       "useWhen": "任务很长、跨会话、容易丢上下文",
       "aboutZh": "为长时间运行的编码任务提供基于文件的持久化计划，支持会话恢复与逐轮重注入，抵御上下文腐化。",
       "skillDirsAll": 18,
-      "useWhenEn": "the task spans sessions and loses context"
+      "useWhenEn": "the task spans sessions and loses context",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Shell",
+        "markdown": 194,
+        "codeFiles": 146,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "alibaba/open-code-review",
@@ -8236,7 +8711,19 @@
       "skillDirsAll": 4,
       "gapFilled": "编程与开发 — 补齐大厂级代码评审标准",
       "installHint": "npx skills add alibaba/open-code-review",
-      "aboutZh": "Fast, efficient, battle-tested at Alibaba's scale. Hybrid architecture code review tool: deterministic pipelines + LLM Agent, precise line-level comments, built-in multi-language ruleset (NPE, thread-safety, XSS, SQL injection), OpenAI & Anthropic compatible."
+      "aboutZh": "Fast, efficient, battle-tested at Alibaba's scale. Hybrid architecture code review tool: deterministic pipelines + LLM Agent, precise line-level comments, built-in multi-language ruleset (NPE, thread-safety, XSS, SQL injection), OpenAI & Anthropic compatible.",
+      "repoKind": "software",
+      "repoFacts": {
+        "language": "Go",
+        "markdown": 191,
+        "codeFiles": 480,
+        "srcFiles": 334,
+        "manifests": [
+          "Makefile",
+          "go.mod",
+          "package.json"
+        ]
+      }
     },
     {
       "fullName": "op7418/guizang-ppt-skill",
@@ -8280,7 +8767,15 @@
       "useWhen": "要做一份好看的中文演示",
       "aboutZh": "生成精致 HTML 幻灯片的智能体技能，内置杂志与瑞士排版风格、配图提示词和演示运行时。",
       "skillDirsAll": 1,
-      "useWhenEn": "you need a good-looking deck"
+      "useWhenEn": "you need a good-looking deck",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "HTML",
+        "markdown": 18,
+        "codeFiles": 4,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "alirezarezvani/claude-skills",
@@ -8793,7 +9288,17 @@
       "useWhen": "需要非技术岗位的技能",
       "aboutZh": "收录三百八十多个技能与插件的综合合集，覆盖工程、市场、产品、合规、研究和财务等方向。",
       "skillDirsAll": 846,
-      "useWhenEn": "you need non-engineering skills"
+      "useWhenEn": "you need non-engineering skills",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 3104,
+        "codeFiles": 773,
+        "srcFiles": 0,
+        "manifests": [
+          "pyproject.toml"
+        ]
+      }
     },
     {
       "fullName": "JimLiu/baoyu-skills",
@@ -8851,7 +9356,17 @@
       "skillDirsAll": 22,
       "gapFilled": "内容与创意 — 补齐文章配图、封面与漫画等视觉素材",
       "installHint": "npx skills add JimLiu/baoyu-skills",
-      "aboutZh": ""
+      "aboutZh": "",
+      "repoKind": "software",
+      "repoFacts": {
+        "language": "TypeScript",
+        "markdown": 299,
+        "codeFiles": 298,
+        "srcFiles": 109,
+        "manifests": [
+          "package.json"
+        ]
+      }
     },
     {
       "fullName": "agentskills/agentskills",
@@ -8883,7 +9398,17 @@
       "useWhen": "想知道 SKILL.md 该怎么写",
       "aboutZh": "Agent Skills 的官方规范与文档仓库，定义 SKILL.md 的结构、发现机制与最佳实践，是该生态的权威依据。",
       "skillDirsAll": 0,
-      "useWhenEn": "learning how to write a SKILL.md"
+      "useWhenEn": "learning how to write a SKILL.md",
+      "repoKind": "reference",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 6,
+        "codeFiles": 14,
+        "srcFiles": 0,
+        "manifests": [
+          "package.json"
+        ]
+      }
     },
     {
       "fullName": "Donchitos/Claude-Code-Game-Studios",
@@ -9000,7 +9525,15 @@
       "skillDirsAll": 73,
       "gapFilled": "编程与开发 — 补齐游戏开发这一全新领域",
       "installHint": "npx skills add Donchitos/Claude-Code-Game-Studios",
-      "aboutZh": "Turn Claude Code into a full game dev studio — 49 AI agents, 72 workflow skills, and a complete coordination system mirroring real studio hierarchy."
+      "aboutZh": "Turn Claude Code into a full game dev studio — 49 AI agents, 72 workflow skills, and a complete coordination system mirroring real studio hierarchy.",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Shell",
+        "markdown": 392,
+        "codeFiles": 0,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "KKKKhazix/khazix-skills",
@@ -9047,7 +9580,15 @@
       "useWhen": "想要中文语境下的实用技能",
       "aboutZh": "数字生命卡兹克开源的 AI 技能合集，包含目标定义、洁癖整理、写作等实用技能，兼容主流智能体。",
       "skillDirsAll": 6,
-      "useWhenEn": "you want practical Chinese-language skills"
+      "useWhenEn": "you want practical Chinese-language skills",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 74,
+        "codeFiles": 18,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "google/skills",
@@ -9220,7 +9761,15 @@
       "useWhen": "在 GCP 上开发",
       "aboutZh": "Google 官方智能体技能集，围绕 Gemini、Google Cloud 等产品与技术，提供权威且可直接使用的最佳实践指导。",
       "skillDirsAll": 143,
-      "useWhenEn": "building on Google Cloud"
+      "useWhenEn": "building on Google Cloud",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 616,
+        "codeFiles": 72,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "teng-lin/notebooklm-py",
@@ -9267,7 +9816,18 @@
       "skillDirsAll": 1,
       "gapFilled": "科研与数据 — 补齐资料转播客与音频摘要链路",
       "installHint": "npx skills add teng-lin/notebooklm-py",
-      "aboutZh": "Unofficial Python API and agentic skill for Google Gemini Notebook. Full programmatic access to NotebookLM's features—including capabilities the web UI doesn't expose—via Python, CLI, and AI agents like Claude Code, Codex, and OpenClaw."
+      "aboutZh": "Unofficial Python API and agentic skill for Google Gemini Notebook. Full programmatic access to NotebookLM's features—including capabilities the web UI doesn't expose—via Python, CLI, and AI agents like Claude Code, Codex, and OpenClaw.",
+      "repoKind": "software",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 100,
+        "codeFiles": 1604,
+        "srcFiles": 530,
+        "manifests": [
+          "Makefile",
+          "pyproject.toml"
+        ]
+      }
     },
     {
       "fullName": "NVIDIA/SkillSpector",
@@ -9335,7 +9895,19 @@
       "useWhen": "要装来路不明的技能",
       "aboutZh": "智能体技能安全扫描器，可在安装前检测漏洞、恶意模式、提示词注入、数据外泄与供应链风险。",
       "skillDirsAll": 25,
-      "useWhenEn": "installing something unfamiliar"
+      "useWhenEn": "installing something unfamiliar",
+      "repoKind": "software",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 75,
+        "codeFiles": 234,
+        "srcFiles": 97,
+        "manifests": [
+          "Makefile",
+          "package.json",
+          "pyproject.toml"
+        ]
+      }
     },
     {
       "fullName": "composio-community/awesome-codex-skills",
@@ -10259,7 +10831,15 @@
       "skillDirsAll": 880,
       "gapFilled": "技能合集 — 补齐 Codex 生态近千个现成技能入口",
       "installHint": "npx skills add composio-community/awesome-codex-skills",
-      "aboutZh": "A curated list of practical Codex skills for automating workflows across the Codex CLI and API."
+      "aboutZh": "A curated list of practical Codex skills for automating workflows across the Codex CLI and API.",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 952,
+        "codeFiles": 35,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "wanshuiyin/Auto-claude-code-research-in-sleep",
@@ -10393,7 +10973,15 @@
       "skillDirsAll": 187,
       "gapFilled": "科研与数据 — 补齐无人值守的自动科研闭环",
       "installHint": "npx skills add wanshuiyin/Auto-claude-code-research-in-sleep",
-      "aboutZh": "ARIS ⚔️ (Auto-Research-In-Sleep) — Lightweight Markdown-only skills for autonomous ML research: cross-model review loops, idea discovery, and experiment automation. No framework, no lock-in — works with Claude Code, Codex, OpenClaw, or any LLM agent."
+      "aboutZh": "ARIS ⚔️ (Auto-Research-In-Sleep) — Lightweight Markdown-only skills for autonomous ML research: cross-model review loops, idea discovery, and experiment automation. No framework, no lock-in — works with Claude Code, Codex, OpenClaw, or any LLM agent.",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 405,
+        "codeFiles": 126,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "yusufkaraaslan/Skill_Seekers",
@@ -10469,7 +11057,18 @@
       "useWhen": "想让 AI 学会一套内部文档",
       "aboutZh": "把文档站点、GitHub 仓库和 PDF 自动转换成 Claude 技能的生成工具，并支持冲突检测。",
       "skillDirsAll": 26,
-      "useWhenEn": "teaching the agent your internal docs"
+      "useWhenEn": "teaching the agent your internal docs",
+      "repoKind": "software",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 306,
+        "codeFiles": 597,
+        "srcFiles": 280,
+        "manifests": [
+          "pyproject.toml",
+          "requirements.txt"
+        ]
+      }
     },
     {
       "fullName": "MiniMax-AI/skills",
@@ -10523,7 +11122,15 @@
       "skillDirsAll": 23,
       "gapFilled": "文档与办公 — 补齐国产模型官方出品的内容产出能力",
       "installHint": "npx skills add MiniMax-AI/skills",
-      "aboutZh": ""
+      "aboutZh": "",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "C#",
+        "markdown": 207,
+        "codeFiles": 66,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "huggingface/skills",
@@ -10580,7 +11187,15 @@
       "skillDirsAll": 26,
       "gapFilled": "云与自动化 — 补齐模型训练与推理部署链路",
       "installHint": "npx skills add huggingface/skills",
-      "aboutZh": "Give your agents the power of the Hugging Face ecosystem"
+      "aboutZh": "Give your agents the power of the Hugging Face ecosystem",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 116,
+        "codeFiles": 55,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "Agents365-ai/drawio-skill",
@@ -10633,7 +11248,15 @@
       "useWhen": "要画架构图但不想手拖",
       "aboutZh": "把自然语言、代码、Terraform、SQL 等来源转成可编辑 draw.io 架构图的技能，支持增量同步与导出。",
       "skillDirsAll": 1,
-      "useWhenEn": "diagrams without dragging boxes"
+      "useWhenEn": "diagrams without dragging boxes",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 41,
+        "codeFiles": 67,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "modelcontextprotocol/modelcontextprotocol",
@@ -10671,7 +11294,18 @@
       "useWhen": "要写 MCP 服务器",
       "aboutZh": "MCP 协议的官方规范与文档仓库，定义模型与外部工具、数据源的连接标准，是 MCP 生态的源头。",
       "skillDirsAll": 2,
-      "useWhenEn": "writing an MCP server"
+      "useWhenEn": "writing an MCP server",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "TypeScript",
+        "markdown": 87,
+        "codeFiles": 44,
+        "srcFiles": 0,
+        "manifests": [
+          "package.json",
+          "tsconfig.json"
+        ]
+      }
     },
     {
       "fullName": "revfactory/harness",
@@ -10708,7 +11342,15 @@
       "useWhen": "一个 agent 干不完，想拆成多个角色",
       "aboutZh": "一个元技能，可根据领域自动设计智能体团队、定义专职代理，并生成它们所需的技能。",
       "skillDirsAll": 1,
-      "useWhenEn": "one agent can't cover the whole job"
+      "useWhenEn": "one agent can't cover the whole job",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "HTML",
+        "markdown": 21,
+        "codeFiles": 0,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "Vincentwei1021/video-shotcraft",
@@ -10755,7 +11397,17 @@
       "useWhen": "要做一个产品演示视频",
       "aboutZh": "用 Remotion 制作电影感产品视频的技能，内置一百五十多张镜头配方卡与可直接使用的模板。",
       "skillDirsAll": 1,
-      "useWhenEn": "you need a product demo video"
+      "useWhenEn": "you need a product demo video",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "TypeScript",
+        "markdown": 335,
+        "codeFiles": 301,
+        "srcFiles": 0,
+        "manifests": [
+          "package.json"
+        ]
+      }
     },
     {
       "fullName": "google-labs-code/stitch-skills",
@@ -10802,7 +11454,15 @@
       "useWhen": "有设计稿要实现",
       "aboutZh": "Google 官方技能库，配合 Stitch MCP 服务器使用，遵循 Agent Skills 开放标准，兼容主流编码智能体。",
       "skillDirsAll": 16,
-      "useWhenEn": "you have a design to implement"
+      "useWhenEn": "you have a design to implement",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "TypeScript",
+        "markdown": 52,
+        "codeFiles": 15,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "jnMetaCode/superpowers-zh",
@@ -10870,7 +11530,17 @@
       "useWhen": "想要 superpowers 但不想看英文",
       "aboutZh": "superpowers 的完整中文化增强版，并加入原创中文技能，让二十多款 AI 编程工具真正落地干活。",
       "skillDirsAll": 20,
-      "useWhenEn": "you want superpowers without the English"
+      "useWhenEn": "you want superpowers without the English",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "JavaScript",
+        "markdown": 94,
+        "codeFiles": 21,
+        "srcFiles": 0,
+        "manifests": [
+          "package.json"
+        ]
+      }
     },
     {
       "fullName": "modelcontextprotocol/registry",
@@ -10903,7 +11573,18 @@
       "useWhen": "想找现成的 MCP 服务器",
       "aboutZh": "社区驱动的 MCP 服务器注册表服务，提供统一的服务器发现与元数据查询接口。",
       "skillDirsAll": 0,
-      "useWhenEn": "finding an existing MCP server"
+      "useWhenEn": "finding an existing MCP server",
+      "repoKind": "reference",
+      "repoFacts": {
+        "language": "Go",
+        "markdown": 32,
+        "codeFiles": 143,
+        "srcFiles": 123,
+        "manifests": [
+          "Makefile",
+          "go.mod"
+        ]
+      }
     },
     {
       "fullName": "trailofbits/skills",
@@ -11021,7 +11702,17 @@
       "useWhen": "要审计代码安全性",
       "aboutZh": "安全公司 Trail of Bits 开源的安全技能集，面向漏洞研究、代码审计与安全评估工作流。",
       "skillDirsAll": 85,
-      "useWhenEn": "auditing code for security"
+      "useWhenEn": "auditing code for security",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 815,
+        "codeFiles": 189,
+        "srcFiles": 0,
+        "manifests": [
+          "Makefile"
+        ]
+      }
     },
     {
       "fullName": "HKUSTDial/Supervisor-Skills",
@@ -11073,7 +11764,15 @@
       "skillDirsAll": 12,
       "gapFilled": "科研与数据 — 补齐从选题到投稿的全流程导师经验",
       "installHint": "npx skills add HKUSTDial/Supervisor-Skills",
-      "aboutZh": "将博导十年科研经验炼化为可直接调用的 AI 技能。从 Idea 构思到论文投稿，你的 AI 科研副导师。"
+      "aboutZh": "将博导十年科研经验炼化为可直接调用的 AI 技能。从 Idea 构思到论文投稿，你的 AI 科研副导师。",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 126,
+        "codeFiles": 7,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "Gentleman-Programming/gentle-ai",
@@ -11150,7 +11849,18 @@
       "useWhen": "新机器或新项目要从零配一遍",
       "aboutZh": "为已有 AI 编程工具统一配置持久记忆、规格驱动开发、精选技能与 MCP 服务器，不锁定任何平台。",
       "skillDirsAll": 37,
-      "useWhenEn": "setting up a new machine or project"
+      "useWhenEn": "setting up a new machine or project",
+      "repoKind": "software",
+      "repoFacts": {
+        "language": "Go",
+        "markdown": 582,
+        "codeFiles": 1417,
+        "srcFiles": 1301,
+        "manifests": [
+          "go.mod",
+          "package.json"
+        ]
+      }
     },
     {
       "fullName": "anbeime/skill",
@@ -11279,7 +11989,17 @@
       "useWhen": "想找中文化的技能包",
       "aboutZh": "中文技能商店，收录文档处理、内容创作、编程开发等原创技能包，并自动整理 GitHub 上的技能项目。",
       "skillDirsAll": 84,
-      "useWhenEn": "looking for Chinese-localised packs"
+      "useWhenEn": "looking for Chinese-localised packs",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 387,
+        "codeFiles": 286,
+        "srcFiles": 0,
+        "manifests": [
+          "requirements.txt"
+        ]
+      }
     },
     {
       "fullName": "tech-leads-club/agent-skills",
@@ -11410,7 +12130,17 @@
       "useWhen": "担心装的技能有后门",
       "aboutZh": "经过安全校验的专业智能体技能注册表，为 Claude Code、Cursor、Copilot 等工具提供可信扩展。",
       "skillDirsAll": 92,
-      "useWhenEn": "you worry about untrusted skills"
+      "useWhenEn": "you worry about untrusted skills",
+      "repoKind": "software",
+      "repoFacts": {
+        "language": "TypeScript",
+        "markdown": 711,
+        "codeFiles": 320,
+        "srcFiles": 254,
+        "manifests": [
+          "package.json"
+        ]
+      }
     },
     {
       "fullName": "browser-act/skills",
@@ -11564,7 +12294,17 @@
       "useWhen": "要抓数据或跑网页自动化",
       "aboutZh": "为 AI 智能体打造的浏览器自动化命令行工具与技能，可突破反爬限制、并行执行任务并隔离多账号会话。",
       "skillDirsAll": 103,
-      "useWhenEn": "scraping or automating the web"
+      "useWhenEn": "scraping or automating the web",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 120,
+        "codeFiles": 146,
+        "srcFiles": 0,
+        "manifests": [
+          "requirements.txt"
+        ]
+      }
     },
     {
       "fullName": "dotnet/skills",
@@ -11701,7 +12441,15 @@
       "skillDirsAll": 106,
       "gapFilled": "编程与开发 — 补齐企业级后端技术栈的官方规范",
       "installHint": "npx skills add dotnet/skills",
-      "aboutZh": "Repository for skills to assist AI coding agents with .NET and C#"
+      "aboutZh": "Repository for skills to assist AI coding agents with .NET and C#",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "C#",
+        "markdown": 322,
+        "codeFiles": 1495,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "libukai/awesome-agent-skills",
@@ -11737,7 +12485,15 @@
       "useWhen": "想快速了解生态里有什么",
       "aboutZh": "中文整理的智能体技能资源清单，汇总 Claude Code、OpenClaw 等平台的技能与工具，适合中文开发者。",
       "skillDirsAll": 0,
-      "useWhenEn": "getting oriented in the ecosystem"
+      "useWhenEn": "getting oriented in the ecosystem",
+      "repoKind": "reference",
+      "repoFacts": {
+        "language": null,
+        "markdown": 7,
+        "codeFiles": 0,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "SnailSploit/Claude-Red",
@@ -11853,7 +12609,15 @@
       "skillDirsAll": 78,
       "gapFilled": "安全与合规 — 补齐红队演练与攻击面梳理",
       "installHint": "npx skills add SnailSploit/Claude-Red",
-      "aboutZh": "claude-red is a curated library of offensive security skills designed for the Claude skills system. Each skill is a structured SKILL.md file that primes Claude with expert-level methodology for a specific attack surface — from SQLi to shellcode, EDR evasion to exploit development."
+      "aboutZh": "claude-red is a curated library of offensive security skills designed for the Claude skills system. Each skill is a structured SKILL.md file that primes Claude with expert-level methodology for a specific attack surface — from SQLi to shellcode, EDR evasion to exploit development.",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 83,
+        "codeFiles": 2,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "xingkongliang/skills-manager",
@@ -11885,7 +12649,18 @@
       "useWhen": "技能散落在多个目录里",
       "aboutZh": "轻量级桌面应用，可在五十多款编码工具之间统一管理、同步和整理 AI 智能体技能。",
       "skillDirsAll": 1,
-      "useWhenEn": "skills scattered across directories"
+      "useWhenEn": "skills scattered across directories",
+      "repoKind": "software",
+      "repoFacts": {
+        "language": "Rust",
+        "markdown": 8,
+        "codeFiles": 131,
+        "srcFiles": 62,
+        "manifests": [
+          "package.json",
+          "tsconfig.json"
+        ]
+      }
     },
     {
       "fullName": "microsoft/skill-recorder",
@@ -11926,7 +12701,18 @@
       "useWhen": "有个重复流程想教会 AI",
       "aboutZh": "微软桌面录制工具，把屏幕操作借助 Copilot CLI 还原为意图与步骤，并生成可复用的技能或自动化。",
       "skillDirsAll": 0,
-      "useWhenEn": "you have a repetitive flow to teach"
+      "useWhenEn": "you have a repetitive flow to teach",
+      "repoKind": "reference",
+      "repoFacts": {
+        "language": "TypeScript",
+        "markdown": 13,
+        "codeFiles": 174,
+        "srcFiles": 13,
+        "manifests": [
+          "package.json",
+          "tsconfig.json"
+        ]
+      }
     },
     {
       "fullName": "gotalab/cc-sdd",
@@ -11971,7 +12757,15 @@
       "useWhen": "想先写规格，再让 AI 自主实现",
       "aboutZh": "把获批的规格文档转成可长期自主执行的实现，是一套极简且可裁剪的规格驱动开发技能框架。",
       "skillDirsAll": 137,
-      "useWhenEn": "you want a spec before autonomous implementation"
+      "useWhenEn": "you want a spec before autonomous implementation",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "TypeScript",
+        "markdown": 385,
+        "codeFiles": 68,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "NVIDIA/skills",
@@ -12372,7 +13166,15 @@
       "useWhen": "做机器人、仿真或 GPU 开发",
       "aboutZh": "NVIDIA 官方智能体技能集，覆盖物理 AI、机器人、仿真、CUDA 与 RAG 等端到端工作流。",
       "skillDirsAll": 356,
-      "useWhenEn": "robotics, simulation or GPU work"
+      "useWhenEn": "robotics, simulation or GPU work",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 2354,
+        "codeFiles": 577,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "microsoft/skills",
@@ -12607,7 +13409,15 @@
       "useWhen": "在 Azure 上开发",
       "aboutZh": "微软官方技能与 MCP 服务器合集，为 Azure、Foundry 等 SDK 提供让编码智能体落地的基础知识。",
       "skillDirsAll": 198,
-      "useWhenEn": "building on Azure"
+      "useWhenEn": "building on Azure",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "TypeScript",
+        "markdown": 1536,
+        "codeFiles": 105,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "cloudflare/skills",
@@ -12657,7 +13467,15 @@
       "useWhen": "部署到 Cloudflare",
       "aboutZh": "Cloudflare 官方技能集，教智能体在其平台上正确构建和部署 Worker、D1、R2 等应用，减少踩坑。",
       "skillDirsAll": 14,
-      "useWhenEn": "deploying to Cloudflare"
+      "useWhenEn": "deploying to Cloudflare",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Shell",
+        "markdown": 344,
+        "codeFiles": 0,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "addyosmani/web-quality-skills",
@@ -12703,7 +13521,15 @@
       "useWhen": "网站慢、想优化性能",
       "aboutZh": "围绕 Lighthouse 与核心网页指标优化的智能体技能，帮助团队持续提升网站性能与质量。",
       "skillDirsAll": 6,
-      "useWhenEn": "the site is slow"
+      "useWhenEn": "the site is slow",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Shell",
+        "markdown": 21,
+        "codeFiles": 0,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "antonbabenko/terraform-skill",
@@ -12746,7 +13572,15 @@
       "useWhen": "管理云基础设施",
       "aboutZh": "面向 AI 智能体的 Terraform 与 OpenTofu 技能，由社区知名作者维护，涵盖模块设计、自动化测试、CI/CD 与生产环境实践。",
       "skillDirsAll": 1,
-      "useWhenEn": "managing cloud infrastructure"
+      "useWhenEn": "managing cloud infrastructure",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": null,
+        "markdown": 18,
+        "codeFiles": 2,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "qufei1993/skills-hub",
@@ -12788,7 +13622,18 @@
       "useWhen": "想让所有工具共用同一份技能",
       "aboutZh": "跨平台桌面应用，把智能体技能集中管理并同步到多款工具的全局技能目录，一次安装处处可用。",
       "skillDirsAll": 0,
-      "useWhenEn": "you want every tool on one set of skills"
+      "useWhenEn": "you want every tool on one set of skills",
+      "repoKind": "reference",
+      "repoFacts": {
+        "language": "Rust",
+        "markdown": 77,
+        "codeFiles": 155,
+        "srcFiles": 87,
+        "manifests": [
+          "package.json",
+          "tsconfig.json"
+        ]
+      }
     },
     {
       "fullName": "codeaholicguy/ai-devkit",
@@ -12867,7 +13712,18 @@
       "useWhen": "用了好几个 AI 工具，配置太散",
       "aboutZh": "为 AI 编程智能体提供统一控制面，集中管理技能、配置与工作流，降低多工具切换成本。",
       "skillDirsAll": 28,
-      "useWhenEn": "config sprawl across several AI tools"
+      "useWhenEn": "config sprawl across several AI tools",
+      "repoKind": "software",
+      "repoFacts": {
+        "language": "TypeScript",
+        "markdown": 531,
+        "codeFiles": 504,
+        "srcFiles": 464,
+        "manifests": [
+          "package.json",
+          "tsconfig.json"
+        ]
+      }
     },
     {
       "fullName": "rohitg00/skillkit",
@@ -12925,7 +13781,18 @@
       "useWhen": "工具换着用，不想重复装",
       "aboutZh": "让技能在 Claude Code、Cursor、Codex、Copilot 等四十多款工具之间便携安装、互相翻译与共享，一份技能到处可用。",
       "skillDirsAll": 17,
-      "useWhenEn": "you keep switching tools"
+      "useWhenEn": "you keep switching tools",
+      "repoKind": "software",
+      "repoFacts": {
+        "language": "TypeScript",
+        "markdown": 47,
+        "codeFiles": 740,
+        "srcFiles": 650,
+        "manifests": [
+          "package.json",
+          "tsconfig.json"
+        ]
+      }
     },
     {
       "fullName": "MoizIbnYousaf/ai-agent-skills",
@@ -12983,7 +13850,17 @@
       "useWhen": "要批量部署到多种 agent",
       "aboutZh": "通用的技能安装器与包管理器，一条命令即可把技能部署到十二种以上运行时。",
       "skillDirsAll": 17,
-      "useWhenEn": "deploying to several agents"
+      "useWhenEn": "deploying to several agents",
+      "repoKind": "software",
+      "repoFacts": {
+        "language": "JavaScript",
+        "markdown": 42,
+        "codeFiles": 20,
+        "srcFiles": 12,
+        "manifests": [
+          "package.json"
+        ]
+      }
     },
     {
       "fullName": "jiweiyeah/Skills-Manager",
@@ -13029,7 +13906,19 @@
       "useWhen": "想保持单一真源",
       "aboutZh": "免费开源的桌面技能管理器，通过符号链接把一份技能同步到三十二款编码工具，本地优先。",
       "skillDirsAll": 1,
-      "useWhenEn": "you want a single source of truth"
+      "useWhenEn": "you want a single source of truth",
+      "repoKind": "software",
+      "repoFacts": {
+        "language": "TypeScript",
+        "markdown": 10,
+        "codeFiles": 212,
+        "srcFiles": 179,
+        "manifests": [
+          "Cargo.toml",
+          "package.json",
+          "tsconfig.json"
+        ]
+      }
     },
     {
       "fullName": "oracle/skills",
@@ -13074,7 +13963,15 @@
       "useWhen": "用 Oracle 技术栈",
       "aboutZh": "Oracle 官方开源技能集，为开发者、管理员和智能体提供整个 Oracle 技术栈的实用指导。",
       "skillDirsAll": 14,
-      "useWhenEn": "working with the Oracle stack"
+      "useWhenEn": "working with the Oracle stack",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 984,
+        "codeFiles": 22,
+        "srcFiles": 0,
+        "manifests": []
+      }
     },
     {
       "fullName": "EverMind-AI/SkillCorpus",
@@ -13125,7 +14022,19 @@
       "useWhen": "技能太多，找不到想要的",
       "aboutZh": "把零散的 SKILL.md 整理成可检索的智能体技能语料库，并附带检索与评测工具。",
       "skillDirsAll": 0,
-      "useWhenEn": "too many skills to find what you want"
+      "useWhenEn": "too many skills to find what you want",
+      "repoKind": "reference",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 36,
+        "codeFiles": 185,
+        "srcFiles": 0,
+        "manifests": [
+          "Makefile",
+          "pyproject.toml",
+          "requirements.txt"
+        ]
+      }
     },
     {
       "fullName": "sno-ai/mda",
@@ -13176,7 +14085,17 @@
       "useWhen": "同一份内容要适配多个平台",
       "aboutZh": "面向智能体文档的 Markdown 超集规范，一份源码即可编译成 SKILL.md、AGENTS.md 等多种文件。",
       "skillDirsAll": 8,
-      "useWhenEn": "one source targeting several platforms"
+      "useWhenEn": "one source targeting several platforms",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "TypeScript",
+        "markdown": 74,
+        "codeFiles": 21,
+        "srcFiles": 0,
+        "manifests": [
+          "package.json"
+        ]
+      }
     },
     {
       "fullName": "Kamalnrf/claude-plugins",
@@ -13212,7 +14131,18 @@
       "useWhen": "想从命令行找插件",
       "aboutZh": "轻量注册表，用于发现、安装和管理公开的 Claude 插件与智能体技能。",
       "skillDirsAll": 1,
-      "useWhenEn": "finding plugins from the terminal"
+      "useWhenEn": "finding plugins from the terminal",
+      "repoKind": "software",
+      "repoFacts": {
+        "language": "TypeScript",
+        "markdown": 7,
+        "codeFiles": 104,
+        "srcFiles": 103,
+        "manifests": [
+          "package.json",
+          "tsconfig.json"
+        ]
+      }
     },
     {
       "fullName": "antfu/skills-npm",
@@ -13246,7 +14176,18 @@
       "useWhen": "想用 npm 生态分发技能",
       "aboutZh": "让开发者直接从 npm 安装智能体技能的工具，简化技能的分发与版本管理。",
       "skillDirsAll": 7,
-      "useWhenEn": "distributing skills through npm"
+      "useWhenEn": "distributing skills through npm",
+      "repoKind": "software",
+      "repoFacts": {
+        "language": "TypeScript",
+        "markdown": 11,
+        "codeFiles": 30,
+        "srcFiles": 19,
+        "manifests": [
+          "package.json",
+          "tsconfig.json"
+        ]
+      }
     },
     {
       "fullName": "astronomer/agents",
@@ -13333,7 +14274,15 @@
       "useWhen": "做数据工程",
       "aboutZh": "面向数据工程工作流的 AI 智能体工具与技能，帮助团队用自然语言构建和运维数据管道。",
       "skillDirsAll": 35,
-      "useWhenEn": "doing data engineering"
+      "useWhenEn": "doing data engineering",
+      "repoKind": "skills",
+      "repoFacts": {
+        "language": "Python",
+        "markdown": 72,
+        "codeFiles": 113,
+        "srcFiles": 0,
+        "manifests": []
+      }
     }
   ],
   "fnLabels": {
@@ -13399,5 +14348,6 @@
     "raw": 9150,
     "unique": 9149,
     "note": "raw 是初次抓取时「含 SKILL.md 的目录」总数，会因仓库为不同 agent 重复打包而虚高；unique 是按目录名去重、并剔除模板脚手架后的真实技能数。"
-  }
+  },
+  "classifiedAt": "2026-09-15T08:07:44.363Z"
 }

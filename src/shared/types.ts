@@ -60,6 +60,19 @@ export interface Scenario {
   keywords: string[]
 }
 
+/**
+ * What a catalog entry actually is. Having a SKILL.md somewhere is not enough
+ * to call a repository a skill source — applications ship one describing
+ * themselves, and link lists ship none at all.
+ */
+export type RepoKind = 'skills' | 'software' | 'reference'
+
+export const REPO_KIND_LABELS: Record<RepoKind, { zh: string; en: string }> = {
+  skills: { zh: '技能包', en: 'Skills' },
+  software: { zh: '软件项目', en: 'Software' },
+  reference: { zh: '资料规范', en: 'Reference' }
+}
+
 /** A GitHub repository that can act as a skill source (or a tooling repo). */
 export interface RepoMeta {
   fullName: string
@@ -69,6 +82,16 @@ export interface RepoMeta {
   descriptionZh?: string
   /** the store's primary browse axis: what you want to do */
   fn?: FnCategory
+  /** whether this is a skill pack, an application, or reference material */
+  repoKind?: RepoKind
+  /** evidence behind repoKind, kept so the classification is auditable */
+  repoFacts?: {
+    language: string | null
+    markdown: number
+    codeFiles: number
+    srcFiles: number
+    manifests: string[]
+  }
   /** ≤30-char "one glance" line shown on the card */
   taglineZh?: string
   taglineEn?: string

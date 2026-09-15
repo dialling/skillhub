@@ -2,7 +2,7 @@ import { Star, Download, Check, Plus, ExternalLink, GitFork, Layers } from 'luci
 import type { RepoMeta } from '@shared/types'
 import { fmtRelative, fmtStars, gradientFor } from '../api'
 import { useStore } from '../store'
-import { CATEGORY_LABELS, FN_LABELS, type FnCategory } from '@shared/types'
+import { CATEGORY_LABELS, FN_LABELS, REPO_KIND_LABELS, type FnCategory, type RepoKind } from '@shared/types'
 import { fnColor } from './Sidebar'
 
 export function RepoArt({
@@ -171,11 +171,27 @@ export function RepoRow({ repo }: { repo: RepoMeta }): React.JSX.Element {
             : repo.taglineEn || repo.descriptionEn}
         </div>
       </div>
+      {repo.repoKind === 'reference' && (
+        <span className="chip kind-ref">{lang === 'zh' ? '不含技能' : 'no skills'}</span>
+      )}
+      {repo.repoKind === 'software' && (
+        <span className="chip kind-sw">{lang === 'zh' ? '软件项目' : 'software'}</span>
+      )}
       <span className="stat strong">
         <Star size={11} />
         {fmtStars(repo.stars)}
       </span>
-      {inLibrary ? (
+      {repo.repoKind === 'reference' ? (
+        <button
+          className="btn sm"
+          onClick={(e) => {
+            e.stopPropagation()
+            void openDetail(repo.fullName)
+          }}
+        >
+          {t('card.details')}
+        </button>
+      ) : inLibrary ? (
         <span className="chip green">
           <Check size={10} />
           {t('card.inLibrary')}

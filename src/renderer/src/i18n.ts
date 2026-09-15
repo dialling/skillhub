@@ -88,6 +88,9 @@ const DICT: Dict = {
   'card.install': ['安装', 'Install'],
   'card.details': ['详情', 'Details'],
   'card.viewRepo': ['GitHub', 'GitHub'],
+  'detail.nothingToInstall': ['该仓库没有可安装的技能', 'This repository has no installable skills'],
+  'detail.kindReference': ['这是一个资料 / 规范仓库，本身不含可安装的技能。可以入库收藏，但无法安装到智能体。', 'This is a reference or specification repository. It ships no installable skills — you can bookmark it, but there is nothing to install into an agent.'],
+  'detail.kindSoftware': ['这是一个软件项目，下面列出的技能是它附带的。仓库本身需要单独安装或构建。', 'This is a software project; the skills below are ones it happens to ship. The application itself is installed or built separately.'],
 
   'detail.overview': ['概览', 'Overview'],
   'detail.skills': ['技能文件', 'Skills'],

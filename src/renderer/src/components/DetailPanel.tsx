@@ -19,7 +19,8 @@ import {
   Search,
   CircleAlert,
   Languages,
-  X
+  X,
+  Info
 } from 'lucide-react'
 import { CATEGORY_LABELS, type AgentTarget } from '@shared/types'
 import { api, fmtStars, fmtRelative, gradientFor } from '../api'
@@ -338,6 +339,18 @@ export function DetailPanel(): React.JSX.Element | null {
             >
               {detail.tab === 'overview' && (
                 <>
+                  {meta?.repoKind === 'reference' && (
+                    <div className="notice notice-plain">
+                      <Info size={14} />
+                      <span>{t('detail.kindReference')}</span>
+                    </div>
+                  )}
+                  {meta?.repoKind === 'software' && (
+                    <div className="notice notice-plain">
+                      <Info size={14} />
+                      <span>{t('detail.kindSoftware')}</span>
+                    </div>
+                  )}
                   {/* The secondary-language description is collapsed when it is
                       not the UI language, so English mode never shows Chinese
                       unprompted (and vice versa) while still keeping the
@@ -592,6 +605,11 @@ export function DetailPanel(): React.JSX.Element | null {
                     {busy ? <span className="spinner" /> : <Download size={14} />}
                     {inLibrary ? t('detail.doInstall') : t('detail.addAndInstall')}
                   </button>
+                  {(meta?.repoKind === 'reference' || !skills.length) && (
+                    <div className="hint" style={{ marginTop: 8, textAlign: 'center' }}>
+                      {t('detail.nothingToInstall')}
+                    </div>
+                  )}
                   <div className="dim" style={{ fontSize: 11, marginTop: 8, textAlign: 'center' }}>
                     {selected.size} {t('common.skills')} → {targets.size} {t('status.agents')}
                   </div>
