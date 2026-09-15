@@ -37,7 +37,7 @@ import {
   scenarioRepos,
   scenarios
 } from './core/catalog'
-import { addLocalDir, addRepo, fetchRemoteSkillMeta, getItem, libraryItems, readSkillFile, removeItem, setProgressSink, syncItem } from './core/library'
+import { addLocalDir, addRepo, fetchRemoteSkillMeta, getItem, getItemEnriched, libraryItems, libraryItemsEnriched, readSkillFile, removeItem, setProgressSink, syncItem } from './core/library'
 import {
   activeAgents,
   listAgents,
@@ -222,8 +222,8 @@ export function registerIpc(send: Broadcast): void {
   handle('catalog:refresh', async (limit?: number) => refreshCuratedStars(limit))
 
   /* ----------------------------------------------------------------- library */
-  handle('library:list', () => libraryItems())
-  handle('library:get', (id: string) => getItem(id))
+  handle('library:list', () => libraryItemsEnriched())
+  handle('library:get', (id: string) => getItemEnriched(id))
   handle('library:add', (req: { fullName: string; skillDirs?: string[] } | string) => {
     const fullName = typeof req === 'string' ? req : req.fullName
     return addRepo(fullName, typeof req === 'string' ? {} : { skillDirs: req.skillDirs })

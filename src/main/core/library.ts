@@ -7,6 +7,7 @@ import { cache, installs, library, logActivity, settings } from './db'
 import { getRepo, listSkillDirs, activeToken, getRawFile } from './github'
 import { buildLocalSkills, buildRemoteSkills, parseSkillMd } from './skills'
 import { m } from './msg'
+import { curatedCatalog } from './catalog'
 import { hasBinary } from './platform'
 
 export type ProgressSink = (p: JobProgress) => void
@@ -75,6 +76,49 @@ export function libraryDir(): string {
 
 export function libraryItems(): LibraryItem[] {
   return library.get().items
+}
+
+/**
+ * Library items with the catalog's authored copy merged over the stored meta.
+ *
+ * `meta` is saved from the GitHub API, which knows nothing about the tagline,
+ * use-case, long description or functional category we write by hand — so the
+ * library was showing repositories stripped of the one thing that tells you at
+ * a glance what they do. Merging happens on read rather than on write so that
+ * repositories added before this existed, and copy improved afterwards, both
+ * pick the change up. Never writes: the stored meta stays pure API data.
+ */
+export async function libraryItemsEnriched(): Promise<LibraryItem[]> {
+  const items = library.get().items
+  if (!items.length) return items
+  const byName = new Map((await curatedCatalog()).map((r) => [r.fullName, r]))
+  return items.map((item) => {
+    const curated = byName.get(item.fullName)
+    if (!curated) return item
+    return {
+      ...item,
+      meta: {
+        ...item.meta,
+        // authored copy wins
+        taglineZh: curated.taglineZh,
+        taglineEn: curated.taglineEn,
+        descriptionEn: curated.descriptionEn || item.meta.descriptionEn,
+        descriptionZh: curated.descriptionZh,
+        aboutZh: curated.aboutZh,
+        useWhen: curated.useWhen,
+        useWhenEn: curated.useWhenEn,
+        // classification and functional grouping
+        fn: curated.fn,
+        category: curated.category,
+        repoKind: curated.repoKind
+      }
+    }
+  })
+}
+
+/** One library item, enriched the same way. */
+export async function getItemEnriched(id: string): Promise<LibraryItem | null> {
+  return (await libraryItemsEnriched()).find((i) => i.id === id) || null
 }
 
 export function getItem(id: string): LibraryItem | null {

@@ -146,6 +146,7 @@ const DICT: Dict = {
   'library.syncing': ['同步中…', 'Syncing…'],
   'library.viewGrid': ['网格', 'Grid'],
   'library.installedTotal': ['已安装 {n} 个技能', '{n} skills installed'],
+  'library.open': ['打开', 'Open'],
   'library.capsuleHint': ['双击查看 {n} 个技能', 'Double-click for {n} skills'],
   'library.heroNotInstalled': ['尚未安装到任何智能体 —— 点「启动」会自动装好', 'Not installed into any agent yet — Launch installs it for you'],
   'sort.recent': ['最近', 'Recent'],

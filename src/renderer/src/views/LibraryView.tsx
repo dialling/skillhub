@@ -375,29 +375,46 @@ function Capsule({
 }): React.JSX.Element {
   const t = useStore((s) => s.t)
   const [c1, c2] = gradientFor(item.fullName)
+  const tagline = lang === 'zh' ? item.meta.taglineZh || item.meta.descriptionZh : item.meta.taglineEn
 
   return (
     <div className={`capsule${active ? ' active' : ''}`} style={style} onClick={onSelect} onDoubleClick={onOpen}>
-      <div className="capsule-art" style={{ background: `linear-gradient(150deg, ${c1} 0%, ${c2} 100%)` }}>
+      {/* The repository's colour as a soft wash over the normal surface —
+          identity without a photo fighting the text. */}
+      <span className="capsule-tint" style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }} />
+
+      <div className="capsule-top">
         {item.meta.avatarUrl ? (
-          <img src={item.meta.avatarUrl} alt="" loading="lazy" />
+          <img className="capsule-avatar" src={item.meta.avatarUrl} alt="" loading="lazy" />
         ) : (
-          <span className="capsule-letter">{item.meta.name.slice(0, 1).toUpperCase()}</span>
+          <span className="capsule-avatar fallback" style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }}>
+            {item.meta.name.slice(0, 1).toUpperCase()}
+          </span>
         )}
-        <div className="capsule-scrim" />
-        <div className="capsule-label">
-          <div className="capsule-name">{item.meta.name}</div>
-          <div className="capsule-owner mono">{item.meta.owner}</div>
-        </div>
+        <span className="capsule-owner mono">{item.meta.owner}</span>
         {installedSkills > 0 && (
           <span className="capsule-badge" title={t('status.installed')}>
-            <Check size={11} />
+            <Check size={10} />
             {installedSkills}
           </span>
         )}
-        <div className="capsule-hover">
-          <span>{t('library.capsuleHint', { n: item.skills.length })}</span>
-        </div>
+      </div>
+
+      <div className="capsule-body">
+        <div className="capsule-name">{item.meta.name}</div>
+        {tagline && <div className="capsule-tagline">{tagline}</div>}
+      </div>
+
+      <div className="capsule-foot">
+        <span className="cf-stat">
+          <Layers size={10} />
+          {item.skills.length}
+        </span>
+        <span className="cf-stat">
+          <Star size={10} />
+          {fmtStars(item.meta.stars)}
+        </span>
+        <span className="cf-open">{t('library.open')}</span>
       </div>
     </div>
   )

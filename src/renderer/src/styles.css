@@ -3241,133 +3241,154 @@ button.status-item:hover {
 /* Capsule grid ----------------------------------------------------------- */
 .capsule-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
-  gap: 13px;
+  grid-template-columns: repeat(auto-fill, minmax(214px, 1fr));
+  gap: 11px;
 }
+/* A card, not a poster: small avatar, the repository's colour as a wash, and
+   the text on the normal surface. Filling the tile with the owner's avatar
+   photo made every entry shout at once and fought the labels. */
 .capsule {
-  cursor: pointer;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 148px;
+  padding: 12px 13px 10px;
   border-radius: var(--r-md);
   overflow: hidden;
+  cursor: pointer;
   border: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--bg-3), var(--bg-2));
   transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.16s, box-shadow 0.18s;
   animation: item-in 0.34s cubic-bezier(0.16, 1, 0.3, 1) backwards;
   animation-delay: calc(var(--i, 0) * var(--step, 24ms));
+}
+.capsule-tint {
+  position: absolute;
+  inset: 0;
+  opacity: 0.13;
+  pointer-events: none;
+  transition: opacity 0.2s;
 }
 .capsule:hover {
   transform: translateY(-3px);
   border-color: var(--border-3);
   box-shadow: var(--shadow-2);
 }
+.capsule:hover .capsule-tint {
+  opacity: 0.22;
+}
 .capsule.active {
   border-color: var(--accent);
   box-shadow: 0 0 0 1px var(--accent) inset, var(--shadow-2);
 }
-.capsule-art {
+.capsule.active .capsule-tint {
+  opacity: 0.26;
+}
+
+.capsule-top {
   position: relative;
-  aspect-ratio: 3 / 4;
-  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 11px;
+}
+.capsule-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  object-fit: cover;
+  flex: none;
+  border: 1px solid var(--border-2);
+  background: var(--bg-1);
+}
+.capsule-avatar.fallback {
   display: grid;
   place-items: center;
+  font-size: 16px;
+  font-weight: 780;
+  color: #fff;
 }
-.capsule-art.compact {
-  width: 44px;
-  height: 44px;
-  aspect-ratio: 1;
-  border-radius: 10px;
+.capsule-owner {
+  font-size: 11px;
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}
+.capsule-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  color: var(--ok);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
   flex: none;
 }
-.capsule-art img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.95;
-}
-.capsule-art.compact img {
-  position: static;
-  border-radius: 10px;
-}
-.capsule-art::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px);
-  background-size: 14px 14px;
-  opacity: 0.5;
-}
-.capsule-letter {
+
+.capsule-body {
   position: relative;
-  z-index: 1;
-  font-size: 44px;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.85);
-}
-.capsule-scrim {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(6, 8, 13, 0.15) 35%, rgba(6, 8, 13, 0.92) 100%);
-}
-.capsule-label {
-  position: absolute;
-  left: 11px;
-  right: 11px;
-  bottom: 10px;
-  z-index: 1;
+  flex: 1;
+  min-height: 0;
 }
 .capsule-name {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 680;
-  color: #fff;
-  line-height: 1.25;
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7);
+  color: var(--text-0);
+  line-height: 1.28;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
-.capsule-owner {
-  font-size: 10.5px;
-  color: rgba(255, 255, 255, 0.7);
-  margin-top: 2px;
+.capsule-tagline {
+  margin-top: 5px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--text-2);
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
-.capsule-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 2;
+
+.capsule-foot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px solid var(--border);
+}
+.cf-stat {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  height: 19px;
-  padding: 0 7px;
-  border-radius: 999px;
-  background: rgba(6, 8, 13, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: var(--ok);
-  font-family: var(--mono);
+  gap: 4px;
   font-size: 10.5px;
-  font-weight: 700;
-  backdrop-filter: blur(6px);
+  color: var(--text-3);
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
 }
-.capsule-hover {
-  position: absolute;
-  inset: auto 0 0 0;
-  z-index: 2;
-  padding: 8px 11px;
-  background: var(--accent);
-  color: #fff;
-  font-size: 11px;
+.cf-open {
+  margin-left: auto;
+  font-size: 10.5px;
   font-weight: 600;
-  transform: translateY(101%);
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  color: var(--accent-hi);
+  opacity: 0;
+  transition: opacity 0.16s;
 }
-.capsule:hover .capsule-hover {
-  transform: none;
+.capsule:hover .cf-open {
+  opacity: 1;
 }
 
 /* List view -------------------------------------------------------------- */
