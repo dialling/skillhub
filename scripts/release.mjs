@@ -16,7 +16,7 @@
  *   node scripts/release.mjs 0.4.2        # an explicit version
  *   node scripts/release.mjs minor --dry  # show what would happen
  */
-import { execFileSync } from 'node:child_process'
+import { execFileSync, spawn } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -194,12 +194,34 @@ if (!assets.length) {
   console.error('没有生成任何安装包，发布中止。')
   process.exit(1)
 }
-try {
-  run('gh', ['release', 'create', tag, '--title', `SkillHub ${tag}`, '--notes-file', join(root, '.release-notes.md'), ...assets])
-} finally {
-  execFileSync('rm', ['-f', join(root, '.release-notes.md')])
-}
-console.log(`· 已上传 ${assets.length} 个安装包`)
+/*
+  Publish, then let the upload finish on its own.
+
+  The disk image is 124 MB and it goes over whatever connection this machine has
+  — measured at ~100 KB/s through a proxy, which is twenty minutes of waiting for
+  a file the user themselves never downloads. They run the app from
+  /Applications; the artifact exists for other people. So the release is created
+  and the upload is left running detached, and this command returns immediately.
+*/
+const notesPath = join(root, '.release-notes.md')
+run('gh', ['release', 'create', tag, '--title', `SkillHub ${tag}`, '--notes-file', notesPath, '--draft'])
+
+const uploadScript = [
+  `cd ${JSON.stringify(root)}`,
+  `gh release upload ${tag} ${assets.map((a) => JSON.stringify(a)).join(' ')} --clobber`,
+  `gh release edit ${tag} --draft=false`,
+  `rm -f ${JSON.stringify(notesPath)}`
+].join(' && ')
+
+const child = spawn('nohup', ['bash', '-c', uploadScript], {
+  detached: true,
+  stdio: ['ignore', 'ignore', 'ignore'],
+  cwd: root
+})
+child.unref()
+
+console.log(`· ${assets.length} 个安装包正在后台上传（${(assets.length * 124).toFixed(0)} MB 量级，不阻塞）`)
+console.log(`· 上传完成后 Release 会自动转为已发布；查看进度： gh release view ${tag}`)
 
 if (noInstall) {
   console.log('· 跳过安装（--no-install）：本机保留旧版本，便于验证更新提示')
