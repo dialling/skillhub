@@ -1,9 +1,14 @@
 # SkillHub
 
-> 像 Steam 管理游戏一样管理 AI 智能体技能 — 搜索、入库、一键安装到任意 agent。
+> 像 Steam 管理游戏一样管理 AI 智能体技能 — 搜索、入库、一键安装到你自己选的目录。
 
-SkillHub 是一个 macOS 桌面应用（Electron + React），把「登录 GitHub → 搜索技能 → 克隆到本地 → 装进对应 agent 的 skills 目录」这条链路图形化。
-界面是 **Steam 的浏览模型**（卡片墙、商店详情页、库、排行榜、个人资料）+ **VSCode 的骨架**（活动栏、侧边栏、命令面板、状态栏）。
+SkillHub 是一个 macOS 桌面应用（Electron 44 + electron-vite + Vite 7 + React 19 + TypeScript + zustand），
+把「登录 GitHub → 搜索技能 → 入库（只建索引）→ 从 GitHub 取最新版装到你选的目录」这条链路图形化。
+界面是 **Steam 的浏览模型**（卡片墙、商店详情页、库、排行榜、个人资料）+ **VSCode 的骨架**（活动栏、侧边栏、命令面板、状态栏），中英双语。
+
+**本机不保留任何仓库副本。** 入库只读一次 GitHub 的目录清单，磁盘上什么都不写；安装只把这个技能的
+那几个文件取下来，放进你指定目录下以技能名命名的文件夹里。没有本地 checkout，没有缓存，也不替你
+启动智能体 —— 对源仓库和你自己的文件，都是**完全不动它的本体**。
 
 ## 界面
 
@@ -15,12 +20,12 @@ SkillHub 是一个 macOS 桌面应用（Electron + React），把「登录 GitHu
 | 仓库详情页 | 我的库 |
 |---|---|
 | ![详情](docs/screenshots/detail.jpg) | ![库](docs/screenshots/library.jpg) |
-| 一句话说清做什么、什么时候用、技能清单、右侧一键安装栏 | 已入库仓库，可批量安装到所有已启用 agent |
+| 一句话说清做什么、什么时候用、技能清单、右侧一键安装栏 | 已入库仓库，选中后一键安装到你选的目录 |
 
 | 排行榜 | 我的库 |
 |---|---|
 | ![排行榜](docs/screenshots/charts.jpg) | ![库](docs/screenshots/library.jpg) |
-| 总星数榜与 24h / 7d / 30d 增长榜，每行标注数据来源 | 已入库仓库，可批量安装到所有已启用的 agent |
+| 总星数榜与 24h / 7d / 30d 增长榜，每行标注数据来源 | 已入库仓库，选中后一键安装到你选的目录 |
 
 | 设置 | 英文界面 |
 |---|---|
@@ -35,10 +40,10 @@ SkillHub 是一个 macOS 桌面应用（Electron + React），把「登录 GitHu
 
 | 平台 | 下载 | 说明 |
 |---|---|---|
-| **macOS Apple 芯片**（M 系列） | `SkillHub-0.1.0-arm64.dmg` | 打开后把 SkillHub 拖进「应用程序」 |
-| **macOS Intel** | `SkillHub-0.1.0.dmg` | 同上 |
-| **Windows 64 位** | `SkillHub-0.1.0-x64-setup.exe` | 安装版，可自选安装目录 |
-| **Windows 免安装** | `SkillHub-0.1.0-x64-portable.exe` | 双击即用，不写注册表 |
+| **macOS Apple 芯片**（M 系列） | `SkillHub-<版本>-arm64.dmg` | 打开后把 SkillHub 拖进「应用程序」 |
+| **macOS Intel** | `SkillHub-<版本>.dmg` | 同上 |
+| **Windows 64 位** | `SkillHub-<版本>-x64-setup.exe` | 安装版，可自选安装目录 |
+| **Windows 免安装** | `SkillHub-<版本>-x64-portable.exe` | 双击即用，不写注册表 |
 
 ### 首次打开会被系统拦下来 —— 这是正常的
 
@@ -62,11 +67,14 @@ SkillHub 是一个 macOS 桌面应用（Electron + React），把「登录 GitHu
 
 ### 运行前提
 
-- **必须有的**：`git`（入库技能时要克隆仓库）。Windows 装 [Git for Windows](https://git-scm.com/download/win)；
-  macOS 执行 `xcode-select --install` 或 `brew install git`
+- **需要能访问 GitHub**：搜索、入库、安装都走 GitHub API 与 `git`；内置精选目录（147 个仓库的简介与
+  技能清单）随应用分发，离线也看得到
+- **`git` 只在安装时需要**：取文件用的是 sparse checkout，一个仓库一次，只下载这次要的那几个技能的文件。
+  没有 `git` 也能浏览、搜索、入库，只是装不了。Windows 装
+  [Git for Windows](https://git-scm.com/download/win)，macOS 执行 `xcode-select --install`
 - **可选的**：`gh`（GitHub CLI）。应用会复用它的登录凭据；没有也行，在设置里填 Personal Access Token
-- 技能会装到你已有的智能体技能目录（如 `~/.claude/skills`、`~/.cursor/skills`）。
-  首次入库时会弹窗告诉你装到哪里，可以改
+- **装到哪里由你选**：安装弹窗把本机检测到的智能体技能目录列成一键选项，也可以「选择其他文件夹…」
+  指到任意目录（详见下文「安装」）
 
 ## 平台支持
 
@@ -78,16 +86,17 @@ SkillHub 是一个 macOS 桌面应用（Electron + React），把「登录 GitHu
 
 代码层面已按平台差异逐项处理（`npm run xplat` 会检查，详见下节）：
 
-- **二进制探测**：Windows 用 `where`，macOS/Linux 用 `/bin/sh -c 'command -v'`
-- **符号链接**：Windows 用 junction（不需要管理员或开发者模式），失败则回退为复制
+- **二进制探测**：Windows 用 `where`，macOS/Linux 用 `/bin/sh -c 'command -v'`（`platform.ts` 的 `which()`）
+- **符号链接**：审计禁止创建 POSIX 目录软链接（Windows 上需要管理员或开发者模式，应该用 `junction`）。
+  新流程里安装**根本不再创建软链接** —— 每次都是真实副本；只有早期版本留下的软链接还留在识别逻辑里
 - **路径比较**：统一走 `platform.ts` 的 `isInside` / `normalizePath`，不再假设分隔符是 `/`
 - **窗口外观**：macOS 用 `hiddenInset` 内嵌红绿灯；Windows 用 `titleBarOverlay` 把系统按钮叠在右侧；
   Linux 保留标准边框。标题栏留白也随之切换（`html[data-platform]`）
 - **应用身份**：打包后的 Bundle ID 是独立的 `com.dialling.skillhub`，
   不再与 Electron 默认的 `com.github.Electron` 冲突
 
-**运行时外部依赖**：入库技能需要 `git` 在 PATH 上（Windows 需安装 Git for Windows）；
-`gh` 可选，仅用于复用已登录凭据，没有它也能用 Personal Access Token。
+**运行时外部依赖**：安装技能时调用 `git`（`--sparse` 按需取文件），所以安装那一步需要 PATH 上有 `git`；
+搜索、浏览、入库不需要。`gh` 可选，仅用于复用已登录凭据，没有它也能用 Personal Access Token。
 
 ## 快速开始
 
@@ -139,7 +148,7 @@ npm run dev
 
   | 类型 | 含义 | 界面表现 |
   |---|---|---|
-  | **技能包**（66） | 主要产出就是技能 | 正常安装 |
+  | **技能包**（112） | 主要产出就是技能 | 正常安装 |
   | **软件项目**（26） | 是应用，附带若干技能 | 黄色「软件项目」徽章 + 详情页说明「仓库本身需单独安装或构建」 |
   | **资料规范**（9） | 完全没有 SKILL.md | 虚线「不含技能」徽章，**安装按钮禁用**，只能入库收藏 |
 
@@ -159,27 +168,51 @@ npm run dev
   而不是把关键词直接丢给 GitHub 的相关性排序。
 
 ### 入库（Library）
-- 对仓库执行 `git clone --depth 1` 到 `~/.skillhub/library/<owner>__<repo>`。
-- 递归扫描整棵目录树，找出**每一个含 `SKILL.md` 的目录**（不只是顶层），解析 YAML frontmatter 得到名称与描述。
-- 支持 `git pull` 同步更新、移出库（同时清理本地文件与关联安装）。
-- 支持**导入本地目录**：把一个本地技能文件夹直接纳入库。
-- 私有仓库：公开克隆失败时自动用已登录凭据重试，成功后把 token 从 `.git/config` 的 remote 里抹掉。
+入库**不下载仓库**。读一次仓库的目录树（GitHub 的 trees API，`listSkillDirs()`），把含 `SKILL.md`
+的目录清单写进 `~/.skillhub/state/library.json` 就结束了。**库是一份索引，不是一个副本。**
 
-### 一键安装（Install）
-- 把库里的技能装进 agent 的 skills 目录，两种方式：
-  - **软链接（默认，推荐）**：单一真源，更新库即更新所有 agent；
-  - **复制**：与原仓库解耦，副本内写入 `.skillhub-install.json` 标记以便识别与清理。
-- **多 agent 适配**：内置 80 个 agent 的技能目录注册表（见下），自动探测本机装了哪些，默认勾选已启用的。
-  安装栏默认只列出已启用的 agent，其余通过「显示全部」展开并支持搜索。
-- 命名冲突处理：目标已存在且不是 SkillHub 管理的，自动追加 owner 后缀；仍是冲突就跳过并如实报告，绝不覆盖别人的东西。
-- 多个 agent 共享同一物理目录时（例如 Zed / Goose / `.agents` 标准都读 `~/.agents/skills`），只做一次文件操作，但为每个 agent 保留安装记录。
+- 之前每个入库仓库都会 `git clone --depth 1` 到 `~/.skillhub/library/<owner>__<repo>`，实测 9 个仓库
+  575 MB，而这些字节只有一个用途：让后面的安装从本地复制。现在安装直接从 GitHub 取，这 575 MB 不再需要 ——
+  `addRepo()` / `syncItem()` 里没有 clone，也没有 `git pull`。
+- 全树递归扫描换成了读远端清单，解析规则不变（目录里有没有 `SKILL.md`、frontmatter 的名称与描述），
+  重复的目录名仍在读取时去重，取路径最浅的那个。
+- 「同步更新」= 重新读一次远端清单（本地没有 checkout 可 pull）并刷新星数等元信息；「移出库」= 删掉索引条目、
+  关联安装记录，以及由这个仓库装出去的技能。
+- 仍然支持**导入本地目录**：登记一个本地技能文件夹，它的路径就是库里唯一真实存在的那种 `sourcePath`。
+- 私有仓库用已登录凭据读 API 清单（不再有「克隆失败后重试、再把 token 从 `.git/config` 里抹掉」这一步）。
+
+### 安装（Install）
+技能从 GitHub **按需取**，落到**你选的目录**里。
+
+- **只取需要的文件**（`src/main/core/fetch.ts`）：每个仓库跑一次
+  `git clone --depth 1 --filter=blob:none --sparse`，再用**一条** `git sparse-checkout set --no-cone '<path>/*'`
+  把这次要的所有技能路径一次选中（逐条调用只会留下最后一条），复制出来、删掉 `.git`，临时目录随即释放。
+  实测一个 69 技能的仓库：取一个技能 264 KB，整仓 tarball 要 5.3 MB —— 约二十分之一，落地内容一模一样。
+- **一个仓库只取一次**（`installer.ts` 的 `installFromGithub()`）：同一仓库要装 5 个技能也只克隆一次；
+  **安装之间没有任何缓存**，每次都重新读源仓库的当前版本 —— 多花几秒，换掉「本地那份是旧的」这一整类问题。
+- **落点由你选**（`InstallModal.tsx`）：弹窗把本机**检测到的**每个智能体自己的技能目录列成一键选项
+  （智能体就是去那里找技能），另有「选择其他文件夹…」打开原生选择器；写入前，弹窗底部显示**完整目标路径**
+  （`<目录>/<技能名>`）。
+- **每一次安装都是真实副本**：取来的技能在本机没有「原件」可以指向，所以软链接模式连同「默认安装模式」
+  这个设置一起取消了。
+- **每次安装都写 `.skillhub-install.json`**，这个标记就是「这是 SkillHub 装的」的全部依据：重装时能否替换
+  这个文件夹、`reconcileInstalls` 能否找回丢失的记录、界面上的「由 SkillHub 管理」标记，都看它。
+- **同名冲突按归属判断，不按存在判断**（`entryOwner()`）：空位直接写，是自己就替换（这就是升级），
+  是**别的技能**占着同名文件夹（实测 12 个技能名出现在不止一个仓库里）或那**根本不是 SkillHub 的目录**，
+  都跳过并给出对应的明确说明，绝不覆盖。
+- **多个智能体共享同一物理目录**时（注册表里 **50 个 agent** 会读通用目录 `~/.agents/skills`，
+  例如 Zed / Goose / OpenHands）只做一次文件操作，但为每个智能体各留一条安装记录。
+- **本机已有的技能同样能装**：它的目录就是源，请求里带 `localPath`，走同一套落地逻辑，不联网。
+- 三个入口打开的是同一个目录选择弹窗：库里的「安装仓库」、库工具栏的「安装待装」、商店详情页的
+  「一键安装」。详情页里已经没有「勾选装到哪些智能体」的列表了。
 
 ### 排行榜（Charts）
 - **总星数榜** 与 **增长榜（24 小时 / 7 天 / 30 天）**。
-- GitHub 没有星标历史接口，所以 SkillHub 按可靠性依次尝试三种数据源，并在每一行标注来源：
-  1. **本地每日快照**（最精确，免费）— 应用每天记录一次星数，累积几天后增长数据完全精确；
-  2. **星标接口** `/repos/{o}/{r}/stargazers`（`star+json`，二分查找定位日期边界，结果精确）；
-  3. **活动事件流** `/repos/{o}/{r}/events` 中的 `WatchEvent`（真实数据；热门仓库的事件流有上限，此时显示 `≥` 表示下界）。
+- GitHub 没有星标历史接口，所以 SkillHub 按可靠性依次尝试几种数据源，并在每一行标注来源：
+  - **共享的预计算序列**（本项目自己的 GitHub Action 发布，见下文「共享数据」）—— 一次请求，不花 API 额度；
+  - **本地每日快照**（最精确，免费）— 应用每天记录一次星数，累积几天后增长数据完全精确；
+  - **星标接口** `/repos/{o}/{r}/stargazers`（`star+json`，二分查找定位日期边界，结果精确）；
+  - **活动事件流** `/repos/{o}/{r}/events` 中的 `WatchEvent`（真实数据；热门仓库的事件流有上限，此时显示 `≥` 表示下界）。
 - **无法测量的仓库不会以「+0」假装有数据**，而是直接不列出。
 
 ### 个人资料（Profile）
@@ -188,16 +221,22 @@ npm run dev
 - 最近活动时间线、我的 Star 列表。
 
 ### 智能体（Agents）
-- **80 个 agent** 的技能目录注册表（`data/agent-registry.json`），每条都带 `confidence` 与 `sourceUrl`，
-  UI 上可直接点开查看依据；非高置信度的条目会显示置信度角标。
+- **注册表里 92 条，应用列出 80 个**（`data/agent-registry.json`）：另外 12 条是网页版对话
+  （ChatGPT / Claude / Gemini …），既没有全局技能目录也没有项目级目录 —— 没地方可装，所以干脆不列出。
+- 每条都带 `confidence` 与 `sourceUrl`，UI 上可直接点开查看依据；非高置信度的条目会显示置信度角标。
 - **按厂商分组**：同一家公司的 agent 归在一起（Moonshot AI 下面是 Kimi Code CLI 与 Kimi CLI，
   Alibaba 下面是 Qwen Code / Qoder / 灵码…），已经装了的厂商排在前面。
 - 支持搜索（匹配名称、厂商或路径 —— 搜 `kimi` 找 agent，搜 `moonshot` 找厂商）
   与 全部 / 已检测 / 已启用 分段视图。
 - 检测同时看目录、配置文件与命令行；若某个二进制位于**另一个** agent 的目录内（例如 Kimi CLI 与
   Kimi Code 的二进制都叫 `kimi`），则不计入该 agent 的证据，避免误报。
-- 只记录项目级目录的 agent（如 ona / qodo / replit）也会列出，安装到「设置」里配置的项目目录。
-- 展示每个目录里已有的技能、哪些是 SkillHub 装的（软链接指向库 / 含标记文件）、哪些没有 `SKILL.md`。
+- 只记录项目级目录的 agent（如 ona / qodo / replit）也会列出，并显示解析到「设置」里配置的项目目录
+  下的路径；它们不在安装弹窗的推荐列表里（那里只放本机检测到的全局技能目录），装进项目目录请用
+  「选择其他文件夹…」。
+- 展示每个目录里已有的技能、哪些是 SkillHub 装的（带 `.skillhub-install.json` 标记；早期装的软链接则
+  指向库目录）、哪些没有 `SKILL.md`。
+- 不跟随符号链接的 agent（`supportsSymlink: false`，如 dsh、cursor、kimi-code、pi）必须拿到真实副本 ——
+  现在每次安装本来就是副本，这个字段只剩「识别早期遗留软链接」的用途。
 - 支持自定义目录（例如你自己的 agent）。
 
 <!-- AGENT-TABLE:START -->
@@ -330,13 +369,13 @@ npm run dev
 选中项的大横幅 + 下方胶囊网格，而不是一格格等权重的小卡片：
 
 - **横幅**：当前选中仓库的整幅渐变封面、大头像、大号标题、一句话简介与统计数据，
-  右侧是 Steam 式的大号「启动」按钮（视觉上明确「下一步该点哪里」），
-  下面一排是详情 / 同步 / 打开目录 / 移除
+  右侧是 Steam 式的大号按钮 —— 它是「**安装仓库**」（把这个仓库里还没装的技能装到你选的目录，
+  选完目录才落盘），下面一排是 详情 / 同步 / 打开目录 / 移除
 - **卡片网格**：小头像（34px）在左上角，作者名紧随其后，下面是加粗的仓库名与
   一句话简介，底部一行是技能数与星数；每张卡片带一层该仓库配色的淡淡色晕作为身份标识。
   早期版本用所有者头像铺满整块作为「封面」，结果是每张卡片都在抢注意力、还压住了文字，
   已改掉 —— 图片只占一小部分
-- 工具栏：全部 / 已安装 / 未安装、排序、网格 / 列表切换、导入本地目录、一键安装
+- 工具栏：全部 / 已安装 / 未安装、排序（最近 / 星数 / 名称）、网格 / 列表切换、导入本地目录、安装待装
 - 选中项有高亮边框，与横幅联动
 
 ### 商店：仓库之外的技能视图
@@ -366,9 +405,11 @@ npm run dev
 星数在 GitHub 接受写入之后才增减，界面上的数字不会声称账号没做过的事。
 
 ### 上传商店没有的技能
-库里商店匹配不到的技能会多一个「**上传待审**」按钮，把技能目录上传到仓库的
-`submissions/`，并登记一条待审记录。**完全不碰目录数据**，所以商店不受影响 ——
-商店条目需要手工撰写的中英简介、使用场景和详细描述。
+把技能目录上传到仓库的 `submissions/`，并登记一条待审记录，**完全不碰目录数据**，
+所以商店不受影响 —— 商店条目需要手工撰写的中英简介、使用场景和详细描述。
+
+> **界面上已经没有这个按钮了。** 后端还在（`core/submit.ts`、IPC 的 `submit:skill`、仓库里的 `submissions/`），
+> 因为它是「本项目自己往目录里加条目」的开发步骤，不是普通用户会做的事。
 
 上传内容的判定：优先取 `SKILL.md`、再取 `SKILL.md` 里链接到的文件、最后按路径
 深浅补齐。深浅是「属于这个技能」与「属于它所寄居的那个项目」的良好近似 ——
@@ -398,7 +439,7 @@ npm run release patch|minor|major
 
 ### 关于上传功能的安全性
 
-这个应用可以把本机的技能上传到本仓库的 `submissions/` 待审区。有人会问：那不是谁都能往你的库里写东西吗？**不是**，这一点值得写清楚，因为它是整个设计成立的前提。
+这个应用可以（通过后端，界面上已无按钮）把本机的技能上传到本仓库的 `submissions/` 待审区。有人会问：那不是谁都能往你的库里写东西吗？**不是**，这一点值得写清楚，因为它是整个设计成立的前提。
 
 **写入的前提是「对仓库有 push 权限」。**
 
@@ -423,7 +464,8 @@ npm run release patch|minor|major
 ```
 
 - 应用**只从打包内置的 `data/curated-catalog.json` 读取可安装内容**，从不读 `submissions/`。
-- 自检里有一条断言专门守着这件事：目录里不得出现来自 `submissions/` 的条目，且目录路径不得指向该目录。**「目前没人读它」是对代码现状的描述，会被以后的改动悄悄破坏，所以写成断言。**
+  > 这一条现在是**对代码现状的描述**：自检里曾经有一条断言守着它（目录中不得出现来自
+  > `submissions/` 的条目），那条断言在这次重构后已经不在了，所以别把它当成被守住的不变量。
 
 **技能本身可能就是载荷，这一点必须直说。**
 
@@ -475,9 +517,9 @@ data/live/skills/<分类>.json      提取出的技能索引，按功能分类�
 现在只有一个问题——「我有哪些技能」——所以只有一份列表：
 
 - **按名称归并**：同一个技能装到多个智能体只占一行，行内写明分布在哪些 agent
-- **每一行都能启动**，无论它来自哪里：
-  - 已入库的技能 → 从库中启动
-  - 本机已有、没入库的技能 → **直接从磁盘启动，不复制也不改动你的原文件**
+- **每一行都能安装**，无论它来自哪里：
+  - 已入库的技能 → 从 GitHub 取最新版，装到你选的目录
+  - 本机已有、没入库的技能 → **以它自己的文件夹为源**装到别处，原文件不动、也不上网
 - 能在商店找到来源但还没入库的，旁边给一个「+」直接入库
 - SkillHub 管理的技能带绿色「SkillHub 管理」标记，并可一键卸载
 - 行首圆点表示是否能在商店里找到来源
@@ -486,34 +528,20 @@ data/live/skills/<分类>.json      提取出的技能索引，按功能分类�
 要用仓库名匹配；智能体目录里混着的索引文件（如 WorkBuddy 的
 `_bm_skillid_migration.json`）不是技能，会被过滤。多个智能体共享同一物理目录时只报告一次。
 
-### 启动技能
-列表里任意一行点「启动」，选一个工作区和智能体，应用会：
-
-1. 在工作区建技能工作目录 `<工作区>/<技能名>/`
-2. 把技能**项目级安装**到该 agent 在该工作区读取的目录（软链接，不复制）
-3. 写启动说明到 `AGENTS.md`（或该 agent 自己的说明文件），用标记块包裹、重复启动是替换
-4. 拉起智能体
-
-| 智能体类型 | 启动方式 | 数量 |
-|---|---|---|
-| CLI | 终端执行 `cd <工作区> && claude "<提示词>"` | 51 |
-| 应用 | `open -a Cursor <工作区>`，提示词进剪贴板 | 12 |
-| 网页 | 打开网址，提示词进剪贴板 | 4 |
-
-**为什么不能只靠提示词**：GUI 应用、网页端、以及不支持 prompt 参数的 CLI 都传不了提示词。
-所以真正的载体是**项目级安装 + agent 启动时必读的说明文件**，提示词只是锦上添花——
-三种启动方式因此都能让 agent 知道该用哪个技能。
-
-### 技能安装位置
-从商店安装的技能需要一个落地目录，智能体从这里读取。应用会自动决定并说明理由：
+### 技能安装位置（推荐位置）
+这个设置是**建议**，不是安装目的地 —— 真正的落点每次都在安装弹窗里由你指定。它只在「首次入库时弹
+一次的那个提示」和设置里起作用，建议顺序是：
 
 1. 你已经指定过的位置
 2. 已经在用、且技能最多的那个智能体目录（沿用你的习惯）
-3. 通用目录 `~/.agents/skills` —— 多数智能体都会读取，兼容性最好
+3. 通用目录 `~/.agents/skills` —— 50 个 agent 会读取，兼容性最好
 4. 电脑上还没有任何技能目录时，新建通用目录，而不是猜一个厂商目录
 
-**首次入库时会弹出提示**，展示推荐位置、推荐理由，以及所有已存在目录的清单
-（含各自已有多少技能）供你改选，也可以手填路径。事后随时可在「设置 → 技能安装位置」更改。
+**首次入库时会弹出提示**，展示推荐位置、推荐理由，以及所有已存在目录的清单（含各自已有多少技能）
+供你改选，也可以手填路径。事后随时可在「设置 → 推荐的技能安装位置」更改。
+
+> 注意区分：这个建议值**不会**替安装弹窗预选目录 —— 弹窗默认选中的是本机检测到的第一个智能体自己的
+> 技能目录（智能体就是去那里找技能），也可以改成任意目录。
 
 ### 界面细节
 - **文字可框选复制**：技能简介、agent 路径、错误信息等都能直接选中复制，
@@ -532,7 +560,7 @@ data/live/skills/<分类>.json      提取出的技能索引，按功能分类�
   默认不混杂：英文模式下不出现中文，中文模式下不出现英文（品牌与 agent 专有名词除外）；
   另一种语言的简介折叠在「Show Chinese / 中文原文」按钮后面，需要时才展开。
   完整性由 `npm run i18n` 强制校验，作为构建门禁。
-- **实时进度**：克隆、同步、安装都有底部进度条与逐条进度事件。
+- **实时进度**：技能文件的获取、库的同步、安装都有底部进度条与逐条进度事件。
 
 ---
 
@@ -548,10 +576,14 @@ npm run dist         # 按当前平台打包
 
 | 产物 | 体积 |
 |---|---|
-| `SkillHub-0.1.0-arm64.dmg` | 124.7 MB |
-| `SkillHub-0.1.0.dmg`（x64） | 128.7 MB |
-| `SkillHub-0.1.0-x64-setup.exe` | 108.2 MB |
-| `SkillHub-0.1.0-x64-portable.exe` | 108.0 MB |
+| `SkillHub-<版本>-arm64.dmg` | 约 124 MB（0.2.7 实测 124.2 MB） |
+| `SkillHub-<版本>.dmg`（x64） | 约 131 MB（0.2.7 实测 131.1 MB） |
+| `SkillHub-<版本>-x64-setup.exe` | 约 108 MB |
+| `SkillHub-<版本>-x64-portable.exe` | 约 108 MB |
+
+> 版本号随每次发布变化，以 `release/` 或 Releases 页面上的实际文件名为准。
+> macOS 两行是 0.2.7 的实测体积；Windows 两行沿用本 README 早先记录的数字 ——
+> 这台机器是 macOS，`release/` 里没有 `.exe` 产物可复测。
 
 > **本机环境的坑**：这个 shell 里的 `node` 被 DSH 接管（`~/.local/.../harness/.desktop-bin/node`
 > 是一个 `ELECTRON_RUN_AS_NODE=1` 的包装脚本），会导致 electron-builder 的 yargs 把脚本路径
@@ -562,8 +594,10 @@ npm run dist         # 按当前平台打包
 > ```
 > 普通机器上 `npm run dist:mac` 直接可用。
 
-**尚未做的**：代码签名（macOS 需要 Developer ID 证书，Windows 需要代码签名证书）。
-未签名的包在 macOS 上首次打开需要右键 →「打开」，或 `xattr -dr com.apple.quarantine`。
+**尚未做的**：真正的代码签名（macOS 需要 Developer ID 证书，Windows 需要代码签名证书）。
+安装包只做了 ad-hoc 签名（`identity: "-"`），所以 macOS 首次打开需要右键 →「打开」，
+或 `xattr -dr com.apple.quarantine`；也因为没有签名证书，**没有自动更新** ——
+应用会提示有新版本，升级要自己下载新的 `.dmg`。
 
 ## 命令行（同一套核心）
 
@@ -572,29 +606,38 @@ npm run dist         # 按当前平台打包
 ```bash
 node out/main/cli.js doctor                          # 环境自检
 node out/main/cli.js search "pdf document"           # 搜索
-node out/main/cli.js add obra/superpowers            # 入库
+node out/main/cli.js add obra/superpowers            # 入库（只建索引，不克隆）
 node out/main/cli.js list                            # 库内容
 node out/main/cli.js agents                          # agent 与目录
-node out/main/cli.js install --all --agents dsh      # 一键安装全部技能到 DSH
-node out/main/cli.js install "obra/superpowers::skills/brainstorming" --agents cursor --copy
+node out/main/cli.js install --all --agents dsh      # 全装到 dsh 的技能目录
+node out/main/cli.js install "obra/superpowers::skills/brainstorming" --to ~/.cursor/skills
 node out/main/cli.js installed                       # 已安装技能
 node out/main/cli.js uninstall "obra/superpowers::skills/brainstorming"
 node out/main/cli.js growth 7                        # 7 天增长榜
 ```
+
+`install` 会真的去 GitHub 取文件，所以它需要一个落点：`--to <目录>` 是显式写法，
+不写时用**第一个已启用 agent** 自己的技能目录；`--agents dsh,cursor` 用来指定对齐到哪个 agent。
+**没有 `--copy` 了** —— 每次安装都是副本，这个开关不再有意义。
 
 ---
 
 ## 自检
 
 ```bash
-npm run verify     # 类型检查 + 双语审计 + 构建 + 端到端自检，一条命令全跑
+npm run verify     # 类型检查 + 双语审计 + 跨平台审计 + 目录审计 + 构建 + 端到端自检
 npm run selftest   # 只跑端到端自检
 npm run i18n       # 只跑双语审计
 ```
 
-会真实跑完 29 项检查：GitHub 凭据 → 精选目录 → 搜索 → 技能树 → 增长数据源 → 排行榜 →
-`git clone` 入库 → 解析出本地 SKILL.md → 软链接安装到临时 agent 目录 → 透过链接读 SKILL.md →
-复制模式（含标记文件）→ 卸载 → 清理。全程使用临时目录，不碰你真实的 agent 目录。
+`npm run selftest` 会真实跑完 **47 项检查**，12 个小节串起来：GitHub 凭据 → 状态存储（两个写入者
+不互相覆盖）→ 精选目录（中英简介、分类、依据）→ 实时搜索 → 仓库详情与技能树 → 星标增长（多数据源）
+→ 排行榜（每行必须有真实来源，不允许悄悄报 0）→ **入库（断言「什么都没被克隆」，且列出的技能没有
+本地路径）** → 从源目录安装到临时 agent 目录（**断言落地的是真实目录而不是软链接**，且
+**副本里带 `.skillhub-install.json` 标记**）→ 两个技能抢同一个文件夹名（第二个必须被拒绝，第一个的
+文件一字不动）→ 一个目录被多个智能体共享（卸载要报出受影响的每一个）→ 卸载与清理（**断言库目录下
+从来没写过任何东西**）。全程使用 `SKILLHUB_HOME` 指向的临时目录，不碰你真实的 agent 目录 ——
+这条隔离也是被事故逼出来的：测试曾经跑在真实 home 上，清理步骤卸载了 201 个真实安装。
 
 ---
 
@@ -604,37 +647,51 @@ npm run i18n       # 只跑双语审计
 src/
   shared/types.ts         主进程 / 渲染进程共用的类型契约
   main/
-    index.ts              窗口、菜单、每日星标快照、raw 主机探测
+    index.ts              窗口、菜单、每日星标快照、raw 主机探测、无头截图探针
     ipc.ts                全部 IPC handler（统一 { ok, data } 信封）
     cli.ts                命令行入口
     selftest.ts           端到端自检
     core/
       paths.ts            路径解析（含 Electron 不可用时的降级）
+      platform.ts         平台判定与差异（二进制探测、路径比较、登录 shell 的 PATH）
       store.ts            无依赖 JSON 存储：原子写入 + 防抖落盘
       db.ts               集合定义：settings / library / installs / stars / activity / cache
-      github.ts           API 客户端、搜索、技能树、星标增长多源计算
-      agents.ts           agent 注册表、探测、目录扫描
-      library.ts          克隆 / 同步 / 移除 / 目录导入
-      skills.ts           SKILL.md 解析、递归技能发现
-      installer.ts        安装引擎（软链接 / 复制、冲突处理、共享目录去重）
+      msg.ts              主进程消息目录（进度、安装错误、任务状态，跟随界面语言）
+      github.ts           API 客户端、搜索、技能树（技能目录清单）、星标增长多源计算
+      agents.ts           agent 注册表、探测、目录扫描、技能目录解析
+      library.ts          入库 = 读远端技能清单建索引（不克隆）/ 同步 / 移除 / 导入本地目录
+      fetch.ts            按需取文件：sparse clone 一次取走本次要的所有技能路径，用完即删
+      installer.ts        安装引擎（从 GitHub 或本地目录取、归属判断、冲突、记录、对账）
+      managed.ts          「这个是 SkillHub 装的」唯一判定：.skillhub-install.json 标记 / 指向库的软链接
+      skills.ts           SKILL.md 解析、技能条目构建
+      skilldirs.ts        技能目录去重与脚手架剔除（计数用）
+      skillsindex.ts      技能索引分片（按功能分类，按需拉取并缓存）
+      discover.ts         本机已发现的技能、安装位置建议、目录审计
       catalog.ts          精选目录加载与星标刷新
+      live.ts             共享星标数据（GitHub Action 发布，CDN 多镜像回退）
       leaderboard.ts      排行榜（快照优先，API 兜底）
-      translate.ts        可选 AI 翻译（任意 OpenAI 兼容接口）
+      starring.ts         在商店里给 GitHub 点 Star（真的写进你的账号）
+      submit.ts           上传待审技能到 submissions/ 与内容扫描
+      update.ts           版本检查（app / 目录数据 / 技能索引各自独立）
   preload/index.ts        contextBridge API
-  renderer/src/           React 界面
+  renderer/src/           React 界面（components/InstallModal.tsx 是安装落点选择弹窗）
 data/
-  curated-catalog.json    精选技能仓库（含功能分类、中英双语「一眼看懂」简介）
+  curated-catalog.json    147 个精选技能仓库（含功能分类、中英双语「一眼看懂」简介）
   scenarios.json          13 个场景（「我要做…」）及其推荐仓库
-  agent-registry.json     80 个 agent 的技能目录（含出处与置信度）
+  agent-registry.json     92 个 agent 的技能目录（含出处与置信度；其中 12 个没有技能目录，应用不列出）
+  live/                   由 GitHub Action 每天两次更新的共享数据与技能索引分片
 ```
 
 ### 存储位置
 
 | 内容 | 路径 |
 |---|---|
-| 库（git 克隆） | `~/.skillhub/library/` |
-| 应用状态（设置、库记录、安装记录、星标历史） | `~/.skillhub/state/` |
+| 应用状态（设置、库索引、安装记录、星标历史、活动日志、缓存） | `~/.skillhub/state/` |
+| 技能索引分片缓存 | `~/.skillhub/state/skills-index/` |
 | Electron 缓存 | `~/Library/Application Support/skillhub/` |
+
+> `~/.skillhub/library/` **已经不再写入**：安装每次现取，没有本地副本要放。这个路径只剩一个用途 ——
+> 识别早期版本留下的、指向库目录的软链接安装（`isManagedPath` 仍然认它）。
 
 状态用一个无依赖的 JSON 存储（原子写入 + 防抖），而不是原生 SQLite —— 数据量只有几千条记录，
 而 `better-sqlite3` 需要按 Electron ABI 重新编译，代价大于收益。
@@ -644,7 +701,6 @@ data/
 ## 开发辅助参数
 
 ```bash
-```bash
 # 直接打开某个页面 / 仓库 / 搜索词
 node scripts/run.mjs --electron . --view=charts
 node scripts/run.mjs --electron . --repo=obra/superpowers
@@ -653,9 +709,21 @@ node scripts/run.mjs --electron . --q="pdf"
 # 渲染窗口并写出 PNG 后退出（用于无头验证界面）
 node scripts/run.mjs --electron . --view=agents --shot=/tmp/agents.png --shot-delay=8000
 
+# 探针：先驱动页面（点按钮、翻列表），再截图
+node scripts/run.mjs --electron . --view=library --shot=/tmp/lib.png \
+  --script="document.querySelector('.btn-play').click(); return 'clicked'"
+
 # 打印每个阶段的耗时
 SKILLHUB_TRACE=1 node scripts/run.mjs --electron . --repo=obra/superpowers
 ```
+
+> **两个坑，都踩过：**
+>
+> 1. **`--script` 不叫 `--eval`。** Electron 主进程会先解析 Node 自己的命令行选项再交给应用，而 `--eval`
+>    正是其中之一：脚本被吞掉，探针每次都静默返回 `undefined`，报告写成「一张截图 + 空结果」，
+>    读起来像「页面什么都没做」，其实是参数根本没送到。
+> 2. **脚本是一个函数体，必须自己 `return`** —— 它被拼成 `(async () => { <脚本> })()` 执行，
+>    只写表达式拿不到返回值，写 `return <表达式>` 才会被打印出来。
 
 ---
 
@@ -675,9 +743,12 @@ SKILLHUB_TRACE=1 node scripts/run.mjs --electron . --repo=obra/superpowers
 
 ## 已知限制
 
-- **翻译**：中文简介对内置精选目录是预先写好的；对搜索到的新仓库，需要在
-  「设置 → AI 翻译」里填一个 OpenAI 兼容接口（如 DeepSeek）才能点「AI 翻译」。未配置时该面板如实提示。
+- **只有商店内的条目有中文**：精选目录里的中英简介、使用场景是人工写好的，随版本分发；
+  GitHub 实时搜索出来的仓库只有它自己的英文描述。机器翻译面板（原「设置 → AI 翻译」）已随重构移除。
 - **增长榜的 `≥`**：热门仓库的事件流只有最近约 300 条，`≥` 表示这是下界。累积几天本地快照后会自动变成精确值。
-- **打包分发**：目前是 `npm run app` 直接跑源码；还没接 electron-builder 出 `.dmg`。
+- **安装需要 `git`**：取文件走的是 `git clone --sparse`。这不是应用主动选择的依赖 ——
+  GitHub 的 tarball 接口一次只能拿整棵树，而稀疏检出能只下载这个技能的那几个文件。
+- **签名与自动更新**：安装包只做 ad-hoc 签名，没有 Developer ID / 代码签名证书，
+  所以**没有自动更新**，升级要手动下载新的磁盘映像。
 - **agent 目录**：注册表基于厂商文档/源码核实，但仍可能随 agent 版本变化；
   非高置信度条目在 UI 上会标出，也可以用「添加自定义目录」覆盖。

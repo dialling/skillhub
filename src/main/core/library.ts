@@ -117,14 +117,7 @@ function upsert(item: LibraryItem): void {
   })
 }
 
-export interface AddOptions {
-  /** restrict the checkout to specific skill dirs (still a full clone today) */
-  skillDirs?: string[]
-  /** shallow clone depth */
-  depth?: number
-}
-
-export async function addRepo(fullName: string, opts: AddOptions = {}): Promise<LibraryItem> {
+export async function addRepo(fullName: string): Promise<LibraryItem> {
   const id = fullName
   const existing = getItem(id)
   if (existing && existing.status === 'ready') return existing

@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readdirSync, rmSync, statSync, cpSync } from 'no
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { m } from './msg'
+import { gitAvailable } from './platform'
 
 /**
  * Fetch one skill's files straight from GitHub.
@@ -67,6 +68,16 @@ export async function fetchPaths(input: {
   onProgress?: (message: string) => void
 }): Promise<FetchedRepo> {
   const { fullName, paths, onProgress } = input
+  /*
+    Say what is actually missing.
+
+    Installing reads the source with git — there is no tarball or API fallback —
+    so a machine without git fails here and nowhere earlier: browsing, searching
+    and indexing all go through the GitHub API. Without this check the user got
+    a raw `spawn git ENOENT` from three frames down, which reads as a bug in the
+    app rather than a tool they have not installed.
+  */
+  if (!gitAvailable()) throw new Error(m('fetch.noGit'))
   const repoDir = join(tmpdir(), `skillhub-fetch-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`)
   const root = join(repoDir, 'r')
   mkdirSync(repoDir, { recursive: true })

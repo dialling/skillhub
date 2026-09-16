@@ -16,6 +16,10 @@ const M: Record<string, [zh: string, en: string]> = {
   'install.notInLibrary': ['技能不在库中，请先入库', 'Skill is not in the library yet — add the repo first'],
   'install.sourceMissing': ['本地文件缺失，请重新同步', 'Local files are missing — sync the library item again'],
   'install.fetched': ['已写入 {files} 个文件', 'Wrote {files} files'],
+  'fetch.noGit': [
+    '安装技能需要 git：从 GitHub 取文件用的是 git 的稀疏检出。浏览、搜索、入库都不需要它。',
+    'Installing needs git: fetching files from GitHub uses git’s sparse checkout. Browsing, searching and indexing do not need it.'
+  ],
   'fetch.downloading': ['正在从 GitHub 获取技能文件…', 'Fetching skill files from GitHub…'],
   'fetch.extracting': ['正在整理文件…', 'Sorting out the files…'],
   'fetch.empty': ['该技能目录没有文件', 'That skill folder has no files'],
@@ -87,7 +91,6 @@ const M: Record<string, [zh: string, en: string]> = {
   'menu.zoomWindow': ['缩放', 'Zoom'],
   'menu.close': ['关闭', 'Close'],
 
-  /* launch */
   // The workspace is already scoped to this skill, so it is the working
   // directory — there is no second folder to name.
   // The hosted chat gets the skill's own text, because it has no access to the
@@ -140,7 +143,8 @@ const M: Record<string, [zh: string, en: string]> = {
   'cli.help.doctor': ['环境自检', 'Check the local environment'],
   'cli.help.example': ['示例：node out/main/cli.js install --all --agents dsh', 'Example: node out/main/cli.js install --all --agents dsh'],
   'cli.doctor.credentials': ['凭据', 'Credentials'],
-  'cli.doctor.libraryDir': ['库目录', 'Library dir'],
+  'cli.doctor.git': ['git', 'git'],
+  'cli.doctor.gitMissing': ['安装技能需要它（浏览/搜索/入库不需要）', 'needed to install skills (browsing/searching/indexing do not need it)'],
   'cli.doctor.catalog': ['目录', 'Catalog'],
   'cli.doctor.catalogMissing': ['（未找到 data/curated-catalog.json）', '(data/curated-catalog.json not found)'],
   'cli.doctor.agents': ['智能体', 'Agents'],

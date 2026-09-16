@@ -20,7 +20,17 @@ const START = '<!-- AGENT-TABLE:START -->'
 const END = '<!-- AGENT-TABLE:END -->'
 
 const registry = JSON.parse(readFileSync(registryPath, 'utf8'))
-const agents = registry.agents
+/*
+ * Only the agents the app actually lists.
+ *
+ * The registry is broader than the app on purpose: it also records hosted chats
+ * (web AI with no skills directory anywhere), which the app skips because there
+ * is nowhere to install into. Mapping every entry made the generated table
+ * disagree with the 智能体 page it documents — 92 rows against 80, including a
+ * dozen entries with an em dash in both directory columns, which reads as
+ * missing data rather than as "this one is not an install target".
+ */
+const agents = registry.agents.filter((a) => a.globalSkillsDir || a.projectSkillsDir)
 
 const dash = (v) => (v ? `\`${v}\`` : '—')
 const confidenceMark = (c) => (c === 'high' ? '' : c === 'medium' ? ' ᵐ' : ' ˡ')
@@ -69,5 +79,5 @@ if (process.argv.includes('--check')) {
 
 writeFileSync(readmePath, next, 'utf8')
 console.log(
-  `README 的 agent 表格已更新：${agents.length} 个 agent（${agents.filter((a) => a.confidence !== 'high').length} 个非高置信度）。`
+  `README 的 agent 表格已更新：${agents.length} 个可安装 agent（注册表共 ${registry.agents.length} 条，其余为无技能目录的网页版对话）。`
 )

@@ -12,7 +12,7 @@ import {
   writeFileSync
 } from 'node:fs'
 import { dirname, join } from 'node:path'
-import type { InstallMode, InstallProgress, InstallRecord, InstallRequest, SkillEntry } from '../../shared/types'
+import type { InstallMode, InstallProgress, InstallRecord, SkillEntry } from '../../shared/types'
 import { expandPath } from './paths'
 import { installs, library, logActivity, settings } from './db'
 import { agentDisplayName, listAgents, loadRegistry, resolveAgentDir } from './agents'

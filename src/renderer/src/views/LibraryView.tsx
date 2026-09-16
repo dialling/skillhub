@@ -392,9 +392,19 @@ function LibraryHero({
                 <RefreshCw size={12} />
               </button>
             )}
-            <button className="btn ghost sm" onClick={onReveal} title={t('common.openFolder')}>
-              <FolderOpen size={12} />
-            </button>
+            {/*
+              Only a locally imported folder has anywhere to open.
+
+              A GitHub-sourced item has no checkout on disk any more, so
+              `sourcePath` is empty and this button called `openPath('')` — a
+              click that did nothing at all, with no way to tell it apart from a
+              broken one.
+            */}
+            {item.local && (
+              <button className="btn ghost sm" onClick={onReveal} title={t('common.openFolder')}>
+                <FolderOpen size={12} />
+              </button>
+            )}
             <button className="btn ghost sm danger" onClick={onRemove} title={t('common.remove')}>
               <Trash2 size={12} />
             </button>

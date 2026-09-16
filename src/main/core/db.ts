@@ -14,7 +14,6 @@ import type {
 export const DEFAULT_SETTINGS: Settings = {
   lang: 'zh',
   libraryDir: defaultLibraryDir(),
-  installMode: 'symlink',
   token: '',
   user: null,
   enabledAgents: [],
@@ -23,7 +22,6 @@ export const DEFAULT_SETTINGS: Settings = {
   sidebarOpen: true,
   theme: 'azure',
   installRoot: undefined,
-  recentWorkspaces: [],
   seenLibraryAt: undefined,
   seenAgents: undefined,
   liveUpdatedAt: undefined,

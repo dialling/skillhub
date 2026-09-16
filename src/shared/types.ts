@@ -391,7 +391,6 @@ export interface RateLimit {
 export interface Settings {
   lang: 'zh' | 'en'
   libraryDir: string
-  installMode: InstallMode
   token: string
   user: GitHubUser | null
   enabledAgents: string[]
@@ -401,10 +400,8 @@ export interface Settings {
   sidebarOpen?: boolean
   /** interface colour scheme id (see src/renderer/src/theme.ts) */
   theme?: string
-  /** where newly added skills are materialised; auto-detected when unset */
+  /** the suggested destination shown in the picker; never decides an install */
   installRoot?: string
-  /** recently used workspace folders, most recent first */
-  recentWorkspaces?: string[]
   curatedUpdatedAt?: number
   firstRunDone?: boolean
   /**
@@ -439,12 +436,6 @@ export interface SearchResult {
 export interface SkillSearchHit {
   skill: SkillEntry
   repo: RepoMeta
-}
-
-export interface InstallRequest {
-  skillIds: string[]
-  agentIds: string[]
-  mode?: InstallMode
 }
 
 export interface InstallProgress {

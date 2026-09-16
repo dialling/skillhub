@@ -241,10 +241,7 @@ export function registerIpc(send: Broadcast): void {
   /* ----------------------------------------------------------------- library */
   handle('library:list', () => libraryItemsEnriched())
   handle('library:get', (id: string) => getItemEnriched(id))
-  handle('library:add', (req: { fullName: string; skillDirs?: string[] } | string) => {
-    const fullName = typeof req === 'string' ? req : req.fullName
-    return addRepo(fullName, typeof req === 'string' ? {} : { skillDirs: req.skillDirs })
-  })
+  handle('library:add', (req: string) => addRepo(req))
   handle('library:addLocal', (dir: string) => addLocalDir(dir))
   handle('library:sync', (id: string) => syncItem(id))
   handle('library:remove', (id: string, deleteFiles?: boolean) => removeItem(id, deleteFiles !== false))

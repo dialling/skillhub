@@ -14,6 +14,7 @@
 import { existsSync } from 'node:fs'
 import { flushAll, installs, library, settings, stars } from './core/db'
 import { listAgents, resolveAgentDir, scanAgentDir } from './core/agents'
+import { gitAvailable } from './core/platform'
 import { addRepo, libraryItems, removeItem, syncItem } from './core/library'
 import { installFromGithub, installedSkills, uninstall } from './core/installer'
 import { searchSkills, rateLimit, tokenSource, getRepo, starsGained } from './core/github'
@@ -111,7 +112,16 @@ async function main(): Promise<number> {
     case 'doctor': {
       const rate = await rateLimit(true)
       console.log(`${C.bold(m('cli.doctor.credentials'))}     ${tokenSource()} ${rate.ok ? C.green('✓') : C.red('✗')} ${rate.ok ? `${rate.remaining}/${rate.limit}` : rate.error}`)
-      console.log(`${C.bold(m('cli.doctor.libraryDir'))}   ${tildify(expandPath(settings.get().libraryDir))}`)
+      /*
+        git is checked here because installing needs it and nothing else does.
+
+        The library directory line it replaces named a folder the app no longer
+        writes to — the library is an index — so `doctor` was reporting on
+        something that could not be wrong.
+      */
+      console.log(
+        `${C.bold(m('cli.doctor.git'))}            ${gitAvailable() ? C.green('✓') : C.red('✗')} ${gitAvailable() ? '' : m('cli.doctor.gitMissing')}`
+      )
       const catalog = await curatedCatalog()
       console.log(`${C.bold(m('cli.doctor.catalog'))} ${catalog.length} ${catalog.length ? C.green('✓') : C.yellow(m('cli.doctor.catalogMissing'))}`)
       const agents = listAgents()

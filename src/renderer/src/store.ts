@@ -896,13 +896,16 @@ export const useStore = create<State>((set, get) => ({
         get().toast('error', item.error || 'error')
         return null
       }
+      /*
+        No more "where should skills go?" popup on the first add.
+
+        It asked for a global destination before the user had anything to
+        install, and the install picker asks the same question at the moment it
+        matters — per install, with the real folder names in front of them. A
+        stored preference that no longer decides anything would only be a stale
+        answer to a question nobody is asking.
+      */
       if (!silent) get().toast('success', get().t('toast.added', { name: fullName }))
-      // First time round, show where new skills will actually land and let the
-      // user redirect it before they install anything.
-      if (!get().settings?.installRoot) {
-        await get().loadInstallTarget()
-        set({ showTargetModal: true })
-      }
       return item
     } catch (err: any) {
       get().toast('error', get().t('toast.failed', { msg: err?.message || err }))
