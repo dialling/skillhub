@@ -19,14 +19,21 @@ export function UpdateModal(): React.JSX.Element | null {
   if (!open || !info?.available) return null
 
   const app = info.app
-  const latest = app?.latest || String(info.catalog?.latest || info.data?.latest || '')
+  /** 20260916 → 2026-09-16; a date reads as a date, not as a version number. */
+  const asDate = (v: number | undefined): string =>
+    v ? `${String(v).slice(0, 4)}-${String(v).slice(4, 6)}-${String(v).slice(6, 8)}` : ''
+  const dataDate = asDate(info.catalog?.latest ?? info.data?.latest)
 
   return (
     <div className="overlay" onClick={() => void dismiss(false)}>
       <div className="modal" style={{ width: 'min(520px, 92vw)' }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
           <Sparkles size={15} style={{ color: 'var(--accent-hi)' }} />
-          <div className="modal-title">{t('update.title', { version: latest })}</div>
+          {/* An app release has a version; the data has a date. Calling a date a
+              version is how "发现新版本 20260916" happened. */}
+          <div className="modal-title">
+            {app ? t('update.title', { version: app.latest }) : t('update.titleData')}
+          </div>
           <button className="btn ghost sm" style={{ marginLeft: 'auto' }} onClick={() => void dismiss(false)}>
             <X size={13} />
           </button>
@@ -53,7 +60,7 @@ export function UpdateModal(): React.JSX.Element | null {
           {!app && (info.catalog || info.data) && (
             <div className="upd-line">
               <span className="dim">{t('update.dataOnly')}</span>
-              <span className="mono upd-new">{String(info.catalog?.latest || info.data?.latest)}</span>
+              <span className="mono upd-new">{dataDate}</span>
             </div>
           )}
         </div>
