@@ -3734,3 +3734,27 @@ button.status-item:hover {
   max-height: 260px;
   overflow-y: auto;
 }
+
+/* Star gets its own row under the add button: the two actions that act on the
+   repository read as a pair, and the star stops looking like part of the count. */
+.card-star-row {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 8px;
+  margin-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.card-star-row .star-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+/* A count that belongs to a button without competing with its label. */
+.btn-count {
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: rgba(var(--scrim-rgb), 0.28);
+  margin-left: 2px;
+}

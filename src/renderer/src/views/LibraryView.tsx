@@ -88,6 +88,13 @@ export function LibraryView(): React.JSX.Element {
   // Bulk install now asks where to put things rather than writing into every
   // enabled agent; the modal owns the choice.
   const [bulkOpen, setBulkOpen] = useState(false)
+  // Installing one skill reuses the same picker as the bulk action: the question
+  // ("which agents?") is identical, only the list of skills differs.
+  const [singleId, setSingleId] = useState<string | null>(null)
+  const installOne = (skillId: string): void => {
+    setSingleId(skillId)
+    setBulkOpen(true)
+  }
 
   if (library.length === 0) {
     return (
@@ -101,7 +108,7 @@ export function LibraryView(): React.JSX.Element {
             <div className="view-sub">{t('library.subtitle')}</div>
           </div>
         </div>
-        <MySkillsPanel />
+        <MySkillsPanel onInstallOne={installOne} />
         <div className="empty" style={{ marginTop: 18 }}>
           <Library size={30} className="icon" />
           <h3>{t('library.empty')}</h3>
@@ -122,11 +129,18 @@ export function LibraryView(): React.JSX.Element {
 
   return (
     <div className="view view-flush">
-      <MySkillsPanel />
+      <MySkillsPanel onInstallOne={installOne} />
 
       <SubmissionsPanel />
 
-      <BulkInstallModal open={bulkOpen} pendingIds={pendingIds} onClose={() => setBulkOpen(false)} />
+      <BulkInstallModal
+        open={bulkOpen}
+        pendingIds={singleId ? [singleId] : pendingIds}
+        onClose={() => {
+          setBulkOpen(false)
+          setSingleId(null)
+        }}
+      />
 
       {selected && (
         <LibraryHero
@@ -204,9 +218,20 @@ export function LibraryView(): React.JSX.Element {
             }
           >
             {pendingSkills === 0 ? <Check size={13} /> : <Download size={13} />}
-            {pendingSkills === 0
-              ? t('library.allInstalledShort')
-              : t('library.installPending', { n: pendingSkills })}
+            {pendingSkills === 0 ? (
+              t('library.allInstalledShort')
+            ) : (
+              <>
+                {t('library.installPendingShort')}
+                {/*
+                  The count in small type, not spelled into the label. With a
+                  library of a few large repositories the number runs into the
+                  hundreds, and set at button size it read as a warning rather
+                  than as a count of what is left to do.
+                */}
+                <span className="btn-count mono">{pendingSkills}</span>
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -511,7 +536,7 @@ function SubmissionsPanel(): React.JSX.Element | null {
   )
 }
 
-function MySkillsPanel(): React.JSX.Element | null {
+function MySkillsPanel({ onInstallOne }: { onInstallOne: (skillId: string) => void }): React.JSX.Element | null {
   const t = useStore((s) => s.t)
   const discovered = useStore((s) => s.discovered)
   const discovering = useStore((s) => s.discovering)
@@ -648,6 +673,21 @@ function MySkillsPanel(): React.JSX.Element | null {
                       onClick={() => void uninstall(libId!, agentIds[0])}
                     >
                       <Trash2 size={12} />
+                    </button>
+                  )}
+                  {/*
+                    Install just this one. Until now the only way to install was
+                    the library-wide button, so wanting a single skill meant
+                    either wiring up everything or nothing.
+                  */}
+                  {libId && (
+                    <button
+                      className="btn sm"
+                      title={t('library.installOne')}
+                      onClick={() => onInstallOne(libId)}
+                    >
+                      <Download size={12} />
+                      {t('library.installOneShort')}
                     </button>
                   )}
                   {!r.matchedRepo && (

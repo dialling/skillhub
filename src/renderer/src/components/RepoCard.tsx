@@ -64,7 +64,6 @@ export function RepoCard({
           <Star size={11} />
           {fmtStars(repo.stars)}
         </span>
-        <StarButton fullName={repo.fullName} />
       </div>
 
       <div className="card-body">
@@ -134,6 +133,15 @@ export function RepoCard({
               </button>
             )}
           </div>
+        </div>
+
+        {/*
+          Its own row, under the add button. Sitting beside the star count at the
+          top it read as part of the number rather than as an action, and the two
+          buttons that act on the repository — add it, star it — belong together.
+        */}
+        <div className="card-star-row" onClick={(e) => e.stopPropagation()}>
+          <StarButton fullName={repo.fullName} showLabel />
         </div>
       </div>
     </div>

@@ -40,6 +40,14 @@ export function BulkInstallModal({
     detected is the stronger signal of "I use this" — `enabled` is a preference
     someone may simply never have visited.
   */
+  /**
+   * Tick what this machine actually has.
+   *
+   * `detected` means the tool's directory exists, which is exactly the right
+   * signal for an *install* target: a skill goes into that directory and the
+   * tool picks it up next time it runs. Whether the command is also on PATH is
+   * a separate question that matters for launching, not for installing.
+   */
   const suggested = useMemo(
     () => agents.filter((a) => a.detected || a.enabled).map((a) => a.id),
     [agents]
