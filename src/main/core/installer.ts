@@ -2,6 +2,7 @@ import {
   cpSync,
   existsSync,
   lstatSync,
+  readFileSync,
   readdirSync,
   readlinkSync,
   mkdirSync,
@@ -427,6 +428,68 @@ function libraryOwnerOf(target: string): { skill: SkillEntry; fullName: string }
   return null
 }
 
+/**
+ * Put a skill into an agent's directory, and leave a record of having done it.
+ *
+ * Both the installer and the launcher place skills, and they disagreed about
+ * what a copy leaves behind: the installer wrote `.skillhub-install.json`, the
+ * launcher did not. A markerless copy is invisible to `isManagedPath`, so the
+ * next install treats it as the user's own file and creates a suffixed duplicate
+ * beside it — measured, `audio-jingle` and `audio-jingle-nexu-io` side by side —
+ * and `reconcileInstalls` cannot recover its record if that record is lost.
+ *
+ * One function, so the two cannot drift again.
+ */
+function isSymlinkPath(p: string): boolean {
+  try {
+    return lstatSync(p).isSymbolicLink()
+  } catch {
+    return false
+  }
+}
+
+export function placeSkill(
+  sourcePath: string,
+  agentDir: string,
+  folderName: string,
+  mode: InstallMode,
+  meta: { skillId: string; repoFullName: string }
+): { linkPath: string; mode: InstallMode } {
+  mkdirSync(agentDir, { recursive: true })
+  const target = join(agentDir, folderName)
+  if (existsSync(target) || isSymlinkPath(target)) {
+    if (isSymlinkPath(target)) unlinkSync(target)
+    else rmSync(target, { recursive: true, force: true })
+  }
+
+  if (mode === 'symlink') {
+    if (isWindows) {
+      try {
+        symlinkSync(sourcePath, target, 'junction')
+      } catch {
+        cpSync(sourcePath, target, { recursive: true, dereference: true })
+        writeFileSync(
+          join(target, MARKER),
+          JSON.stringify({ ...meta, installedAt: Date.now(), mode: 'copy' }, null, 2),
+          'utf8'
+        )
+        return { linkPath: target, mode: 'copy' }
+      }
+    } else {
+      symlinkSync(sourcePath, target, 'dir')
+    }
+    return { linkPath: target, mode: 'symlink' }
+  }
+
+  cpSync(sourcePath, target, { recursive: true, dereference: true })
+  writeFileSync(
+    join(target, MARKER),
+    JSON.stringify({ ...meta, installedAt: Date.now(), mode: 'copy' }, null, 2),
+    'utf8'
+  )
+  return { linkPath: target, mode: 'copy' }
+}
+
 export function reconcileInstalls(): number {
   const libRoot = expandPath(settings.get().libraryDir)
   const known = new Set(installs.get().records.map((r) => `${r.linkPath}`))
@@ -447,12 +510,28 @@ export function reconcileInstalls(): number {
       // Only links into the library are ours. A folder the user made themselves
       // is not something this app placed, and claiming it would be wrong.
       let target: string | null = null
+      let fromMarker: { skillId?: string; repoFullName?: string } | null = null
       try {
-        if (lstatSync(link).isSymbolicLink()) target = expandPath(readlinkSync(link))
+        if (lstatSync(link).isSymbolicLink()) {
+          target = expandPath(readlinkSync(link))
+        } else if (existsSync(join(link, MARKER))) {
+          /*
+            A copy, not a link.
+
+            Agents that do not follow symlinks get a real directory, and the only
+            thing distinguishing it from a folder the user made is the marker. This
+            scan looked at symlinks alone, so a copied install whose record was
+            lost could never be recovered — the recovery covered exactly the agents
+            that needed it least. Measured: `browser-act` sat there with its marker
+            and was not picked up.
+          */
+          fromMarker = JSON.parse(readFileSync(join(link, MARKER), 'utf8'))
+        }
       } catch {
         continue
       }
-      if (!target || !isInside(target, libRoot)) continue
+      if (!target && !fromMarker) continue
+      if (target && !isInside(target, libRoot)) continue
       if (known.has(link)) continue
 
       /*
@@ -465,22 +544,24 @@ export function reconcileInstalls(): number {
         still reports zero installed. The library already knows the real path of
         every skill it materialized, so ask it.
       */
-      const owner = libraryOwnerOf(target)
-      const relative = target.slice(libRoot.length + 1)
+      // The marker carries the exact ids, which beats reconstructing them.
+      const owner = target ? libraryOwnerOf(target) : null
+      const relative = target ? target.slice(libRoot.length + 1) : ''
       const [repoPart] = relative.split('/')
-      const repoFullName = owner?.fullName || (repoPart ? repoPart.replace('__', '/') : '')
+      const repoFullName =
+        owner?.fullName || fromMarker?.repoFullName || (repoPart ? repoPart.replace('__', '/') : '')
       found.push({
-        id: `${owner?.skill.id || `${repoFullName}::${name}`}@${agent.id}`,
-        skillId: owner?.skill.id || `${repoFullName}::${name}`,
+        id: `${owner?.skill.id || fromMarker?.skillId || `${repoFullName}::${name}`}@${agent.id}`,
+        skillId: owner?.skill.id || fromMarker?.skillId || `${repoFullName}::${name}`,
         skillName: owner?.skill.name || name,
         repoFullName,
         agentId: agent.id,
         agentName: agent.name,
         targetDir: dir,
         linkPath: link,
-        mode: 'symlink',
+        mode: target ? 'symlink' : 'copy',
         installedAt: Date.now(),
-        sourcePath: target
+        sourcePath: target || link
       })
     }
   }

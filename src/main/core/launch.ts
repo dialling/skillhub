@@ -7,6 +7,7 @@ import type { LaunchPlan, LaunchTarget } from '../../shared/types'
 import { expandPath, sandboxDir, tildify, safeSegment } from './paths'
 import { curatedCatalog } from './catalog'
 import { installs, library, logActivity, settings } from './db'
+import { placeSkill } from './installer'
 import { loadRegistry, listAgents, resolveAgentDir } from './agents'
 import { isWindows, which } from './platform'
 import { m } from './msg'
@@ -226,33 +227,16 @@ export async function prepareLaunch(input: {
     `.agents/skills`, so putting a copy there makes the instruction true whichever
     agent arrives.
   */
-  const place = (rel: string): string => {
-    const dir = join(workspace, rel)
-    mkdirSync(dir, { recursive: true })
-    const target = join(dir, folderName)
-    try {
-      if (existsSync(target) || isSymlink(target)) {
-        if (isSymlink(target)) rmSync(target)
-        else rmSync(target, { recursive: true, force: true })
-      }
-      if (isWindows) {
-        try {
-          symlinkSync(sourcePath, target, 'junction')
-        } catch {
-          cpSync(sourcePath, target, { recursive: true, dereference: true })
-        }
-      } else {
-        symlinkSync(sourcePath, target, 'dir')
-      }
-    } catch {
-      cpSync(sourcePath, target, { recursive: true, dereference: true })
-    }
-    return target
-  }
-
-  const projectSkillPath = place(entry?.projectSkillsDir || '.agents/skills')
-  if (entry?.projectSkillsDir && entry.projectSkillsDir !== '.agents/skills') {
-    place('.agents/skills')
+  const projectRel = entry?.projectSkillsDir || '.agents/skills'
+  const projectSkillPath = placeSkill(
+    sourcePath,
+    join(workspace, projectRel),
+    folderName,
+    entry?.supportsSymlink === false ? 'copy' : 'symlink',
+    { skillId, repoFullName }
+  ).linkPath
+  if (projectRel !== '.agents/skills') {
+    placeSkill(sourcePath, join(workspace, '.agents/skills'), folderName, 'symlink', { skillId, repoFullName })
   }
 
   /*
@@ -274,27 +258,21 @@ export async function prepareLaunch(input: {
   if (agentDir) {
     try {
       mkdirSync(agentDir, { recursive: true })
+      const canLink = entry?.supportsSymlink !== false
       const target = join(agentDir, safeSegment(skillName) || folderName)
       if (!existsSync(target) && !isSymlink(target)) {
         /*
-          Same rule the installer follows, and for the same reason: an agent that
-          does not follow symlinks gets a real copy. Installing a link it cannot
-          read is not an install — it is a file in a directory the agent skips,
-          which is what "unknown or no longer available" was reporting all along.
+          Same rule the installer follows, and the same function, so a copy left
+          here carries the marker that makes it recognisable later. An agent that
+          does not follow symlinks gets a real copy — installing a link it cannot
+          read is not an install, which is what "unknown or no longer available"
+          was reporting.
         */
-        const canLink = entry?.supportsSymlink !== false
-        if (canLink && isWindows) {
-          try {
-            symlinkSync(sourcePath, target, 'junction')
-          } catch {
-            cpSync(sourcePath, target, { recursive: true, dereference: true })
-          }
-        } else if (canLink) {
-          symlinkSync(sourcePath, target, 'dir')
-        } else {
-          cpSync(sourcePath, target, { recursive: true, dereference: true })
-        }
-        globalSkillPath = target
+        const placed = placeSkill(sourcePath, agentDir, safeSegment(skillName) || folderName, canLink ? 'symlink' : 'copy', {
+          skillId,
+          repoFullName
+        })
+        globalSkillPath = placed.linkPath
         installs.update((d) => {
           d.records = d.records.filter((r) => !(r.skillId === skillId && r.agentId === input.agentId))
           d.records.push({
@@ -305,8 +283,8 @@ export async function prepareLaunch(input: {
             agentId: input.agentId,
             agentName: entry?.name || input.agentId,
             targetDir: agentDir,
-            linkPath: target,
-            mode: canLink ? 'symlink' : 'copy',
+            linkPath: placed.linkPath,
+            mode: placed.mode,
             installedAt: Date.now(),
             sourcePath
           })
