@@ -24,6 +24,14 @@ import { fileURLToPath } from 'node:url'
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const args = process.argv.slice(2)
 const dry = args.includes('--dry')
+/**
+ * Publish without touching the installed app.
+ *
+ * Useful precisely when the installed copy is the older one: leaving it in place
+ * is the only way to see the real update prompt a user would see, rather than
+ * reasoning about it.
+ */
+const noInstall = args.includes('--no-install')
 const kind = args.find((a) => !a.startsWith('--')) || 'patch'
 
 /**
@@ -185,11 +193,15 @@ try {
 }
 console.log(`· 已上传 ${assets.length} 个安装包`)
 
-console.log('· 安装到 /Applications')
-// Deleting the key rather than assigning undefined: an env value of `undefined`
-// is stringified to "undefined", which is still present and still truthy.
-const cleanEnv = { ...process.env }
-delete cleanEnv.ELECTRON_RUN_AS_NODE
-run('npm', ['run', 'install:app'], { env: cleanEnv })
+if (noInstall) {
+  console.log('· 跳过安装（--no-install）：本机保留旧版本，便于验证更新提示')
+} else {
+  console.log('· 安装到 /Applications')
+  // Deleting the key rather than assigning undefined: an env value of `undefined`
+  // is stringified to "undefined", which is still present and still truthy.
+  const cleanEnv = { ...process.env }
+  delete cleanEnv.ELECTRON_RUN_AS_NODE
+  run('npm', ['run', 'install:app'], { env: cleanEnv })
+}
 
 console.log(`\n  ✓ ${tag} 已发布并安装\n`)

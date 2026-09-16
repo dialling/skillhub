@@ -141,7 +141,7 @@ interface State {
   setView: (v: ViewKey) => void
   setLang: (l: Lang) => void
   toggleLang: () => Promise<void>
-  toast: (kind: Toast['kind'], message: string, detail?: string) => void
+  toast: (kind: Toast['kind'], message: string, detail?: string, ttl?: number) => void
   dismissToast: (id: string) => void
   runSearch: (q: string) => Promise<void>
   clearSearch: () => void
@@ -330,7 +330,8 @@ export const useStore = create<State>((set, get) => ({
     try {
       const res = await api.launch.run(plan)
       if (res.ok) {
-        get().toast('success', res.message, plan.workspace)
+        // Long enough to switch to the app, open the folder and paste.
+        get().toast('success', res.message, plan.prompt, 20000)
         set({ showLaunchModal: false, launchPlan: null, launchSource: null })
       } else {
         get().toast('error', res.message)
@@ -582,10 +583,18 @@ export const useStore = create<State>((set, get) => ({
     await api.system.rebuildMenu().catch(() => {})
   },
 
-  toast(kind, message, detail) {
+  /**
+   * `ttl` overrides how long the toast stays.
+   *
+   * The default is sized for "that worked", read in place. A message that tells
+   * someone to go and paste something is read *after* they switch to another
+   * window, so it cannot disappear on the default schedule — they would come
+   * back to an empty screen and no idea what was on the clipboard.
+   */
+  toast(kind, message, detail, ttl) {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
     set({ toasts: [...get().toasts, { id, kind, message, detail }] })
-    setTimeout(() => get().dismissToast(id), kind === 'error' ? 7000 : 3600)
+    setTimeout(() => get().dismissToast(id), ttl ?? (kind === 'error' ? 7000 : 3600))
   },
 
   dismissToast(id) {
@@ -733,8 +742,23 @@ export const useStore = create<State>((set, get) => ({
   async dismissUpdate(remember = false) {
     const info = get().updateInfo
     const latest = info?.app?.latest || String(info?.catalog?.latest || info?.data?.latest || '')
-    if (remember && latest) await api.update.dismiss(latest)
+
+    /*
+      Close first, persist afterwards.
+
+      Set the other way round, the dialog could not be dismissed at all whenever
+      `dismiss` failed: the state change sat behind an awaited call, so a write
+      error, a missing handler or a rejected promise left the prompt on screen
+      with no way out. A close button that can fail is not a close button.
+    */
     set({ updateOpen: false })
+    if (!remember || !latest) return
+    try {
+      await api.update.dismiss(latest)
+    } catch {
+      // The version is forgotten for this session only; the prompt returns next
+      // launch, which is the harmless direction to fail in.
+    }
   },
 
   async refreshAll() {

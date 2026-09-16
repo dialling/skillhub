@@ -69,7 +69,7 @@ const DICT: Dict = {
   'update.title': ['发现新版本 {version}', 'Version {version} is available'],
   'update.current': ['当前', 'installed'],
   'update.publishedAt': ['发布于 {date}', 'published {date}'],
-  'update.titleData': ['技能数据有更新', 'Skill data has an update'],
+  'update.titleData': ['技能数据有更新（{date}）', 'Skill data has an update ({date})'],
   'update.dataOnly': ['有更新的技能数据', 'Newer skill data is available'],
   'update.download': ['去下载', 'Download'],
   'update.refreshData': ['立即同步', 'Sync now'],

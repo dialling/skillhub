@@ -32,7 +32,9 @@ export function UpdateModal(): React.JSX.Element | null {
           {/* An app release has a version; the data has a date. Calling a date a
               version is how "发现新版本 20260916" happened. */}
           <div className="modal-title">
-            {app ? t('update.title', { version: app.latest }) : t('update.titleData')}
+            {app
+              ? t('update.title', { version: `v${app.latest}` })
+              : t('update.titleData', { date: dataDate })}
           </div>
           <button className="btn ghost sm" style={{ marginLeft: 'auto' }} onClick={() => void dismiss(false)}>
             <X size={13} />

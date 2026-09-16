@@ -97,7 +97,7 @@ const M: Record<string, [zh: string, en: string]> = {
     'Work from the skill description below.\n\n--- skill: {skill} ---\n{body}\n--- end of skill ---\n\nI will describe what I need next. Keep inputs and outputs in {folder}/.'
   ],
   'launch.startedCli': ['已在终端启动 {agent}', 'Started {agent} in Terminal'],
-  'launch.startedApp': ['已打开 {agent}，提示词已复制到剪贴板', 'Opened {agent}; the prompt is on your clipboard'],
+  'launch.startedApp': ['已打开 {agent}，提示词已复制 —— 直接粘贴即可', 'Opened {agent}. The prompt is on your clipboard — just paste it'],
   'launch.modeInteractive': ['交互式，可继续对话', 'interactive, keeps the session'],
   'launch.modeClipboard': ['提示词已复制，可直接粘贴', 'prompt copied, just paste it'],
   'launch.modeOneshot': ['一次性，执行后退出', 'one-shot, exits when done'],
@@ -115,7 +115,7 @@ const M: Record<string, [zh: string, en: string]> = {
     '在本工作区中优先使用 `{skill}` 技能：先读取它的 SKILL.md，再执行我的任务。',
     'Prefer the `{skill}` skill in this workspace: read its SKILL.md first, then carry out my request.'
   ],
-  'launch.startedWeb': ['已打开网页端，提示词已复制到剪贴板', 'Opened the web app; the prompt is on your clipboard'],
+  'launch.startedWeb': ['已打开网页端，提示词已复制 —— 直接粘贴即可', 'Opened the web app. The prompt is on your clipboard — just paste it'],
 
   /* cli */
   'cli.usage.search': ['用法：search <关键词>', 'Usage: search <term>'],
