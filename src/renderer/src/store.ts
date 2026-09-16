@@ -18,6 +18,7 @@ import type {
   Settings,
   SkillEntry,
   SkillIndexEntry,
+  UpdateInfo,
   SubmissionRecord
 } from '@shared/types'
 import { makeT, type Lang } from './i18n'
@@ -83,6 +84,9 @@ interface State {
   starred: string[]
   starredLoaded: boolean
   starring: string | null
+  /** what the last update check found; null until one has run */
+  updateInfo: UpdateInfo | null
+  updateOpen: boolean
   submissions: SubmissionRecord[]
   submitting: string | null
   scenarios: Scenario[]
@@ -125,6 +129,8 @@ interface State {
   setSkillQuery: (q: string) => void
   loadStarred: (force?: boolean) => Promise<void>
   toggleStar: (fullName: string) => Promise<void>
+  checkUpdates: () => Promise<void>
+  dismissUpdate: () => Promise<void>
   loadSubmissions: () => Promise<void>
   submitSkill: (input: { localPath: string; name: string; origin?: string }) => Promise<void>
   setLibraryFilter: (f: 'all' | 'pending' | 'installed') => void
@@ -202,6 +208,8 @@ export const useStore = create<State>((set, get) => ({
   starred: [],
   starredLoaded: false,
   starring: null,
+  updateInfo: null,
+  updateOpen: false,
   submissions: [],
   submitting: null,
   scenarios: [],
@@ -517,6 +525,9 @@ export const useStore = create<State>((set, get) => ({
     ])
     void get().scanLocal()
     void get().loadStarred()
+    // Same check the refresh button runs; a newer release is worth knowing about
+    // without having to press anything.
+    void get().checkUpdates()
     // Submissions are a development workflow with no UI; nothing fetches them on
     // boot. `submitSkill` stays available for when an entry needs uploading.
     // Record what already exists so nothing pre-existing badges as "new" —
@@ -689,11 +700,45 @@ export const useStore = create<State>((set, get) => ({
    * this project's repository first — one request, no GitHub API budget — then
    * tops up the local rate-limit reading.
    */
+  /**
+   * Ask GitHub whether anything is newer.
+   *
+   * Runs on every refresh, and on boot. A version the user has skipped stays
+   * skipped — the check still runs, it just does not interrupt again.
+   */
+  async checkUpdates() {
+    try {
+      const info = await api.update.check()
+      set({ updateInfo: info })
+      if (!info.available) {
+        set({ updateOpen: false })
+        return
+      }
+      const latest = info.app?.latest || String(info.catalog?.latest || info.data?.latest || '')
+      if (latest && (await api.update.isDismissed(latest))) return
+      set({ updateOpen: true })
+    } catch {
+      /* an update check must never break the refresh */
+    }
+  },
+
+  async dismissUpdate() {
+    const info = get().updateInfo
+    const latest = info?.app?.latest || String(info?.catalog?.latest || info?.data?.latest || '')
+    if (latest) await api.update.dismiss(latest)
+    set({ updateOpen: false })
+  },
+
   async refreshAll() {
     set({ refreshing: true })
     try {
       const live = await api.live.refresh()
-      if (live.ok) {
+      if (live.ok && live.stale) {
+        // Nothing was written on purpose: the published copy is older than what
+        // this machine already has, and overwriting newer data with older is
+        // worse than doing nothing.
+        get().toast('info', get().t('toast.liveStale'))
+      } else if (live.ok) {
         const rows = Object.values(live.growthRows).reduce((n, v) => n + v, 0)
         const settings = await api.settings.get()
         set({ settings })
@@ -714,6 +759,8 @@ export const useStore = create<State>((set, get) => ({
     } finally {
       await get().refreshRate(true)
       set({ refreshing: false })
+      // Same button, same intent: "make this install current".
+      void get().checkUpdates()
     }
   },
 

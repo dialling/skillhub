@@ -69,6 +69,7 @@ import { installLocations, launchTargets, prepareLaunch, runLaunch } from './cor
 import { liveStatus, refreshLiveData } from './core/live'
 import { searchSkillIndex, skillIndex, skillShard } from './core/skillsindex'
 import { listStarred, setStar, starState } from './core/starring'
+import { checkUpdates, dismissUpdate, isDismissed } from './core/update'
 import { listSubmissions, submitSkill } from './core/submit'
 import { sandboxDir, sandboxFor } from './core/paths'
 import { clearSandbox } from './core/launch'
@@ -394,6 +395,16 @@ export function registerIpc(send: Broadcast): void {
   // is involved and a fresh install still gets real history.
   handle('live:refresh', () => refreshLiveData())
   handle('live:status', () => liveStatus())
+
+  /* --------------------------------------------------------------- update -- */
+  // Every check answers "is the remote newer", never "is it different": an
+  // older-but-different copy must not overwrite newer local state.
+  handle('update:check', () => checkUpdates())
+  handle('update:dismiss', (version: string | null) => {
+    dismissUpdate(version)
+    return true
+  })
+  handle('update:isDismissed', (version: string) => isDismissed(version))
 
   /* -------------------------------------------------------------- sandbox -- */
   // Launching writes AGENTS.md and a copy of the skill into the chosen folder,

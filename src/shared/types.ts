@@ -90,6 +90,29 @@ export function categoryLabel(cat: string | undefined, lang: 'zh' | 'en'): strin
   return entry ? entry[lang] : cat
 }
 
+/**
+ * What is newer than this install.
+ *
+ * A key is present only when the remote copy is **strictly newer**. Absent means
+ * "you are current", never "unknown, update anyway" — acting on an unknown or an
+ * older version is the failure this shape is designed to make impossible.
+ */
+export interface UpdateInfo {
+  current: string
+  checkedAt: number
+  available?: boolean
+  app?: {
+    latest: string
+    url: string
+    notes: string
+    publishedAt: string
+  }
+  /** the bundled catalog needs a new build to change */
+  catalog?: { current: number; latest: number }
+  /** stars, growth and the skill index, published twice a day */
+  data?: { current: number; latest: number }
+}
+
 /** A skill waiting in the repository's submissions area, not yet in the store. */
 export interface SubmissionRecord {
   /** folder name under submissions/ */
@@ -386,6 +409,8 @@ export interface Settings {
    */
   liveUpdatedAt?: number
   liveDate?: string | null
+  /** the update version the user chose to skip, so it stops being offered */
+  dismissedUpdate?: string | null
 }
 
 export interface SearchResult {

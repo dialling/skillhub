@@ -40,6 +40,13 @@ export interface LiveResult {
   changed: number
   /** rows available per window, e.g. { '7': 92 } */
   growthRows: Record<string, number>
+  /**
+   * Set when the published copy was not newer than what this machine already
+   * applied, so nothing was written. The refresh succeeded; it simply had no
+   * business overwriting newer data with older.
+   */
+  stale?: boolean
+  publishedAt?: string
 }
 
 /**
@@ -122,6 +129,32 @@ export async function refreshLiveData(): Promise<LiveResult> {
       error: `bad stars.json: ${err?.message}`,
       changed: 0,
       growthRows: {}
+    }
+  }
+
+  /*
+    Refuse to go backwards.
+
+    The published copy is not always the newer one: jsDelivr caches a branch ref
+    for up to twelve hours, so a mirror can still be serving yesterday's file
+    after the mirror beside it has today's. Applying whatever arrives would let a
+    stale edge overwrite newer local numbers — and the damage is invisible,
+    because the result looks like ordinary data.
+
+    ISO timestamps compare correctly as strings, so the guard is a direct
+    comparison against the file this machine last applied.
+  */
+  const publishedAt = String(parsed.updatedAt || '')
+  const lastApplied = String(settings.get().liveDate || '')
+  if (publishedAt && lastApplied && publishedAt <= lastApplied) {
+    return {
+      ok: true,
+      source: starsFile.source,
+      stale: true,
+      changed: 0,
+      growthRows: {},
+      publishedAt,
+      error: 'published copy is not newer than what is already applied'
     }
   }
 

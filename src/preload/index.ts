@@ -86,6 +86,11 @@ const api = {
     refresh: () => call<any>('profile:refresh'),
     starred: () => call<any[]>('profile:starred')
   },
+  update: {
+    check: () => call<any>('update:check'),
+    dismiss: (version: string | null) => call<boolean>('update:dismiss', version),
+    isDismissed: (version: string) => call<boolean>('update:isDismissed', version)
+  },
   sandbox: {
     for: (skillName: string) => call<string>('sandbox:for', skillName),
     root: () => call<string>('sandbox:root'),

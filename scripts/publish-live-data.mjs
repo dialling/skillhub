@@ -177,6 +177,35 @@ console.log(
   `增长榜：1 天 ${growth['1'].length} 条 · 7 天 ${growth['7'].length} 条 · 30 天 ${growth['30'].length} 条`
 )
 
+// ---- version ---------------------------------------------------------------
+/*
+  One manifest the app can compare against, so an update check is a single fetch.
+
+  Three things version independently and the comparison has to respect that:
+  the app binary (a release tag), the bundled catalog (needs a new build), and
+  this live data (changes twice a day). Dates here are monotonically increasing
+  numbers, which is what makes "is the remote newer?" answerable without any
+  guessing about clocks.
+*/
+const catalogRaw = JSON.parse(readFileSync(join(root, 'data', 'curated-catalog.json'), 'utf8'))
+writeFileSync(
+  join(liveDir, 'version.json'),
+  JSON.stringify(
+    {
+      dataVersion: Number(today.replace(/-/g, '')),
+      catalogVersion: Number(catalogRaw.version || 0),
+      repos: repos.length,
+      skills: catalogRaw.repos.reduce((n, r) => n + (r.skillCount || 0), 0),
+      updatedAt: new Date().toISOString(),
+      date: today
+    },
+    null,
+    2
+  ) + '\n',
+  'utf8'
+)
+console.log(`版本清单：数据 ${Number(today.replace(/-/g, ''))} · 目录 ${Number(catalogRaw.version || 0)}`)
+
 // ---- meta ------------------------------------------------------------------
 const seriesLengths = Object.values(history).map((l) => l.length)
 writeFileSync(

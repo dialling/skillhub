@@ -29,6 +29,7 @@ import { addRepo, libraryItems, removeItem } from './core/library'
 import { installSkills, installedSkills, uninstall } from './core/installer'
 import { launchTargets, prepareLaunch } from './core/launch'
 import { loadRegistry } from './core/agents'
+import { compareVersions } from './core/update'
 import { buildRemoteSkills } from './core/skills'
 import { userDataDir } from './core/paths'
 import { leaderboard } from './core/leaderboard'
@@ -275,6 +276,31 @@ async function main(): Promise<number> {
     through to "no usable launch method". A shape check catches that class of
     omission without launching anything.
   */
+  /*
+    Version ordering is what stops an older copy from overwriting a newer one.
+
+    Every one of these is a case that would otherwise be silently wrong: a CDN
+    edge still serving yesterday's file, a release tag older than what is
+    installed, a pre-release being offered as a finished upgrade.
+  */
+  section('Version ordering (never go backwards)')
+  {
+    check('newer patch wins', compareVersions('0.1.1', '0.1.0') > 0, '0.1.1 > 0.1.0')
+    check('older patch loses', compareVersions('0.1.0', '0.1.1') < 0, '0.1.0 < 0.1.1')
+    check('equal compares equal', compareVersions('0.1.0', '0.1.0') === 0, '0.1.0 == 0.1.0')
+    check('v prefix ignored', compareVersions('v0.2.0', '0.1.9') > 0, 'v0.2.0 > 0.1.9')
+    check('minor beats patch', compareVersions('0.2.0', '0.1.99') > 0, '0.2.0 > 0.1.99')
+    check('major beats minor', compareVersions('1.0.0', '0.99.99') > 0, '1.0.0 > 0.99.99')
+    // A pre-release is not an upgrade over the release it precedes.
+    check('release outranks its pre-release', compareVersions('1.0.0', '1.0.0-rc.1') > 0, '1.0.0 > 1.0.0-rc.1')
+    check('pre-release does not outrank release', compareVersions('1.0.0-rc.1', '1.0.0') < 0, 'rc < release')
+    check('shorter version pads with zero', compareVersions('1.1', '1.1.0') === 0, '1.1 == 1.1.0')
+
+    // Data and catalog versions are dates, so the comparison is plain numbers.
+    check('newer data date wins', 20260917 > 20260916, '20260917 > 20260916')
+    check('older data date loses', 20260915 < 20260916, '20260915 < 20260916')
+  }
+
   section('Launch plan carries what the launcher needs')
   {
     const targets = launchTargets().filter((t) => t.ready)

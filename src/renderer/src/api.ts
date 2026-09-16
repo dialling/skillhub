@@ -13,6 +13,7 @@ import type {
   LibraryItem,
   SkillIndexEntry,
   SubmissionRecord,
+  UpdateInfo,
   SubmissionResult,
   LocalSkill,
   RateLimit,
@@ -123,6 +124,11 @@ export interface SkillHubApi {
     refresh(): Promise<GitHubUser | null>
     starred(): Promise<{ fullName: string; stars: number; avatarUrl?: string; descriptionEn?: string }[]>
   }
+  update: {
+    check(): Promise<UpdateInfo>
+    dismiss(version: string | null): Promise<boolean>
+    isDismissed(version: string): Promise<boolean>
+  }
   sandbox: {
     for(skillName: string): Promise<string>
     root(): Promise<string>
@@ -149,6 +155,9 @@ export interface SkillHubApi {
       error?: string
       changed: number
       growthRows: Record<string, number>
+      /** the published copy was not newer, so nothing was written */
+      stale?: boolean
+      publishedAt?: string
     }>
     status(): Promise<{ at: number | null; publishedAt: string | null }>
   }

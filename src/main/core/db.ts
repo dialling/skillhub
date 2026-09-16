@@ -28,6 +28,7 @@ export const DEFAULT_SETTINGS: Settings = {
   seenAgents: undefined,
   liveUpdatedAt: undefined,
   liveDate: null,
+  dismissedUpdate: null,
   firstRunDone: false
 }
 
