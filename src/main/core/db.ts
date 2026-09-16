@@ -34,7 +34,20 @@ export const DEFAULT_SETTINGS: Settings = {
 
 export const settings = new JsonStore<Settings>('settings', DEFAULT_SETTINGS)
 export const library = new JsonStore<{ items: LibraryItem[] }>('library', { items: [] })
-export const installs = new JsonStore<{ records: InstallRecord[] }>('installs', { records: [] })
+/*
+  Flush install records immediately.
+
+  Everything else can afford the store's 250ms debounce; this one cannot. A
+  record is the only evidence that a symlink was placed deliberately — without
+  it the app cannot offer to remove that link, and a process that exits inside
+  the debounce window loses the record while the link stays on disk. Measured
+  exactly that: the skill was installed and the record was empty.
+*/
+export const installs = new JsonStore<{ records: InstallRecord[] }>(
+  'installs',
+  { records: [] },
+  { immediate: true }
+)
 export const stars = new JsonStore<{
   history: Record<string, StarSnapshot[]>
   /** precomputed leaderboards published by the project's own GitHub Action */

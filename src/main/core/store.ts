@@ -12,13 +12,22 @@ export class JsonStore<T extends object> {
   private data: T
   private file: string
   private timer: NodeJS.Timeout | null = null
+  /**
+   * Skip the debounce and write on every update.
+   *
+   * For state whose loss is not merely stale but wrong: an install record with no
+   * file behind it, or a file with no record, cannot be reconciled later. A
+   * process that exits inside the debounce window would do exactly that.
+   */
+  private immediate = false
   private defaults: T
   /** mtime of the file as we last wrote it, to spot another process's writes. */
   private writtenAt = 0
 
-  constructor(name: string, defaults: T) {
+  constructor(name: string, defaults: T, opts: { immediate?: boolean } = {}) {
     this.file = join(userDataDir(), `${name}.json`)
     this.defaults = defaults
+    this.immediate = opts.immediate === true
     this.data = this.load()
   }
 
@@ -87,6 +96,10 @@ export class JsonStore<T extends object> {
   }
 
   private schedule(): void {
+    if (this.immediate) {
+      this.flush()
+      return
+    }
     if (this.timer) clearTimeout(this.timer)
     this.timer = setTimeout(() => this.flush(), 250)
   }
