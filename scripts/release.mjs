@@ -49,12 +49,10 @@ if (git('status', '--porcelain')) {
   console.error('工作区有未提交的改动，先提交或撤销再发布。')
   process.exit(1)
 }
-try {
-  git('rev-parse', tag)
+// --verify --quiet so a missing tag is an ordinary answer, not printed noise.
+if (execFileSync('git', ['rev-parse', '--verify', '--quiet', tag], { cwd: root, encoding: 'utf8', stdio: ['ignore','pipe','ignore'] }).trim()) {
   console.error(`标签 ${tag} 已存在。`)
   process.exit(1)
-} catch {
-  /* the tag is free, which is what we want */
 }
 
 console.log(`\n  ${current} → ${next}   (${tag})\n`)
