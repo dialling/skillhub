@@ -481,7 +481,18 @@ export async function installFromGithub(input: InstallFromGithubInput): Promise<
       */
       const owner = entryOwner(folder, { skillId: s.skillId, sourcePath: origin })
       if (owner === 'other' || owner === 'foreign') {
-        outcome.skipped.push({ skillId: s.skillId, agentId: agent.id, reason: m('install.conflict', { path: folder }) })
+        /*
+          Two different refusals, and the user needs to know which one they got.
+
+          "That folder is ours but belongs to a different skill" is a naming
+          collision between two published skills — 12 names exist in more than
+          one repository — and the fix is to rename or install elsewhere.
+          "That folder is not ours at all" means we would have been writing into
+          the user's own work, and the fix is to pick another destination. One
+          message for both made the first case look like the second.
+        */
+        const key = owner === 'other' ? 'install.conflictOurs' : 'install.conflict'
+        outcome.skipped.push({ skillId: s.skillId, agentId: agent.id, reason: m(key, { path: folder }) })
         report({})
         return
       }

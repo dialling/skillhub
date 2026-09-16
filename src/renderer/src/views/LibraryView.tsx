@@ -164,7 +164,12 @@ export function LibraryView(): React.JSX.Element {
           onSync={() => void syncItem(selected.id)}
           onReveal={() => void window.skillhub.system.openPath(selected.sourcePath)}
           onRemove={() => {
-            if (confirm(`${t('library.removeConfirm')}\n${t('library.removeHint')}\n\n${t('library.deleteFiles')}?`)) {
+            /*
+              No "also delete the files?" question any more: the library holds no
+              files. What 移除 does now is forget the repository and uninstall
+              the skills that came from it, which is the whole of it.
+            */
+            if (confirm(`${t('library.removeConfirm')}\n${t('library.removeHint')}`)) {
               void removeFromLibrary(selected.id, true)
             }
           }}

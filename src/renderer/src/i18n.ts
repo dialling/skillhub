@@ -221,7 +221,6 @@ const DICT: Dict = {
   'library.discoverUnmatched': ['商店里暂无对应来源', 'no matching source in the store'],
   'library.removeConfirm': ['确定移出库？', 'Remove from library?'],
   'library.removeHint': ['这会同时卸载已安装的关联技能', 'This also uninstalls related skills'],
-  'library.deleteFiles': ['同时删除本地克隆文件', 'Also delete local clone'],
 
   'charts.title': ['排行榜', 'Leaderboards'],
   'charts.subtitle': ['基于 GitHub 星标总数与增长速度', 'Based on GitHub stars and star velocity'],

@@ -28,6 +28,10 @@ const M: Record<string, [zh: string, en: string]> = {
     '目标已存在且不是 SkillHub 管理的技能：{path}',
     'Target exists and is not managed by SkillHub: {path}'
   ],
+  'install.conflictOurs': [
+    '{path} 已被同名的另一个技能占用，两个技能不能共用一个文件夹',
+    '{path} is already taken by a different skill of the same name — two skills cannot share one folder'
+  ],
   'install.conflictShort': ['冲突：{path}', 'Conflict: {path}'],
   'install.done': ['已安装 {skill} → {agent}', 'Installed {skill} → {agent}'],
   'install.itemFailed': ['安装失败 {skill} → {agent}：{error}', 'Failed {skill} → {agent}: {error}'],
