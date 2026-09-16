@@ -17,7 +17,7 @@
  *   node scripts/release.mjs minor --dry  # show what would happen
  */
 import { execFileSync } from 'node:child_process'
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -26,8 +26,46 @@ const args = process.argv.slice(2)
 const dry = args.includes('--dry')
 const kind = args.find((a) => !a.startsWith('--')) || 'patch'
 
+/**
+ * A node that can actually run these CLIs — `process.execPath` is another
+ * application's helper in this shell.
+ */
+const NODE = (() => {
+  const candidates = [
+    process.env.SKILLHUB_NODE,
+    process.execPath,
+    ...String(process.env.PATH || '').split(':').map((d) => join(d, 'node')),
+    '/usr/local/bin/node',
+    '/opt/homebrew/bin/node'
+  ].filter(Boolean)
+  for (const c of candidates) {
+    if (!existsSync(c)) continue
+    try {
+      const env = { ...process.env }
+      delete env.ELECTRON_RUN_AS_NODE
+      const out = execFileSync(
+        c,
+        ['-e', 'console.log("node=" + process.versions.node + " electron=" + (process.versions.electron || ""))'],
+        // stderr suppressed: a rejected candidate may crash loudly on its way
+        // out, and that noise is not this script's output.
+        { encoding: 'utf8', timeout: 10000, env, stdio: ['ignore', 'pipe', 'ignore'] }
+      ).trim()
+      if (/^node=\d+\.\d+\.\d+ electron=$/.test(out)) return c
+    } catch {
+      continue
+    }
+  }
+  return process.execPath
+})()
+
 const git = (...a) => execFileSync('git', a, { cwd: root, encoding: 'utf8' }).trim()
 const run = (cmd, a, opts = {}) => execFileSync(cmd, a, { cwd: root, stdio: 'inherit', ...opts })
+
+/** Run a local CLI through the real node (see install-app.mjs for why). */
+function localCli(script, args) {
+  const node = process.env.SKILLHUB_NODE || NODE
+  execFileSync(node, [join(root, 'node_modules', script), ...args], { cwd: root, stdio: 'inherit' })
+}
 
 const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
 const current = pkg.version
@@ -86,6 +124,18 @@ run('git', ['tag', '-a', tag, '-m', tag])
 run('git', ['push'])
 run('git', ['push', 'origin', tag])
 
+/*
+  Build the installers before creating the release.
+
+  The first release this script produced had no assets at all — while its own
+  notes told the reader to download a `.dmg` that did not exist. The update check
+  opens that page for the user, so a release without an installer is an update
+  that cannot be completed. The artifacts are part of the release, not a step
+  someone might remember afterwards.
+*/
+console.log('· 打包安装包')
+localCli('electron-builder/cli.js', ['--mac', '--arm64'])
+
 console.log('· 创建 GitHub Release')
 const previous = (() => {
   try {
@@ -121,11 +171,19 @@ const body = [
 ].join('\n')
 
 writeFileSync(join(root, '.release-notes.md'), body, 'utf8')
+const assets = [`release/SkillHub-${next}-arm64.dmg`, `release/SkillHub-${next}-arm64-mac.zip`]
+  .map((p) => join(root, p))
+  .filter((p) => existsSync(p))
+if (!assets.length) {
+  console.error('没有生成任何安装包，发布中止。')
+  process.exit(1)
+}
 try {
-  run('gh', ['release', 'create', tag, '--title', `SkillHub ${tag}`, '--notes-file', join(root, '.release-notes.md')])
+  run('gh', ['release', 'create', tag, '--title', `SkillHub ${tag}`, '--notes-file', join(root, '.release-notes.md'), ...assets])
 } finally {
   execFileSync('rm', ['-f', join(root, '.release-notes.md')])
 }
+console.log(`· 已上传 ${assets.length} 个安装包`)
 
 console.log('· 安装到 /Applications')
 // Deleting the key rather than assigning undefined: an env value of `undefined`

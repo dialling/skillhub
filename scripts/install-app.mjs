@@ -71,7 +71,9 @@ function realNode() {
       const out = execFileSync(
         c,
         ['-e', 'console.log("node=" + process.versions.node + " electron=" + (process.versions.electron || ""))'],
-        { encoding: 'utf8', timeout: 10000, env }
+        // stderr suppressed: a rejected candidate may crash loudly on its way
+        // out, and that noise is not this script's output.
+        { encoding: 'utf8', timeout: 10000, env, stdio: ['ignore', 'pipe', 'ignore'] }
       ).trim()
       if (/^node=\d+\.\d+\.\d+ electron=$/.test(out)) return c
     } catch {
