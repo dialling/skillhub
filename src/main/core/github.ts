@@ -326,8 +326,7 @@ export async function getUser(login: string): Promise<GitHubUser> {
   }
 }
 
-export async function viewer(): Promise<GitHubUser> {
-  const raw = await ghFetch<any>('/user')
+function toUser(raw: any): GitHubUser {
   return {
     login: raw.login,
     name: raw.name,
@@ -340,6 +339,50 @@ export async function viewer(): Promise<GitHubUser> {
     followers: raw.followers,
     following: raw.following
   }
+}
+
+/**
+ * Check a candidate token WITHOUT installing it.
+ *
+ * Replacing a credential used to be "write it, then ask whether it works": the
+ * new token was stored first, and any failure of the follow-up rate check cleared
+ * the setting — with the working token already overwritten, so a network blip
+ * while pasting a replacement destroyed the credential that was there. Ask about
+ * the candidate first, commit it only once it has answered.
+ */
+export async function verifyToken(
+  token: string
+): Promise<{ ok: true; user: GitHubUser } | { ok: false; error?: string }> {
+  const candidate = token.trim()
+  if (!candidate) return { ok: false }
+  try {
+    const res = await fetch(`${API}/user`, {
+      headers: {
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+        'User-Agent': UA,
+        Authorization: `Bearer ${candidate}`
+      },
+      signal: AbortSignal.timeout(15000)
+    })
+    if (!res.ok) {
+      let detail = ''
+      try {
+        const body: any = await res.json()
+        detail = body?.message || ''
+      } catch {
+        /* ignore */
+      }
+      return { ok: false, error: detail || `GitHub ${res.status} ${res.statusText}` }
+    }
+    return { ok: true, user: toUser(await res.json()) }
+  } catch (err: any) {
+    return { ok: false, error: err?.message || String(err) }
+  }
+}
+
+export async function viewer(): Promise<GitHubUser> {
+  return toUser(await ghFetch<any>('/user'))
 }
 
 let rateCache: { at: number; value: RateLimit } | null = null
@@ -552,6 +595,9 @@ export async function starsGained(
   return remember({ gained: 0, source: 'unavailable', approx: true, coveredHours: 0 })
 }
 
+/** Page size the stargazer walk assumes; the pagination arithmetic depends on it. */
+const PAGE_SIZE = 100
+
 async function starsGainedFromStargazers(
   fullName: string,
   totalStars: number,
@@ -559,10 +605,10 @@ async function starsGainedFromStargazers(
 ): Promise<StarGrowth | null> {
   if (totalStars <= 0) return { gained: 0, source: 'stargazers-api', approx: false, coveredHours: days * 24 }
   const cutoff = Date.now() - days * 86400_000
-  const pages = Math.max(1, Math.ceil(totalStars / 100))
+  const pages = Math.max(1, Math.ceil(totalStars / PAGE_SIZE))
 
   const fetchPage = async (page: number): Promise<{ starred_at: string }[]> =>
-    ghFetch<any[]>(`/repos/${fullName}/stargazers?per_page=100&page=${page}`, {
+    ghFetch<any[]>(`/repos/${fullName}/stargazers?per_page=${PAGE_SIZE}&page=${page}`, {
       headers: { Accept: 'application/vnd.github.star+json' }
     })
 
@@ -596,7 +642,19 @@ async function starsGainedFromStargazers(
     for (const it of items) {
       if (Date.parse(it.starred_at) >= cutoff) withinPage++
     }
-    const gained = Math.max(0, totalStars - (boundary - 1) * 100 - withinPage)
+    /*
+      Subtract the stars that are OUTSIDE the window, not the ones inside it.
+
+      The binary search finds the smallest page whose last entry is inside the
+      window, so the window's first star sits on that page: everything before it
+      is the full pages above plus the part of this page older than the cutoff.
+      Subtracting `withinPage` instead of that remainder missed by
+      `len - 2 * withinPage` — up to ±100 stars in either direction — and the
+      result is returned with `approx: false`, so a repository that gained one
+      star was shown as having gained 99.
+    */
+    const outside = (boundary - 1) * PAGE_SIZE + (items.length - withinPage)
+    const gained = Math.max(0, totalStars - outside)
     return { gained, source: 'stargazers-api', approx: false, coveredHours: days * 24 }
   } catch {
     return null

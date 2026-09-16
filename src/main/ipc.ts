@@ -2,10 +2,8 @@ import { ipcMain, shell, dialog, app } from 'electron'
 import { existsSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import type {
-  LaunchPlan,
   DiskStats,
   InstallProgress,
-  InstallRequest,
   JobProgress,
   RepoMeta,
   Settings,
@@ -24,6 +22,7 @@ import {
   searchSkills,
   starsGained,
   tokenSource,
+  verifyToken,
   viewer
 } from './core/github'
 import {
@@ -45,15 +44,16 @@ import {
   resolveAgentDir
 } from './core/agents'
 import {
+  installFromGithub,
   installMap,
   installRecords,
-  installSkills,
   installedSkills,
   managedCountByAgent,
   reconcileInstalls,
   removeRawPath,
   uninstall,
-  uninstallAll
+  uninstallAll,
+  uninstallFrom
 } from './core/installer'
 import { leaderboard, snapshotCoverage, topByStars, type GrowthWindow } from './core/leaderboard'
 import { expandPath, userDataDir as stateDir } from './core/paths'
@@ -66,14 +66,11 @@ import {
   recommendInstallTarget,
   setInstallRoot
 } from './core/discover'
-import { installLocations, launchTargets, prepareLaunch, runLaunch } from './core/launch'
 import { liveStatus, refreshLiveData } from './core/live'
 import { searchSkillIndex, skillIndex, skillShard } from './core/skillsindex'
 import { listStarred, setStar, starState } from './core/starring'
 import { checkUpdates, dismissUpdate, isDismissed } from './core/update'
 import { listSubmissions, submitSkill } from './core/submit'
-import { sandboxDir, sandboxFor } from './core/paths'
-import { clearSandbox } from './core/launch'
 
 type Broadcast = (channel: string, payload: unknown) => void
 let broadcast: Broadcast = () => {}
@@ -116,18 +113,32 @@ export function registerIpc(send: Broadcast): void {
     }
   })
   handle('github:rate', (force: boolean) => rateLimit(force))
+  /*
+    Validate the candidate BEFORE storing it.
+
+    This used to store first and validate second, then wipe the setting on
+    failure. The working token was already overwritten by then, so replacing a
+    credential while GitHub was unreachable (or rate-limited, or behind a flaky
+    proxy) destroyed a token that still worked — and the renderer only saw a
+    toast, while every screen kept showing the old account as connected.
+  */
   handle('github:login', async (token: string) => {
+    const previous = settings.get().token
+    const check = await verifyToken(token)
+    if (!check.ok) throw new Error(check.error || m('auth.tokenInvalid'))
     settings.set({ token: token.trim() })
     clearCaches()
     const limit = await rateLimit(true)
     if (!limit.ok) {
-      settings.set({ token: '' })
+      // It answered a moment ago, so this failure is environmental: put the
+      // credential that was here back rather than leaving the user without one.
+      settings.set({ token: previous })
+      clearCaches()
       throw new Error(limit.error || m('auth.tokenInvalid'))
     }
-    const me = await viewer()
-    settings.set({ user: me, firstRunDone: true })
-    logActivity('settings', 'activity.loggedIn', { login: me.login })
-    return me
+    settings.set({ user: check.user, firstRunDone: true })
+    logActivity('settings', 'activity.loggedIn', { login: check.user.login })
+    return check.user
   })
   handle('github:loginWithCli', async () => {
     clearCaches()
@@ -293,10 +304,21 @@ export function registerIpc(send: Broadcast): void {
   })
 
   /* ----------------------------------------------------------------- install */
-  handle('install:run', (req: InstallRequest) =>
-    installSkills(req, (p: InstallProgress) => broadcast('install:progress', p))
+  /*
+    Install straight from GitHub.
+
+    `skills` are upstream coordinates (owner/repo + path); the destination is the
+    folder the user chose. Nothing is read from a local checkout, because there
+    is none — the store is an index and the files come from the source.
+  */
+  handle(
+    'install:fromGithub',
+    (input: {
+      skills: { skillId: string; fullName: string; path: string; name: string; localPath?: string }[]
+      destination: string
+    }) => installFromGithub({ ...input, onProgress: (p) => broadcast('install:progress', p) })
   )
-  handle('install:uninstall', (skillId: string, agentId: string) => uninstall(skillId, agentId))
+  handle('install:uninstall', (skillId: string, agentId: string) => uninstallFrom(skillId, agentId))
   handle('install:uninstallAll', (skillId: string) => uninstallAll(skillId))
   handle('install:records', () => installRecords())
   /*
@@ -385,22 +407,6 @@ export function registerIpc(send: Broadcast): void {
   handle('discover:setInstallTarget', (path: string) => setInstallRoot(path))
   handle('discover:adopt', (repoFullName: string) => addRepo(repoFullName))
 
-  /* ------------------------------------------------------------------ launch */
-  handle('launch:targets', () => launchTargets())
-  handle(
-    'launch:prepare',
-    (req: {
-      skillId?: string
-      localPath?: string
-      localName?: string
-      localDescription?: string
-      agentId: string
-      workspace: string
-    }) => prepareLaunch(req)
-  )
-  handle('launch:run', (plan: LaunchPlan) => runLaunch(plan))
-  handle('launch:locations', (skillName: string) => installLocations(skillName))
-
   /* -------------------------------------------------------------- live data */
   // Pulled from this project's own repository: the scheduled Action there keeps
   // star counts and the growth leaderboard current for everyone, so no server
@@ -417,13 +423,6 @@ export function registerIpc(send: Broadcast): void {
     return true
   })
   handle('update:isDismissed', (version: string) => isDismissed(version))
-
-  /* -------------------------------------------------------------- sandbox -- */
-  // Launching writes AGENTS.md and a copy of the skill into the chosen folder,
-  // so the default is a folder SkillHub owns rather than one the user works in.
-  handle('sandbox:for', (skillName: string) => sandboxFor(skillName))
-  handle('sandbox:root', () => sandboxDir())
-  handle('sandbox:clear', () => clearSandbox())
 
   /* ---------------------------------------------------------- submissions -- */
   // Local skills that are not in the store go to the repository's submissions

@@ -8,8 +8,6 @@ import type {
   InstallRecord,
   JobProgress,
   InstallTargetAdvice,
-  LaunchPlan,
-  LaunchTarget,
   LibraryItem,
   SkillIndexEntry,
   SubmissionRecord,
@@ -85,12 +83,15 @@ export interface SkillHubApi {
     reveal(p: string): Promise<boolean>
   }
   install: {
-    run(req: { skillIds: string[]; agentIds: string[]; mode?: 'symlink' | 'copy' }): Promise<{
+    fromGithub(input: {
+      skills: { skillId: string; fullName: string; path: string; name: string; localPath?: string }[]
+      destination: string
+    }): Promise<{
       ok: InstallRecord[]
       skipped: { skillId: string; agentId: string; reason: string }[]
       errors: { skillId: string; agentId: string; reason: string }[]
     }>
-    uninstall(skillId: string, agentId: string): Promise<boolean>
+    uninstall(skillId: string, agentId: string): Promise<{ ok: boolean; agents: string[] }>
     uninstallAll(skillId: string): Promise<number>
     records(): Promise<InstallRecord[]>
     map(): Promise<Record<string, string[]>>
@@ -129,11 +130,6 @@ export interface SkillHubApi {
     dismiss(version: string | null): Promise<boolean>
     isDismissed(version: string): Promise<boolean>
   }
-  sandbox: {
-    for(skillName: string): Promise<string>
-    root(): Promise<string>
-    clear(): Promise<number>
-  }
   submit: {
     list(): Promise<SubmissionRecord[]>
     skill(input: { localPath: string; name: string; origin?: string }): Promise<SubmissionResult>
@@ -160,19 +156,6 @@ export interface SkillHubApi {
       publishedAt?: string
     }>
     status(): Promise<{ at: number | null; publishedAt: string | null }>
-  }
-  launch: {
-    targets(): Promise<LaunchTarget[]>
-    prepare(req: {
-      skillId?: string
-      localPath?: string
-      localName?: string
-      localDescription?: string
-      agentId: string
-      workspace: string
-    }): Promise<LaunchPlan>
-    run(plan: LaunchPlan): Promise<{ ok: boolean; message: string }>
-    locations(skillName: string): Promise<string[]>
   }
   discover: {
     localSkills(): Promise<LocalSkill[]>

@@ -16,10 +16,49 @@ import type { InstallMode, InstallProgress, InstallRecord, InstallRequest, Skill
 import { expandPath } from './paths'
 import { installs, library, logActivity, settings } from './db'
 import { agentDisplayName, listAgents, loadRegistry, resolveAgentDir } from './agents'
+import { fetchPaths, placeFetched } from './fetch'
 import { m } from './msg'
 import { isInside, isWindows } from './platform'
+import { MARKER, entryOwner, isCopiedEntry, isManagedPath, libraryRoot } from './managed'
 
-const MARKER = '.skillhub-install.json'
+// Re-exported so the placement rules and the scan cannot drift apart again.
+export { entryOwner, isManagedPath }
+
+/**
+ * The file that makes a copy recognisable as ours.
+ *
+ * Every install writes one. It is what `entryOwner` reads to decide whether a
+ * folder may be replaced, what `reconcileInstalls` reads to rebuild a lost
+ * record, and what the "managed by SkillHub" chips are based on — so a copy
+ * written without it is an entry the app can no longer see, update, or remove.
+ */
+function writeMarker(
+  target: string,
+  meta: { skillId: string; repoFullName: string },
+  sourcePath: string
+): void {
+  try {
+    writeFileSync(
+      join(target, MARKER),
+      JSON.stringify(
+        {
+          skillId: meta.skillId,
+          repoFullName: meta.repoFullName,
+          installedAt: Date.now(),
+          mode: 'copy',
+          sourcePath
+        },
+        null,
+        2
+      ),
+      'utf8'
+    )
+  } catch (err) {
+    // A missing marker degrades the entry to "someone else's folder", which is
+    // safe but unmanageable; worth knowing about, not worth failing the install.
+    console.error('[installer] failed to write install marker', err)
+  }
+}
 
 export interface InstallOutcome {
   ok: InstallRecord[]
@@ -27,66 +66,44 @@ export interface InstallOutcome {
   errors: { skillId: string; agentId: string; reason: string }[]
 }
 
-function sanitizeName(name: string): string {
+/**
+ * The folder name one skill occupies in an agent directory.
+ *
+ * Exported because the launcher has to predict the same name before anything is
+ * written; two name functions for one slot is how the plan and the placement end
+ * up disagreeing. The length cap keeps room for the owner-qualified variant
+ * beside it inside a 255-byte filename limit.
+ */
+export function sanitizeName(name: string): string {
   return (
     name
       .replace(/[/\\:]+/g, '-')
       .replace(/[^A-Za-z0-9._@+-]+/g, '-')
       .replace(/^[.-]+/, '')
-      .replace(/-+$/, '') || 'skill'
+      .replace(/-+$/, '')
+      .slice(0, 120) || 'skill'
   )
 }
 
 /** True when the path is a SkillHub-owned install (symlink into the library,
- *  or a copy carrying our marker file). */
-export function isManagedPath(p: string, libraryRoot: string): boolean {
-  try {
-    const st = lstatSync(p)
-    if (st.isSymbolicLink()) {
-      const target = expandPath(require('node:fs').readlinkSync(p))
-      return isInside(target, libraryRoot)
-    }
-    if (st.isDirectory() && existsSync(join(p, MARKER))) return true
-  } catch {
-    return false
-  }
-  return false
-}
+ *  or a copy carrying our marker file). Defined in `managed.ts` so the scan and
+ *  the installer cannot answer it differently. */
 
 /**
- * Resolve a skill id to something installable.
+ * Which folder a skill should occupy in an agent directory.
  *
- * Library ids are `owner/repo::path`. Skills that exist only on this machine —
- * a folder in `~/.cursor/skills`, say — have no library entry, and everything
- * that installs was therefore blind to them: the library showed a launch button
- * and no install button, because there was nothing to resolve. They carry a
- * `local:<path>` id instead, which resolves against the filesystem.
+ * The base name comes from the skill alone, so two different skills can want the
+ * same folder — measured on this machine: 12 skill names exist in more than one
+ * library repository (`canvas-design`, `brand-guidelines`, …). Reusing the slot
+ * on the strength of "it is one of ours" deleted the first skill's install to
+ * make room for the second, while the first skill's record still pointed at the
+ * shared path and reported it installed.
+ *
+ * So ownership decides, not existence: the base name is used only when nothing
+ * is there or when the entry is this same skill; anything else gets the
+ * owner-qualified name beside it, and if that is taken too the install is
+ * reported as a conflict rather than overwriting someone else's files.
  */
-function findSkill(skillId: string): { skill: SkillEntry; repoFullName: string } | null {
-  if (skillId.startsWith('local:')) {
-    const dir = expandPath(skillId.slice('local:'.length))
-    if (!existsSync(join(dir, 'SKILL.md'))) return null
-    const name = dir.split(/[\\/]/).filter(Boolean).pop() || 'skill'
-    const skill: SkillEntry = {
-      id: skillId,
-      repoFullName: 'local',
-      path: '',
-      name,
-      title: name,
-      tags: [],
-      source: 'local',
-      localPath: dir
-    }
-    return { skill, repoFullName: 'local' }
-  }
-  const [repoFullName] = skillId.split('::')
-  const item = library.get().items.find((i) => i.id === repoFullName)
-  if (!item) return null
-  const skill = item.skills.find((s) => s.id === skillId)
-  if (!skill) return null
-  return { skill, repoFullName }
-}
-
 export function installRecords(): InstallRecord[] {
   return installs.get().records
 }
@@ -101,209 +118,6 @@ export function installMap(): Record<string, string[]> {
   return map
 }
 
-export function installSkills(
-  req: InstallRequest,
-  onProgress?: (p: InstallProgress) => void
-): InstallOutcome {
-  /*
-    The install mode is per agent, not global.
-
-    `supportsSymlink: false` was recorded in the registry for DeepSeek Harness,
-    Cursor, Kimi and pi, shown in the UI, and then never consulted: everything was
-    installed as a symlink because that is the global default. An agent that does
-    not follow symlinks therefore never saw the skill — it reported "unknown or no
-    longer available" while the link sat in its own skills directory, which is
-    what every one of those reports turned out to be.
-  */
-  const requestedMode: InstallMode | undefined = req.mode || settings.get().installMode
-  const libRoot = expandPath(settings.get().libraryDir)
-  const outcome: InstallOutcome = { ok: [], skipped: [], errors: [] }
-  const total = req.skillIds.length * req.agentIds.length
-  let current = 0
-  const report = (p: Partial<InstallProgress>): void => {
-    onProgress?.({
-      phase: 'link',
-      message: '',
-      current,
-      total,
-      ...p
-    } as InstallProgress)
-  }
-
-  for (const skillId of req.skillIds) {
-    const found = findSkill(skillId)
-    if (!found) {
-      for (const agentId of req.agentIds) {
-        outcome.errors.push({ skillId, agentId, reason: m('install.notInLibrary') })
-      }
-      current += req.agentIds.length
-      continue
-    }
-    const { skill } = found
-    const source = skill.localPath && existsSync(skill.localPath) ? skill.localPath : null
-    /** resolved agent skills dir -> link path already created for this skill */
-    const handledDirs = new Map<string, string>()
-    if (!source) {
-      for (const agentId of req.agentIds) {
-        outcome.errors.push({ skillId, agentId, reason: m('install.sourceMissing') })
-      }
-      current += req.agentIds.length
-      continue
-    }
-    if (!existsSync(join(source, 'SKILL.md'))) {
-      for (const agentId of req.agentIds) {
-        outcome.errors.push({ skillId, agentId, reason: m('install.noSkillFile') })
-      }
-      current += req.agentIds.length
-      continue
-    }
-
-    for (const agentId of req.agentIds) {
-      current++
-      const entry = loadRegistry().find((e) => e.id === agentId)
-      // An agent that cannot follow symlinks gets a real copy, whatever the
-      // global preference says: a link it cannot read is not an install.
-      const mode: InstallMode =
-        entry?.supportsSymlink === false ? 'copy' : requestedMode || 'symlink'
-      const agentDir = resolveAgentDir(agentId)
-      const agentName = agentDisplayName(agentId)
-      if (!agentDir) {
-        outcome.errors.push({ skillId, agentId, reason: m('install.noAgentDir') })
-        report({ message: m('install.skippedAgent', { agent: agentName }) })
-        continue
-      }
-
-      // Several agents can share one physical directory (e.g. Zed, Goose and the
-      // .agents standard all read ~/.agents/skills). Do the filesystem work once
-      // and record a row per agent so the UI stays truthful.
-      const already = handledDirs.get(agentDir)
-      if (already) {
-        const record: InstallRecord = {
-          id: `${skillId}@${agentId}`,
-          skillId,
-          skillName: skill.name,
-          repoFullName: found.repoFullName,
-          agentId,
-          agentName,
-          targetDir: agentDir,
-          linkPath: already,
-          mode,
-          installedAt: Date.now(),
-          sourcePath: source
-        }
-        installs.update((d) => {
-          d.records = d.records.filter((r) => !(r.skillId === skillId && r.agentId === agentId))
-          d.records.push(record)
-        })
-        outcome.ok.push(record)
-        report({ skillId, skillName: skill.name, agentId, agentName, message: m('install.sharedDir', { dir: agentDir }) })
-        continue
-      }
-
-      let target = join(agentDir, sanitizeName(skill.name))
-      try {
-        mkdirSync(agentDir, { recursive: true })
-
-        // Resolve naming conflicts inside the same agent directory.
-        if (existsSync(target) && !isManagedPath(target, libRoot)) {
-          const alt = `${sanitizeName(skill.name)}-${sanitizeName(found.repoFullName.split('/')[0])}`
-          const altPath = join(agentDir, alt)
-          if (!existsSync(altPath)) {
-            target = altPath
-          } else if (!isManagedPath(altPath, libRoot)) {
-            outcome.skipped.push({ skillId, agentId, reason: m('install.conflict', { path: target }) })
-            report({ message: m('install.conflictShort', { path: target }) })
-            continue
-          } else {
-            target = altPath
-          }
-        }
-
-        // Remove any previous SkillHub-owned entry.
-        if (existsSync(target) || isSymlink(target)) {
-          if (isSymlink(target)) unlinkSync(target)
-          else rmSync(target, { recursive: true, force: true })
-        }
-
-        if (mode === 'symlink') {
-          // Windows can only create a symlink with Developer Mode or elevation,
-          // but a *junction* needs neither and works for directories.
-          if (isWindows) {
-            try {
-              symlinkSync(source, target, 'junction')
-            } catch {
-              cpSync(source, target, { recursive: true, dereference: true })
-            }
-          } else {
-            symlinkSync(source, target, 'dir')
-          }
-        } else {
-          cpSync(source, target, { recursive: true, dereference: true })
-          writeFileSync(
-            join(target, MARKER),
-            JSON.stringify(
-              { skillId, repoFullName: found.repoFullName, installedAt: Date.now(), mode },
-              null,
-              2
-            ),
-            'utf8'
-          )
-        }
-
-        // Replace any stale record for this skill/agent pair.
-        const record: InstallRecord = {
-          id: `${skillId}@${agentId}`,
-          skillId,
-          skillName: skill.name,
-          repoFullName: found.repoFullName,
-          agentId,
-          agentName,
-          targetDir: agentDir,
-          linkPath: target,
-          mode,
-          installedAt: Date.now(),
-          sourcePath: source
-        }
-        installs.update((d) => {
-          d.records = d.records.filter((r) => !(r.skillId === skillId && r.agentId === agentId))
-          d.records.push(record)
-        })
-        outcome.ok.push(record)
-        handledDirs.set(agentDir, target)
-        report({
-          skillId,
-          skillName: skill.name,
-          agentId,
-          agentName,
-          message: m('install.done', { skill: skill.name, agent: agentName })
-        })
-      } catch (err: any) {
-        outcome.errors.push({ skillId, agentId, reason: err?.message || String(err) })
-        report({ message: m('install.itemFailed', { skill: skill.name, agent: agentName, error: err?.message || err }) })
-      }
-    }
-  }
-
-  onProgress?.({
-    phase: 'done',
-    message: m('install.summary', {
-      ok: outcome.ok.length,
-      skipped: outcome.skipped.length,
-      failed: outcome.errors.length
-    }),
-    current: total,
-    total,
-    ok: outcome.errors.length === 0
-  })
-  if (outcome.ok.length) {
-    logActivity('install', 'activity.installed', {
-      count: outcome.ok.length,
-      agents: [...new Set(outcome.ok.map((r) => r.agentName))].join(', ')
-    })
-  }
-  return outcome
-}
-
 function isSymlink(p: string): boolean {
   try {
     return lstatSync(p).isSymbolicLink()
@@ -312,9 +126,27 @@ function isSymlink(p: string): boolean {
   }
 }
 
-export function uninstall(skillId: string, agentId: string): boolean {
+export interface UninstallResult {
+  ok: boolean
+  /** display names of every agent whose install this removed (shared dirs) */
+  agents: string[]
+}
+
+/**
+ * Remove one agent's install, and every record that described the same entry.
+ *
+ * Several agents share one physical directory, so the deletion is per directory
+ * while both the request and the records are per agent. Deleting one agent's
+ * entry therefore removes the skill from every agent reading that directory, and
+ * the sibling records were left behind claiming an install whose path no longer
+ * existed — invisible in the UI (which filters on existence) and impossible to
+ * clean up from it. The scope of what happened is returned so the caller can say
+ * so instead of reporting a single-agent removal.
+ */
+export function uninstallFrom(skillId: string, agentId: string): UninstallResult {
   const rec = installs.get().records.find((r) => r.skillId === skillId && r.agentId === agentId)
-  if (!rec) return false
+  if (!rec) return { ok: false, agents: [] }
+  const shared = installs.get().records.filter((r) => r.linkPath === rec.linkPath)
   try {
     if (existsSync(rec.linkPath) || isSymlink(rec.linkPath)) {
       if (isSymlink(rec.linkPath)) unlinkSync(rec.linkPath)
@@ -322,30 +154,52 @@ export function uninstall(skillId: string, agentId: string): boolean {
     }
   } catch (err) {
     console.error('[installer] uninstall failed', err)
-    return false
+    return { ok: false, agents: [] }
   }
+  const gone = new Set(shared.map((r) => r.id))
   installs.update((d) => {
-    d.records = d.records.filter((r) => r.id !== rec.id)
+    d.records = d.records.filter((r) => !gone.has(r.id))
   })
-  logActivity('uninstall', 'activity.uninstalled', { skill: rec.skillName, agent: rec.agentName })
-  return true
+  const agents = [...new Set(shared.map((r) => r.agentName))]
+  logActivity('uninstall', 'activity.uninstalled', { skill: rec.skillName, agent: agents.join(', ') })
+  return { ok: true, agents }
+}
+
+export function uninstall(skillId: string, agentId: string): boolean {
+  return uninstallFrom(skillId, agentId).ok
 }
 
 export function uninstallAll(skillId: string): number {
   const recs = installs.get().records.filter((r) => r.skillId === skillId)
+  // One entry can back several agents; count the removals, not the records.
+  const seen = new Set<string>()
   let n = 0
-  for (const r of recs) if (uninstall(skillId, r.agentId)) n++
+  for (const r of recs) {
+    if (seen.has(r.linkPath)) continue
+    seen.add(r.linkPath)
+    const res = uninstallFrom(skillId, r.agentId)
+    if (res.ok) n += res.agents.length
+  }
   return n
 }
 
 /** Remove a raw path from an agent directory (for skills not installed by us). */
 export function removeRawPath(p: string): boolean {
   if (!p || !existsSync(p)) return false
-  const libRoot = expandPath(settings.get().libraryDir)
-  // Guard: only ever delete inside a known agent skills directory.
   const dir = dirname(p)
   if (!dir || dir === p) return false
-  void libRoot
+  /*
+    Only ever delete inside a known agent skills directory.
+
+    The comment was there before the check was: the body computed the parent
+    directory, returned false when the path had no parent, and threw the library
+    root away with `void`. This IPC takes its path from the renderer, so the
+    guard is the only thing standing between a bad caller and a recursive delete.
+  */
+  if (!isKnownAgentDir(dir)) {
+    console.error('[installer] refused to remove a path outside an agent directory', p)
+    return false
+  }
   try {
     if (isSymlink(p)) unlinkSync(p)
     else rmSync(p, { recursive: true, force: true })
@@ -357,6 +211,15 @@ export function removeRawPath(p: string): boolean {
     console.error('[installer] removeRawPath failed', err)
     return false
   }
+}
+
+function isKnownAgentDir(dir: string): boolean {
+  const wanted = expandPath(dir)
+  for (const agent of listAgents()) {
+    const resolved = resolveAgentDir(agent.id)
+    if (resolved && expandPath(resolved) === wanted) return true
+  }
+  return false
 }
 
 export interface InstalledSkillView {
@@ -428,70 +291,8 @@ function libraryOwnerOf(target: string): { skill: SkillEntry; fullName: string }
   return null
 }
 
-/**
- * Put a skill into an agent's directory, and leave a record of having done it.
- *
- * Both the installer and the launcher place skills, and they disagreed about
- * what a copy leaves behind: the installer wrote `.skillhub-install.json`, the
- * launcher did not. A markerless copy is invisible to `isManagedPath`, so the
- * next install treats it as the user's own file and creates a suffixed duplicate
- * beside it — measured, `audio-jingle` and `audio-jingle-nexu-io` side by side —
- * and `reconcileInstalls` cannot recover its record if that record is lost.
- *
- * One function, so the two cannot drift again.
- */
-function isSymlinkPath(p: string): boolean {
-  try {
-    return lstatSync(p).isSymbolicLink()
-  } catch {
-    return false
-  }
-}
-
-export function placeSkill(
-  sourcePath: string,
-  agentDir: string,
-  folderName: string,
-  mode: InstallMode,
-  meta: { skillId: string; repoFullName: string }
-): { linkPath: string; mode: InstallMode } {
-  mkdirSync(agentDir, { recursive: true })
-  const target = join(agentDir, folderName)
-  if (existsSync(target) || isSymlinkPath(target)) {
-    if (isSymlinkPath(target)) unlinkSync(target)
-    else rmSync(target, { recursive: true, force: true })
-  }
-
-  if (mode === 'symlink') {
-    if (isWindows) {
-      try {
-        symlinkSync(sourcePath, target, 'junction')
-      } catch {
-        cpSync(sourcePath, target, { recursive: true, dereference: true })
-        writeFileSync(
-          join(target, MARKER),
-          JSON.stringify({ ...meta, installedAt: Date.now(), mode: 'copy' }, null, 2),
-          'utf8'
-        )
-        return { linkPath: target, mode: 'copy' }
-      }
-    } else {
-      symlinkSync(sourcePath, target, 'dir')
-    }
-    return { linkPath: target, mode: 'symlink' }
-  }
-
-  cpSync(sourcePath, target, { recursive: true, dereference: true })
-  writeFileSync(
-    join(target, MARKER),
-    JSON.stringify({ ...meta, installedAt: Date.now(), mode: 'copy' }, null, 2),
-    'utf8'
-  )
-  return { linkPath: target, mode: 'copy' }
-}
-
 export function reconcileInstalls(): number {
-  const libRoot = expandPath(settings.get().libraryDir)
+  const libRoot = libraryRoot()
   const known = new Set(installs.get().records.map((r) => `${r.linkPath}`))
   const found: InstallRecord[] = []
 
@@ -510,7 +311,7 @@ export function reconcileInstalls(): number {
       // Only links into the library are ours. A folder the user made themselves
       // is not something this app placed, and claiming it would be wrong.
       let target: string | null = null
-      let fromMarker: { skillId?: string; repoFullName?: string } | null = null
+      let fromMarker: { skillId?: string; repoFullName?: string; sourcePath?: string } | null = null
       try {
         if (lstatSync(link).isSymbolicLink()) {
           target = expandPath(readlinkSync(link))
@@ -561,16 +362,199 @@ export function reconcileInstalls(): number {
         linkPath: link,
         mode: target ? 'symlink' : 'copy',
         installedAt: Date.now(),
-        sourcePath: target || link
+        sourcePath: target || fromMarker?.sourcePath || link
       })
     }
   }
 
+  /*
+    One record per (skill, agent) pair, which is what the record id means.
+
+    This pass used to key its guard on the path alone and then append, so a pair
+    whose entry had moved (an install under the owner-qualified name, then the
+    conflicting folder removed, then a plain install) ended up with two records
+    sharing one id. `uninstall` selects by pair and then removes by id, so it
+    dropped both records while deleting only one entry — a removal that reported
+    success and changed nothing. Recovered entries replace the pair's record
+    instead of joining it.
+  */
   if (found.length) {
+    // One entry per pair: two folders in one agent directory can both look like
+    // this skill, and the id can only describe one of them.
+    const byPair = new Map<string, InstallRecord>()
+    for (const f of found) if (!byPair.has(f.id)) byPair.set(f.id, f)
+    const recovered = [...byPair.values()]
     installs.update((d) => {
-      d.records.push(...found)
+      const claimed = new Set(recovered.map((f) => f.id))
+      d.records = d.records.filter((r) => !claimed.has(r.id))
+      d.records.push(...recovered)
     })
-    logActivity('install', 'activity.reconciled', { count: found.length })
+    logActivity('install', 'activity.reconciled', { count: recovered.length })
+    return recovered.length
   }
-  return found.length
+  return 0
+}
+
+/* ---------------------------------------------------------------------------
+   Installing straight from GitHub
+   ---------------------------------------------------------------------------
+   The store is an index, not a copy. Installing a skill means downloading that
+   skill and putting it where the user asked for it — no local checkout of the
+   repository, nothing to keep in step, and no second copy of somebody's project
+   on disk. The previous flow cloned each repository into ~/.skillhub/library
+   first, which cost 575 MB across nine repositories and existed only so a later
+   install could copy from it.
+--------------------------------------------------------------------------- */
+
+/** Where a skill lives upstream, resolved from its id. */
+export interface UpstreamSkill {
+  skillId: string
+  fullName: string
+  /** folder inside the repository; '' when the skill is the whole repository */
+  path: string
+  name: string
+  /**
+   * Set when the source is a folder on this machine rather than a repository.
+   *
+   * A skill found on disk is installable into an agent just like a published
+   * one; the only difference is where the bytes come from, so it travels in the
+   * same request and lands through the same placement code.
+   */
+  localPath?: string
+}
+
+export interface InstallFromGithubInput {
+  skills: UpstreamSkill[]
+  /** the folder the user chose; each skill is placed as <destination>/<name> */
+  destination: string
+  onProgress?: (p: InstallProgress) => void
+}
+
+/**
+ * The agent whose skills directory this is, if any.
+ *
+ * The user may pick any folder, so this is a match rather than an assumption —
+ * and when nothing matches, the record still has to say where the files went.
+ */
+function agentForDestination(destination: string): { id: string; name: string } {
+  const real = expandPath(destination)
+  for (const agent of listAgents()) {
+    const dir = resolveAgentDir(agent.id)
+    if (dir && expandPath(dir) === real) return { id: agent.id, name: agent.name }
+  }
+  return { id: `path:${real}`, name: real }
+}
+
+export async function installFromGithub(input: InstallFromGithubInput): Promise<InstallOutcome> {
+  const { skills, destination, onProgress } = input
+  const outcome: InstallOutcome = { ok: [], skipped: [], errors: [] }
+  const target = expandPath(destination)
+  const agent = agentForDestination(target)
+  const total = skills.length
+  let current = 0
+
+  const report = (p: Partial<InstallProgress>): void => {
+    onProgress?.({ phase: 'link', message: '', current, total, ...p } as InstallProgress)
+  }
+
+  /**
+   * Copy one skill's files into place and record it.
+   *
+   * `source` is read at the moment of installation — a freshly fetched checkout
+   * for a published skill, the skill's own folder for one found on disk.
+   */
+  const take = (s: UpstreamSkill, source: string, origin: string): void => {
+    current++
+    const folder = join(target, sanitizeName(s.name) || s.name)
+    try {
+      /*
+        Decide who owns the folder before writing into it.
+
+        A bare `existsSync` was wrong in both directions: it refused to update
+        our own entry, and it would happily have written next to the user's own
+        folder. `entryOwner` answers the question that matters — free, ours,
+        another skill's, or someone else's entirely.
+
+        Without the marker this writes afterwards, the copy is invisible to
+        `isManagedPath`, so re-installing reports "目标已存在且不是 SkillHub
+        管理的技能" and reconcile can never recover the record.
+      */
+      const owner = entryOwner(folder, { skillId: s.skillId, sourcePath: origin })
+      if (owner === 'other' || owner === 'foreign') {
+        outcome.skipped.push({ skillId: s.skillId, agentId: agent.id, reason: m('install.conflict', { path: folder }) })
+        report({})
+        return
+      }
+      if (owner === 'ours') rmSync(folder, { recursive: true, force: true })
+      const placed = placeFetched(source, folder)
+      writeMarker(folder, { skillId: s.skillId, repoFullName: s.fullName }, origin)
+      const record: InstallRecord = {
+        id: `${s.skillId}@${agent.id}`,
+        skillId: s.skillId,
+        skillName: s.name,
+        repoFullName: s.fullName,
+        agentId: agent.id,
+        agentName: agent.name,
+        targetDir: target,
+        linkPath: folder,
+        mode: 'copy',
+        installedAt: Date.now(),
+        sourcePath: origin
+      }
+      installs.update((d) => {
+        d.records = d.records.filter((r) => !(r.skillId === s.skillId && r.agentId === agent.id))
+        d.records.push(record)
+      })
+      outcome.ok.push(record)
+      report({ skillId: s.skillId, skillName: s.name, message: m('install.fetched', { files: placed.files }) })
+    } catch (err: any) {
+      outcome.errors.push({ skillId: s.skillId, agentId: agent.id, reason: err?.message || String(err) })
+    }
+  }
+
+  // A skill that already lives on this machine needs no network at all.
+  const local = skills.filter((s) => s.localPath)
+  const remote = skills.filter((s) => !s.localPath)
+  for (const s of local) take(s, expandPath(s.localPath as string), expandPath(s.localPath as string))
+
+  // One fetch per repository, however many of its skills are being installed.
+  const byRepo = new Map<string, UpstreamSkill[]>()
+  for (const s of remote) {
+    const list = byRepo.get(s.fullName)
+    if (list) list.push(s)
+    else byRepo.set(s.fullName, [s])
+  }
+
+  for (const [fullName, list] of byRepo) {
+    let fetched: Awaited<ReturnType<typeof fetchPaths>> | null = null
+    try {
+      fetched = await fetchPaths({
+        fullName,
+        paths: list.map((s) => s.path),
+        onProgress: (message) => report({ message })
+      })
+    } catch (err: any) {
+      for (const s of list) {
+        current++
+        outcome.errors.push({ skillId: s.skillId, agentId: agent.id, reason: err?.message || String(err) })
+      }
+      report({ message: '' })
+      continue
+    }
+
+    try {
+      for (const s of list) take(s, fetched.dirFor(s.path), `https://github.com/${s.fullName}/tree/HEAD/${s.path}`)
+    } finally {
+      fetched?.release()
+    }
+  }
+
+  if (outcome.ok.length) {
+    logActivity('install', 'activity.installed', {
+      count: outcome.ok.length,
+      agents: agent.name
+    })
+  }
+  report({ phase: 'done' } as Partial<InstallProgress>)
+  return outcome
 }

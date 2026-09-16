@@ -10,8 +10,9 @@
  *   1. HARDCODED  — a Chinese string literal in renderer code, or a Chinese
  *                   message in the main process that is surfaced through IPC.
  *                   These appear verbatim in English mode.
- *   2. MISSING    — a `t('…')` key that has no dictionary entry, so the UI
- *                   renders the key itself.
+ *   2. MISSING    — a `t('…')` key (renderer) or `m('…')` key (main process)
+ *                   that has no dictionary entry, so the UI renders the key
+ *                   itself.
  *
  * Comments are stripped before scanning, so Chinese comments are not flagged.
  * Exit code is non-zero when anything is found, which makes this usable as a
@@ -152,16 +153,25 @@ for (const file of walk(join(root, 'src', 'renderer', 'src'))) {
     }
   })
 }
+const missing = [...usedKeys.entries()]
+  .filter(([key]) => !dictKeys.has(key))
+  .map(([key, refs]) => ({ key, refs: refs.slice(0, 3), uses: refs.length }))
+
+/*
+  Template families are reported after `missing` exists.
+
+  This block used to sit above the declaration and push into it, so the moment it
+  had something to report — a `t(`launch.kind.${x}`)` whose family is absent, the
+  one case it exists to catch — it threw `Cannot access 'missing' before
+  initialization` instead of reporting. A gate that crashes on its own subject
+  cannot fail the subject.
+*/
 const emptyFamilies = [...templatePrefixes.entries()].filter(
   ([prefix]) => ![...dictKeys].some((k) => k.startsWith(prefix))
 )
 for (const [prefix, refs] of emptyFamilies) {
   missing.push({ key: `${prefix}*`, refs, uses: refs.length })
 }
-
-const missing = [...usedKeys.entries()]
-  .filter(([key]) => !dictKeys.has(key))
-  .map(([key, refs]) => ({ key, refs: refs.slice(0, 3), uses: refs.length }))
 
 /**
  * A dictionary entry whose two languages are identical is almost always an
@@ -257,15 +267,46 @@ for (const file of walk(join(root, 'src', 'main'))) {
   })
 }
 
+/* ------------------------------------------- main-process dictionary keys --- */
+
+/**
+ * `m('some.key')` with no entry in msg.ts renders the key itself to the user —
+ * the main-process twin of the renderer's MISSING check.
+ *
+ * It was not checked, and it bit: the fetch-based installer introduced
+ * `fetch.downloading`, `fetch.extracting` and `install.fetched` while the audit
+ * stayed green, so the progress line in the install dialog read
+ * "install.fetched" instead of "Wrote 4 files". A dictionary that is only
+ * audited on one side of the process boundary is half a dictionary.
+ */
+const msgPath = join(root, 'src', 'main', 'core', 'msg.ts')
+const msgSrc = readFileSync(msgPath, 'utf8')
+const msgKeys = new Set([...msgSrc.matchAll(/^\s{2}'([^']+)':/gm)].map((m) => m[1]))
+
+const msgMissing = []
+for (const file of walk(join(root, 'src', 'main'))) {
+  if (/\/msg\.ts$/.test(file)) continue
+  const stripped = stripComments(readFileSync(file, 'utf8'))
+  stripped.split('\n').forEach((line, idx) => {
+    for (const hit of line.matchAll(/\bm\(\s*'([^']+)'/g)) {
+      if (msgKeys.has(hit[1])) continue
+      msgMissing.push({ key: hit[1], file: relative(root, file), line: idx + 1 })
+    }
+  })
+}
+
 /* ------------------------------------------------------------------ report --- */
 
 if (asJson) {
-  console.log(JSON.stringify({ dictKeys: dictKeys.size, missing, hardcoded, untranslated }, null, 2))
+  console.log(JSON.stringify({ dictKeys: dictKeys.size, missing, msgMissing, hardcoded, untranslated }, null, 2))
 } else {
   console.log(`字典词条 ${dictKeys.size} 条 · 代码中引用 ${usedKeys.size} 条\n`)
 
   console.log(`✗ 缺失词条（界面会直接显示 key 本身）：${missing.length}`)
   for (const m of missing) console.log(`   ${m.key}  ← ${m.refs[0]?.file}:${m.refs[0]?.line}  (${m.uses} 处)`)
+
+  console.log(`\n✗ 主进程缺失词条（界面会直接显示 key 本身）：${msgMissing.length}`)
+  for (const m of msgMissing) console.log(`   ${m.key}  ← ${m.file}:${m.line}`)
 
   const renderer = hardcoded.filter((h) => h.area === 'renderer')
   const main = hardcoded.filter((h) => h.area === 'main')
@@ -281,6 +322,6 @@ if (asJson) {
   for (const u of untranslated) console.log(`   ${u.key} = ${JSON.stringify(u.value)}`)
 }
 
-const failed = missing.length + hardcoded.length + untranslated.length
+const failed = missing.length + msgMissing.length + hardcoded.length + untranslated.length
 console.log(`\n${failed === 0 ? 'PASS — 无缺失、无硬编码' : `FAIL — ${failed} 项待处理`}`)
 process.exit(failed === 0 ? 0 : 1)

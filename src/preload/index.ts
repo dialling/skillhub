@@ -65,8 +65,9 @@ const api = {
     reveal: (p: string) => call<boolean>('agents:reveal', p)
   },
   install: {
-    run: (req: any) => call<any>('install:run', req),
-    uninstall: (skillId: string, agentId: string) => call<boolean>('install:uninstall', skillId, agentId),
+    fromGithub: (input: any) => call<any>('install:fromGithub', input),
+    uninstall: (skillId: string, agentId: string) =>
+      call<{ ok: boolean; agents: string[] }>('install:uninstall', skillId, agentId),
     uninstallAll: (skillId: string) => call<number>('install:uninstallAll', skillId),
     records: () => call<any[]>('install:records'),
     map: () => call<Record<string, string[]>>('install:map'),
@@ -78,7 +79,8 @@ const api = {
       call<any[]>('board:growth', days, limit, useApi, apiBudget),
     top: (limit?: number) => call<any[]>('board:top', limit),
     coverage: () => call<any>('board:coverage'),
-    growthOne: (fullName: string, days: 1 | 7 | 30) => call<number>('board:growthOne', fullName, days)
+    growthOne: (fullName: string, days: 1 | 7 | 30) =>
+      call<{ gained: number; source: string; approx: boolean; coveredHours: number }>('board:growthOne', fullName, days)
   },
   profile: {
     stats: () => call<any>('profile:stats'),
@@ -90,11 +92,6 @@ const api = {
     check: () => call<any>('update:check'),
     dismiss: (version: string | null) => call<boolean>('update:dismiss', version),
     isDismissed: (version: string) => call<boolean>('update:isDismissed', version)
-  },
-  sandbox: {
-    for: (skillName: string) => call<string>('sandbox:for', skillName),
-    root: () => call<string>('sandbox:root'),
-    clear: () => call<number>('sandbox:clear')
   },
   submit: {
     list: () => call<any[]>('submit:list'),
@@ -113,19 +110,6 @@ const api = {
   live: {
     refresh: () => call<any>('live:refresh'),
     status: () => call<any>('live:status')
-  },
-  launch: {
-    targets: () => call<any[]>('launch:targets'),
-    prepare: (req: {
-      skillId?: string
-      localPath?: string
-      localName?: string
-      localDescription?: string
-      agentId: string
-      workspace: string
-    }) => call<any>('launch:prepare', req),
-    run: (plan: any) => call<{ ok: boolean; message: string }>('launch:run', plan),
-    locations: (skillName: string) => call<string[]>('launch:locations', skillName)
   },
   discover: {
     localSkills: () => call<any[]>('discover:localSkills'),

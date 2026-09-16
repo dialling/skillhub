@@ -3,8 +3,6 @@ import {
   Settings as SettingsIcon,
   KeyRound,
   FolderOpen,
-  Link2,
-  Copy,
   Sparkles,
   RefreshCw,
   Database,
@@ -21,10 +19,7 @@ import { api } from '../api'
 import { useStore } from '../store'
 
 export function SettingsView(): React.JSX.Element {
-  const [sandbox, setSandbox] = useState('')
-  const [clearing, setClearing] = useState(false)
   useEffect(() => {
-    void api.sandbox.root().then(setSandbox).catch(() => {})
   }, [])
 
   const t = useStore((s) => s.t)
@@ -38,7 +33,6 @@ export function SettingsView(): React.JSX.Element {
   const toast = useStore((s) => s.toast)
 
   const [token, setToken] = useState(settings?.token || '')
-  const [libraryDir, setLibraryDir] = useState(settings?.libraryDir || '')
   const [sys, setSys] = useState<Record<string, any> | null>(null)
   const [showToken, setShowToken] = useState(false)
 
@@ -57,7 +51,6 @@ export function SettingsView(): React.JSX.Element {
 
   useEffect(() => {
     setToken(settings?.token || '')
-    setLibraryDir(settings?.libraryDir || '')
   }, [settings])
 
   return (
@@ -250,25 +243,14 @@ export function SettingsView(): React.JSX.Element {
           {t('settings.library')}
         </div>
         <div className="panel-body">
-          <div className="field">
-            <label>{t('settings.library')}</label>
-            <div className="row">
-              <input className="input" value={libraryDir} spellCheck={false} onChange={(e) => setLibraryDir(e.target.value)} />
-              <button
-                className="btn"
-                onClick={async () => {
-                  const picked = await api.system.pickDirectory()
-                  if (picked) setLibraryDir(picked)
-                }}
-              >
-                {t('agents.pickDir')}
-              </button>
-              <button className="btn primary" onClick={() => void updateSettings({ libraryDir })}>
-                {t('common.save')}
-              </button>
-            </div>
-            <div className="hint">{t('settings.libraryHint')}</div>
-          </div>
+          {/*
+            There is no library folder to configure any more.
+
+            The library is an index — repositories and the skills they contain,
+            with nothing on disk — so a path setting here would point at a
+            directory that is never written to. What the user chooses is where
+            each install goes, at the moment they install it.
+          */}
 
           <div className="field">
             <label>{t('settings.projectDir')}</label>
@@ -293,39 +275,6 @@ export function SettingsView(): React.JSX.Element {
             <div className="hint">{t('settings.projectHint')}</div>
           </div>
 
-          {/*
-            The sandbox is where a launch runs by default. Each skill gets its
-            own folder because a launch writes an AGENTS.md, and two skills
-            sharing one folder would both want to own that file.
-          */}
-          <div className="field">
-            <label>{t('settings.sandbox')}</label>
-            <div className="row">
-              <input className="input mono" value={sandbox} readOnly />
-              <button className="btn" onClick={() => void api.system.openExternal(sandbox)}>
-                <FolderOpen size={13} />
-                {t('settings.openSandbox')}
-              </button>
-              <button
-                className="btn"
-                disabled={clearing}
-                onClick={async () => {
-                  setClearing(true)
-                  try {
-                    const n = await api.sandbox.clear()
-                    toast('success', t('settings.sandboxCleared', { n }))
-                  } finally {
-                    setClearing(false)
-                  }
-                }}
-              >
-                <Trash2 size={13} />
-                {t('settings.clearSandbox')}
-              </button>
-            </div>
-            <div className="hint">{t('settings.sandboxHint')}</div>
-          </div>
-
 
           <div className="field">
             <label>{t('settings.installLocation')}</label>
@@ -344,26 +293,11 @@ export function SettingsView(): React.JSX.Element {
             <div className="hint">{t('settings.installLocationHint')}</div>
           </div>
 
-          <div className="field" style={{ marginBottom: 0 }}>
-            <label>{t('settings.installMode')}</label>
-            <div className="seg">
-              <button
-                className={settings?.installMode === 'symlink' ? 'active' : ''}
-                onClick={() => void updateSettings({ installMode: 'symlink' })}
-              >
-                <Link2 size={11} style={{ verticalAlign: -1, marginRight: 5 }} />
-                {t('detail.symlink')}
-              </button>
-              <button
-                className={settings?.installMode === 'copy' ? 'active' : ''}
-                onClick={() => void updateSettings({ installMode: 'copy' })}
-              >
-                <Copy size={11} style={{ verticalAlign: -1, marginRight: 5 }} />
-                {t('detail.copy')}
-              </button>
-            </div>
-            <div className="hint">{t('settings.installModeHint')}</div>
-          </div>
+          {/*
+            No install mode either: a skill fetched from GitHub has no local
+            original to link to, so every install is a real copy. The choice
+            between symlink and copy only existed because of the old checkout.
+          */}
         </div>
       </div>
 
@@ -499,10 +433,6 @@ export function SettingsView(): React.JSX.Element {
             <button className="btn" onClick={() => void api.system.openPath(sys?.userData || '')}>
               <HardDriveDownload size={13} />
               {t('settings.openUserData')}
-            </button>
-            <button className="btn" onClick={() => void api.system.openPath(settings?.libraryDir || '')}>
-              <FolderOpen size={13} />
-              {t('settings.library')}
             </button>
             {settings?.user && (
               <span className="chip green mono">

@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { lstatSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join, relative, posix } from 'node:path'
 import type { SubmissionRecord, SubmissionResult } from '../../shared/types'
 import { activeToken, ghFetch, GitHubError } from './github'
@@ -59,15 +59,57 @@ function truncate(text: string, max: number): string {
   return (cut > 60 ? slice.slice(0, cut + 1) : slice.trimEnd()).trim()
 }
 
+/**
+ * Every real file in the skill folder, relative to it.
+ *
+ * `lstatSync`, not `statSync`: a symlink is a pointer to somewhere else on this
+ * machine, not something the author put in the folder, and following one
+ * published files from outside the skill — a linked `references` directory that
+ * happened to point at another project went up with the submission. A dangling
+ * link is the same case from the other side: it threw, and one broken link
+ * failed the whole submission. Links are skipped, and an entry that cannot be
+ * read is skipped too rather than taking the other 119 files with it.
+ *
+ * Skipped links are logged, not counted in the manifest's `skipped`, which the
+ * record documents as media and oversized files: a link is not a file that was
+ * dropped from the skill, and calling it one would misdescribe the entry.
+ */
 function walk(dir: string, base = dir, out: string[] = []): string[] {
-  for (const entry of readdirSync(dir)) {
+  let entries: string[]
+  try {
+    entries = readdirSync(dir)
+  } catch (err: any) {
+    // The root of the walk is the skill folder itself: if that cannot be read
+    // there is nothing to submit, and reporting it as an empty folder would
+    // name the wrong cause. Deeper down, one unreadable directory is skipped
+    // instead of failing the submission over it.
+    if (dir === base) throw err
+    console.warn(`[submit] 跳过无法读取的目录 ${dir}：${err?.message || err}`)
+    return out
+  }
+  for (const entry of entries) {
     if (SKIP_DIRS.has(entry) || entry.startsWith('.')) continue
     const full = join(dir, entry)
-    const st = statSync(full)
+    let st: ReturnType<typeof lstatSync>
+    try {
+      st = lstatSync(full)
+    } catch (err: any) {
+      console.warn(`[submit] 跳过无法读取的条目 ${full}：${err?.message || err}`)
+      continue
+    }
+    if (st.isSymbolicLink()) {
+      console.warn(`[submit] 跳过符号链接 ${full}`)
+      continue
+    }
     if (st.isDirectory()) walk(full, base, out)
     else if (st.isFile()) out.push(relative(base, full))
   }
   return out
+}
+
+/** A failure as one line, in the shape the toasts already show it. */
+function errText(err: any): string {
+  return err instanceof GitHubError ? `${err.status} ${err.message}` : err?.message || String(err)
 }
 
 /** PUT one file. Returns false when the path already exists and is unchanged. */
@@ -92,17 +134,83 @@ async function putFile(path: string, content: Buffer, message: string): Promise<
   })
 }
 
-async function readManifest(): Promise<{ submissions: SubmissionRecord[] }> {
+/** DELETE one file. The Contents API needs the SHA of the blob it removes. */
+async function deleteFile(path: string, sha: string, message: string): Promise<void> {
+  await ghFetch(`/repos/${OWNER}/${REPO}/contents/${path}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, sha, branch: BRANCH })
+  })
+}
+
+/**
+ * Every file published under one repository folder, recursively, with the SHA
+ * needed to delete it.
+ *
+ * The walk starts at the folder it is handed and only descends into paths this
+ * very listing returned, so it can never reach outside that submission's own
+ * folder. A folder that is not there is not a failure: a first submission has
+ * nothing published yet.
+ */
+async function listRemoteFiles(dir: string): Promise<{ path: string; sha: string }[]> {
+  let entries: any
   try {
-    const raw = await ghFetch<{ content?: string }>(
+    entries = await ghFetch<any>(`/repos/${OWNER}/${REPO}/contents/${dir}?ref=${BRANCH}`)
+  } catch (err) {
+    if (err instanceof GitHubError && err.status === 404) return []
+    throw err
+  }
+  if (!Array.isArray(entries)) return []
+  const files: { path: string; sha: string }[] = []
+  for (const entry of entries) {
+    const { path, sha, type } = entry || {}
+    if (typeof path !== 'string' || typeof sha !== 'string') continue
+    if (type === 'dir') files.push(...(await listRemoteFiles(path)))
+    else files.push({ path, sha })
+  }
+  return files
+}
+
+/**
+ * The shared review index, or an empty one when the repository has none yet.
+ *
+ * Only a 404 means "no manifest": a rate limit, a dropped connection, a
+ * truncated body, JSON that does not parse, or a file too large for the
+ * Contents API to return are all failures. Reporting them as an empty manifest
+ * is what made a submission overwrite `submissions/index.json` with a single
+ * entry — every other pending submission disappeared from the review list, and
+ * nothing in the result said so.
+ */
+async function readManifest(): Promise<{ submissions: SubmissionRecord[] }> {
+  let raw: { content?: string; encoding?: string }
+  try {
+    raw = await ghFetch<{ content?: string; encoding?: string }>(
       `/repos/${OWNER}/${REPO}/contents/${DIR}/index.json?ref=${BRANCH}`
     )
-    if (!raw?.content) return { submissions: [] }
-    return JSON.parse(Buffer.from(raw.content, 'base64').toString('utf8'))
-  } catch {
-    // No manifest yet, or unreadable: start a fresh one rather than failing.
-    return { submissions: [] }
+  } catch (err) {
+    if (err instanceof GitHubError && err.status === 404) return { submissions: [] }
+    throw err
   }
+  // Over 1 MB and GitHub answers without a body (`encoding: 'none'`). An index
+  // we cannot read, not one that holds nothing.
+  if (raw?.encoding && raw.encoding !== 'base64') {
+    throw new Error(`submissions/index.json is too large to read (encoding=${raw.encoding})`)
+  }
+  // An empty file really does hold no submissions, so a fresh index loses nothing.
+  const text = raw?.content ? Buffer.from(raw.content, 'base64').toString('utf8').trim() : ''
+  if (!text) return { submissions: [] }
+  let parsed: { submissions?: SubmissionRecord[] }
+  try {
+    parsed = JSON.parse(text)
+  } catch (err: any) {
+    throw new Error(`submissions/index.json is not valid JSON: ${err?.message || err}`)
+  }
+  // Valid JSON that is not this manifest: writing over it would destroy whatever
+  // it actually is.
+  if (!Array.isArray(parsed?.submissions)) {
+    throw new Error('submissions/index.json is not a submission manifest')
+  }
+  return { submissions: parsed.submissions }
 }
 
 export async function listSubmissions(): Promise<SubmissionRecord[]> {
@@ -283,6 +391,41 @@ export async function submitSkill(input: SubmitInput): Promise<SubmissionResult>
 
   const slug = safeSegment(input.name)
   const parsed = readSkillDir(input.localPath)
+
+  /*
+    Read the shared index before the first write, and treat a real failure as a
+    failure.
+
+    The index belongs to every submission in the repository, but the read that
+    feeds the write was also the read that decided what the write replaces. A
+    rate limit or a dropped connection came back as "no manifest yet", and the
+    write then put a single entry where the whole review list had been: the other
+    pending submissions were gone from the list, with no error to explain it.
+    Reading first also means a failure here costs nothing — nothing is published
+    yet, so the submission can simply be sent again.
+  */
+  let manifest: { submissions: SubmissionRecord[] }
+  try {
+    manifest = await readManifest()
+  } catch (err: any) {
+    return { ok: false, uploaded: 0, message: m('submit.failed', { msg: errText(err) }) }
+  }
+
+  /*
+    What this slug already has published.
+
+    A re-submission has to replace the folder, not merge into it: the manifest
+    entry describes `submissions/<slug>/` as a whole, so a file left over from
+    the previous upload is a file the entry claims is part of a skill that no
+    longer contains it — and the reviewer reads the entry, then the folder.
+  */
+  let published: { path: string; sha: string }[]
+  try {
+    published = await listRemoteFiles(posix.join(DIR, slug))
+  } catch (err: any) {
+    return { ok: false, uploaded: 0, message: m('submit.failed', { msg: errText(err) }) }
+  }
+
   let uploaded = 0
   try {
     for (const file of payload) {
@@ -291,7 +434,7 @@ export async function submitSkill(input: SubmitInput): Promise<SubmissionResult>
       uploaded++
     }
   } catch (err: any) {
-    const msg = err instanceof GitHubError ? `${err.status} ${err.message}` : err?.message || String(err)
+    const msg = errText(err)
     return {
       ok: false,
       uploaded,
@@ -299,6 +442,25 @@ export async function submitSkill(input: SubmitInput): Promise<SubmissionResult>
         ? m('submit.partial', { n: uploaded, msg })
         : m('submit.failed', { msg })
     }
+  }
+
+  /*
+    The new payload is in place, so what the previous upload left behind can go.
+
+    Deletion comes after the upload, never before: a failure here leaves files
+    the entry does not describe, which is reported, while deleting first would
+    leave a published submission missing the files it does describe. Only paths
+    that the listing of this slug returned are deleted, so nothing outside this
+    submission's own folder can be touched.
+  */
+  const keep = new Set(payload.map((f) => posix.join(DIR, slug, f.rel.split(/[\\/]/).join('/'))))
+  try {
+    for (const file of published) {
+      if (keep.has(file.path)) continue
+      await deleteFile(file.path, file.sha, `submission: replace ${input.name}`)
+    }
+  } catch (err: any) {
+    return { ok: false, uploaded, message: m('submit.partial', { n: uploaded, msg: errText(err) }) }
   }
 
   const record: SubmissionRecord = {
@@ -315,14 +477,28 @@ export async function submitSkill(input: SubmitInput): Promise<SubmissionResult>
     status: 'pending'
   }
 
-  const manifest = await readManifest()
-  const submissions = (manifest.submissions || []).filter((s) => s.slug !== slug)
+  // `readManifest` guarantees an array, so this is the whole current list minus
+  // this slug's own previous entry.
+  const submissions = manifest.submissions.filter((s) => s.slug !== slug)
   submissions.push(record)
-  await putFile(
-    `${DIR}/index.json`,
-    Buffer.from(JSON.stringify({ updatedAt: new Date().toISOString(), submissions }, null, 2) + '\n', 'utf8'),
-    `submission: register ${input.name}`
-  )
+  try {
+    await putFile(
+      `${DIR}/index.json`,
+      Buffer.from(JSON.stringify({ updatedAt: new Date().toISOString(), submissions }, null, 2) + '\n', 'utf8'),
+      `submission: register ${input.name}`
+    )
+  } catch (err: any) {
+    /*
+      The files are published and the entry that describes them is not, and that
+      is not a success: the review list does not show this submission at all.
+
+      The reverse report is just as wrong. This write used to sit outside the
+      guard above, so a failure here rejected the whole call and the folder that
+      had already been published was reported as a total failure; the count says
+      what did happen — files copied, manifest not updated.
+    */
+    return { ok: false, uploaded, slug, message: m('submit.partial', { n: uploaded, msg: errText(err) }) }
+  }
 
   const flags = scanContent(payload)
   if (flags.length) {

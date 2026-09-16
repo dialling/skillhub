@@ -23,14 +23,7 @@
       "readsUniversalDir": false,
       "supportsSymlink": true,
       "confidence": "high",
-      "sourceUrl": "https://code.claude.com/docs/en/skills",
-      "launch": {
-        "kind": "cli",
-        "command": "claude",
-        "promptArgs": [],
-        "instructionFile": "CLAUDE.md",
-        "promptMode": "interactive"
-      }
+      "sourceUrl": "https://code.claude.com/docs/en/skills"
     },
     {
       "id": "codex",
@@ -53,14 +46,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://github.com/openai/codex/blob/main/codex-rs/ext/skills/src/host_roots.rs",
-      "launch": {
-        "kind": "cli",
-        "command": "codex",
-        "promptArgs": [],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "interactive"
-      }
+      "sourceUrl": "https://github.com/openai/codex/blob/main/codex-rs/ext/skills/src/host_roots.rs"
     },
     {
       "id": "cursor",
@@ -84,14 +70,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://cursor.com/docs/skills",
-      "launch": {
-        "kind": "cli",
-        "command": "cursor-agent",
-        "promptArgs": [],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "interactive"
-      }
+      "sourceUrl": "https://cursor.com/docs/skills"
     },
     {
       "id": "gemini-cli",
@@ -114,14 +93,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/skills.md",
-      "launch": {
-        "kind": "cli",
-        "command": "gemini",
-        "promptArgs": [],
-        "instructionFile": "GEMINI.md",
-        "promptMode": "interactive"
-      }
+      "sourceUrl": "https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/skills.md"
     },
     {
       "id": "github-copilot",
@@ -145,16 +117,7 @@
       "supportsSymlink": false,
       "confidence": "high",
       "sourceUrl": "https://code.visualstudio.com/docs/copilot/customization/agent-skills",
-      "notes": "VS Code / Copilot docs list .github/skills, .claude/skills and .agents/skills (project) plus ~/.copilot/skills, ~/.claude/skills and ~/.agents/skills (personal).",
-      "launch": {
-        "kind": "cli",
-        "command": "copilot",
-        "promptArgs": [
-          "-p"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "notes": "VS Code / Copilot docs list .github/skills, .claude/skills and .agents/skills (project) plus ~/.copilot/skills, ~/.claude/skills and ~/.agents/skills (personal)."
     },
     {
       "id": "kimi-code",
@@ -181,16 +144,7 @@
       "notes": "国际调研另以 kimi-code-cli 为 id 重复收录（仅记录了通用目录），已合并到本条。",
       "aliases": [
         "kimi-code-cli"
-      ],
-      "launch": {
-        "kind": "cli",
-        "command": "kimi",
-        "promptArgs": [
-          "-p"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      ]
     },
     {
       "id": "kimi-cli",
@@ -233,14 +187,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://docs.devin.ai/desktop/cascade/skills",
-      "launch": {
-        "kind": "app",
-        "appName": "Windsurf",
-        "command": "windsurf",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "sourceUrl": "https://docs.devin.ai/desktop/cascade/skills"
     },
     {
       "id": "cline",
@@ -261,14 +208,7 @@
       "readsUniversalDir": false,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://docs.cline.bot/customization/skills",
-      "launch": {
-        "kind": "app",
-        "appName": "Visual Studio Code",
-        "command": "code",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "sourceUrl": "https://docs.cline.bot/customization/skills"
     },
     {
       "id": "qwen-code",
@@ -291,14 +231,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": true,
       "confidence": "high",
-      "sourceUrl": "https://github.com/QwenLM/qwen-code/blob/main/docs/users/features/skills.md",
-      "launch": {
-        "kind": "cli",
-        "command": "qwen",
-        "promptArgs": [],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "sourceUrl": "https://github.com/QwenLM/qwen-code/blob/main/docs/users/features/skills.md"
     },
     {
       "id": "roo-code",
@@ -317,14 +250,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://roocodeinc.github.io/Roo-Code/advanced-usage/available-tools/skill/",
-      "launch": {
-        "kind": "app",
-        "appName": "Visual Studio Code",
-        "command": "code",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "sourceUrl": "https://roocodeinc.github.io/Roo-Code/advanced-usage/available-tools/skill/"
     },
     {
       "id": "kilo-code",
@@ -345,14 +271,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://github.com/Kilo-Org/kilocode/blob/main/packages/kilo-docs/pages/customize/skills.md",
-      "launch": {
-        "kind": "app",
-        "appName": "Visual Studio Code",
-        "command": "code",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "sourceUrl": "https://github.com/Kilo-Org/kilocode/blob/main/packages/kilo-docs/pages/customize/skills.md"
     },
     {
       "id": "opencode",
@@ -375,16 +294,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": true,
       "confidence": "high",
-      "sourceUrl": "https://opencode.ai/docs/skills",
-      "launch": {
-        "kind": "cli",
-        "command": "opencode",
-        "promptArgs": [
-          "--prompt"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "interactive"
-      }
+      "sourceUrl": "https://opencode.ai/docs/skills"
     },
     {
       "id": "trae",
@@ -403,13 +313,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://docs.trae.ai/ide/skills",
-      "launch": {
-        "kind": "app",
-        "appName": "Trae",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "sourceUrl": "https://docs.trae.ai/ide/skills"
     },
     {
       "id": "kiro",
@@ -432,13 +336,7 @@
       "readsUniversalDir": false,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://kiro.dev/docs/skills/",
-      "launch": {
-        "kind": "app",
-        "appName": "Kiro",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "sourceUrl": "https://kiro.dev/docs/skills/"
     },
     {
       "id": "amp",
@@ -460,16 +358,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://ampcode.com/docs/customize/skills",
-      "launch": {
-        "kind": "cli",
-        "command": "amp",
-        "promptArgs": [
-          "-x"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "sourceUrl": "https://ampcode.com/docs/customize/skills"
     },
     {
       "id": "goose",
@@ -493,17 +382,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://goose-docs.ai/docs/guides/context-engineering/using-skills/",
-      "launch": {
-        "kind": "cli",
-        "command": "goose",
-        "promptArgs": [
-          "run",
-          "-t"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "sourceUrl": "https://goose-docs.ai/docs/guides/context-engineering/using-skills/"
     },
     {
       "id": "continue",
@@ -526,14 +405,7 @@
       "readsUniversalDir": false,
       "supportsSymlink": false,
       "confidence": "medium",
-      "sourceUrl": "https://github.com/continuedev/continue/blob/main/core/config/markdown/loadMarkdownSkills.ts",
-      "launch": {
-        "kind": "app",
-        "appName": "Visual Studio Code",
-        "command": "code",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "sourceUrl": "https://github.com/continuedev/continue/blob/main/core/config/markdown/loadMarkdownSkills.ts"
     },
     {
       "id": "zed",
@@ -557,14 +429,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": true,
       "confidence": "high",
-      "sourceUrl": "https://zed.dev/docs/ai/skills",
-      "launch": {
-        "kind": "app",
-        "appName": "Zed",
-        "command": "zed",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "sourceUrl": "https://zed.dev/docs/ai/skills"
     },
     {
       "id": "warp",
@@ -585,13 +450,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": true,
       "confidence": "high",
-      "sourceUrl": "https://docs.warp.dev/agents/capabilities/skills",
-      "launch": {
-        "kind": "app",
-        "appName": "Warp",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "sourceUrl": "https://docs.warp.dev/agents/capabilities/skills"
     },
     {
       "id": "factory-droid",
@@ -614,14 +473,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://docs.factory.ai/harness/skills",
-      "launch": {
-        "kind": "cli",
-        "command": "droid",
-        "promptArgs": [],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "interactive"
-      }
+      "sourceUrl": "https://docs.factory.ai/harness/skills"
     },
     {
       "id": "dsh",
@@ -644,15 +496,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://github.com/dataelement/dsh-desktop",
-      "launch": {
-        "kind": "app",
-        "appName": "DSH Desktop",
-        "command": "dsh",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      },
-      "launchNote": "打开 DSH Desktop 客户端。本应用无法为它新建工作区 —— 该客户端是外壳，工作区由内部 harness 管理，主进程只读 argv 判断安全模式，从不解析路径，也没有声明 URL scheme 或文档类型。因此提示词会复制到剪贴板，你在客户端里打开 ~/.skillhub/sandbox/<技能名> 后直接粘贴即可。"
+      "sourceUrl": "https://github.com/dataelement/dsh-desktop"
     },
     {
       "id": "agents-standard",
@@ -671,13 +515,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://agentskills.io/client-implementation/adding-skills-support",
-      "launch": {
-        "kind": "web",
-        "url": "https://chatgpt.com",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "sourceUrl": "https://agentskills.io/client-implementation/adding-skills-support"
     },
     {
       "id": "lingma",
@@ -696,13 +534,7 @@
       "readsUniversalDir": false,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://docs.qoder.cn/user-guide/skills",
-      "launch": {
-        "kind": "app",
-        "appName": "Tongyi Lingma",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "sourceUrl": "https://docs.qoder.cn/user-guide/skills"
     },
     {
       "id": "qoder",
@@ -723,14 +555,7 @@
       "readsUniversalDir": false,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://docs.qoder.com/zh/cli/Skills",
-      "launch": {
-        "kind": "cli",
-        "command": "qoder",
-        "promptArgs": [],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "sourceUrl": "https://docs.qoder.com/zh/cli/Skills"
     },
     {
       "id": "codebuddy",
@@ -751,14 +576,7 @@
       "readsUniversalDir": false,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://cloud.tencent.cn/document/product/1831/137020",
-      "launch": {
-        "kind": "cli",
-        "command": "codebuddy",
-        "promptArgs": [],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "interactive"
-      }
+      "sourceUrl": "https://cloud.tencent.cn/document/product/1831/137020"
     },
     {
       "id": "comate",
@@ -838,14 +656,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://agent.minimaxi.com/docs/cli/configuration.md",
-      "launch": {
-        "kind": "cli",
-        "command": "mcode",
-        "promptArgs": [],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "interactive"
-      }
+      "sourceUrl": "https://agent.minimaxi.com/docs/cli/configuration.md"
     },
     {
       "id": "workbuddy",
@@ -885,14 +696,7 @@
       "readsUniversalDir": false,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://neovateai.dev/en/docs/skills",
-      "launch": {
-        "kind": "cli",
-        "command": "neovate",
-        "promptArgs": [],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "interactive"
-      }
+      "sourceUrl": "https://neovateai.dev/en/docs/skills"
     },
     {
       "id": "pochi",
@@ -913,16 +717,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://docs.getpochi.com/skills/",
-      "launch": {
-        "kind": "cli",
-        "command": "pochi",
-        "promptArgs": [
-          "-p"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "sourceUrl": "https://docs.getpochi.com/skills/"
     },
     {
       "id": "coderider",
@@ -962,16 +757,7 @@
       "readsUniversalDir": false,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "http://docs.iflow.cn/cli/examples/skill/",
-      "launch": {
-        "kind": "cli",
-        "command": "iflow",
-        "promptArgs": [
-          "-p"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "sourceUrl": "http://docs.iflow.cn/cli/examples/skill/"
     },
     {
       "id": "zcode",
@@ -1071,17 +857,7 @@
       "supportsSymlink": false,
       "confidence": "high",
       "sourceUrl": "https://api-docs.deepseek.com/quick_start/agent_integrations/deepcode/",
-      "notes": "两份独立调研对全局目录存在分歧：中文调研只记录到通用目录 ~/.agents/skills，国际调研找到了专用目录 ~/.deepcode/skills。此处采用专用目录，并标注它也读取通用目录。",
-      "launch": {
-        "kind": "cli",
-        "command": "deepcode",
-        "promptArgs": [
-          "-x",
-          "-p"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "notes": "两份独立调研对全局目录存在分歧：中文调研只记录到通用目录 ~/.agents/skills，国际调研找到了专用目录 ~/.deepcode/skills。此处采用专用目录，并标注它也读取通用目录。"
     },
     {
       "id": "deepseek-tui",
@@ -1102,16 +878,7 @@
       "readsUniversalDir": false,
       "supportsSymlink": false,
       "confidence": "medium",
-      "sourceUrl": "https://github.com/deepseek-ai/awesome-deepseek-agent/blob/main/docs/deepseek-tui.md",
-      "launch": {
-        "kind": "cli",
-        "command": "codewhale",
-        "promptArgs": [
-          "exec"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "sourceUrl": "https://github.com/deepseek-ai/awesome-deepseek-agent/blob/main/docs/deepseek-tui.md"
     },
     {
       "id": "kode",
@@ -1132,14 +899,7 @@
       "readsUniversalDir": false,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://github.com/shareAI-lab/Kode-CLI/blob/main/docs/skills.md",
-      "launch": {
-        "kind": "cli",
-        "command": "kode",
-        "promptArgs": [],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "interactive"
-      }
+      "sourceUrl": "https://github.com/shareAI-lab/Kode-CLI/blob/main/docs/skills.md"
     },
     {
       "id": "junie",
@@ -1161,16 +921,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://www.jetbrains.com/help/junie/agent-skills.html",
-      "launch": {
-        "kind": "cli",
-        "command": "junie",
-        "promptArgs": [
-          "--prompt"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "interactive"
-      }
+      "sourceUrl": "https://www.jetbrains.com/help/junie/agent-skills.html"
     },
     {
       "id": "augment-code",
@@ -1191,14 +942,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://docs.augmentcode.com/cli/skills",
-      "launch": {
-        "kind": "cli",
-        "command": "auggie",
-        "promptArgs": [],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "interactive"
-      }
+      "sourceUrl": "https://docs.augmentcode.com/cli/skills"
     },
     {
       "id": "antigravity",
@@ -1219,16 +963,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://antigravity.google/docs/skills",
-      "launch": {
-        "kind": "cli",
-        "command": "agy",
-        "promptArgs": [
-          "-p"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "sourceUrl": "https://antigravity.google/docs/skills"
     },
     {
       "id": "grok",
@@ -1249,13 +984,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://docs.x.ai/build/features/skills-plugins-marketplaces",
-      "launch": {
-        "kind": "web",
-        "url": "https://grok.com",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "sourceUrl": "https://docs.x.ai/build/features/skills-plugins-marketplaces"
     },
     {
       "id": "devin",
@@ -1276,13 +1005,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://docs.devin.ai/cli/extensibility/skills/overview",
-      "launch": {
-        "kind": "web",
-        "url": "https://app.devin.ai",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "sourceUrl": "https://docs.devin.ai/cli/extensibility/skills/overview"
     },
     {
       "id": "openhands",
@@ -1303,17 +1026,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://docs.openhands.dev/overview/skills",
-      "launch": {
-        "kind": "cli",
-        "command": "openhands",
-        "promptArgs": [
-          "--headless",
-          "-t"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "sourceUrl": "https://docs.openhands.dev/overview/skills"
     },
     {
       "id": "tabnine",
@@ -1334,16 +1047,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://docs.tabnine.com/main/getting-started/tabnine-cli/features/agent-skills",
-      "launch": {
-        "kind": "cli",
-        "command": "tabnine",
-        "promptArgs": [
-          "-p"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "sourceUrl": "https://docs.tabnine.com/main/getting-started/tabnine-cli/features/agent-skills"
     },
     {
       "id": "rovodev",
@@ -1364,17 +1068,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://support.atlassian.com/rovo/docs/extend-rovo-dev-cli-with-agent-skills/",
-      "launch": {
-        "kind": "cli",
-        "command": "acli",
-        "promptArgs": [
-          "rovodev",
-          "run"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "sourceUrl": "https://support.atlassian.com/rovo/docs/extend-rovo-dev-cli-with-agent-skills/"
     },
     {
       "id": "mistral-vibe",
@@ -1395,14 +1089,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": true,
       "confidence": "high",
-      "sourceUrl": "https://github.com/mistralai/platform-docs-public/blob/main/public/vibe/code/cli/skills.md",
-      "launch": {
-        "kind": "cli",
-        "command": "vibe",
-        "promptArgs": [],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "interactive"
-      }
+      "sourceUrl": "https://github.com/mistralai/platform-docs-public/blob/main/public/vibe/code/cli/skills.md"
     },
     {
       "id": "crush",
@@ -1423,16 +1110,7 @@
       "readsUniversalDir": false,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://github.com/charmbracelet/crush",
-      "launch": {
-        "kind": "cli",
-        "command": "crush",
-        "promptArgs": [
-          "run"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "sourceUrl": "https://github.com/charmbracelet/crush"
     },
     {
       "id": "letta",
@@ -1453,16 +1131,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://docs.letta.com/letta-code/skills",
-      "launch": {
-        "kind": "cli",
-        "command": "letta",
-        "promptArgs": [
-          "-p"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "sourceUrl": "https://docs.letta.com/letta-code/skills"
     },
     {
       "id": "aider-desk",
@@ -1483,16 +1152,7 @@
       "readsUniversalDir": false,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://aiderdesk.hotovo.com/docs/agent-mode/skills",
-      "launch": {
-        "kind": "cli",
-        "command": "aiderdesk",
-        "promptArgs": [
-          "run"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "sourceUrl": "https://aiderdesk.hotovo.com/docs/agent-mode/skills"
     },
     {
       "id": "openclaw",
@@ -1514,13 +1174,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://docs.openclaw.ai/tools/skills",
-      "launch": {
-        "kind": "app",
-        "appName": "OpenClaw",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "sourceUrl": "https://docs.openclaw.ai/tools/skills"
     },
     {
       "id": "hermes-agent",
@@ -1541,18 +1195,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://hermes-agent.nousresearch.com/docs/user-guide/features/skills",
-      "launch": {
-        "kind": "cli",
-        "command": "hermes",
-        "promptArgs": [
-          "chat",
-          "--oneshot",
-          "-q"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "sourceUrl": "https://hermes-agent.nousresearch.com/docs/user-guide/features/skills"
     },
     {
       "id": "mux",
@@ -1574,16 +1217,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://mux.coder.com/agent-skills",
-      "launch": {
-        "kind": "cli",
-        "command": "xum",
-        "promptArgs": [
-          "run"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "sourceUrl": "https://mux.coder.com/agent-skills"
     },
     {
       "id": "firebender",
@@ -1646,14 +1280,7 @@
       "confidence": "high",
       "sourceUrl": "https://docs.qodo.ai/governance/manage-skills-across-repositories",
       "projectOnly": true,
-      "notes": "该 agent 未记录用户级技能目录，只能安装到项目内的 .qodo/skills。",
-      "launch": {
-        "kind": "cli",
-        "command": "qodo",
-        "promptArgs": [],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "notes": "该 agent 未记录用户级技能目录，只能安装到项目内的 .qodo/skills。"
     },
     {
       "id": "snowflake-cortex-code",
@@ -1674,16 +1301,7 @@
       "readsUniversalDir": false,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://docs.snowflake.com/en/user-guide/cortex-code/extensibility",
-      "launch": {
-        "kind": "cli",
-        "command": "cortex",
-        "promptArgs": [
-          "-p"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "sourceUrl": "https://docs.snowflake.com/en/user-guide/cortex-code/extensibility"
     },
     {
       "id": "command-code",
@@ -1704,16 +1322,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://commandcode.ai/docs/skills",
-      "launch": {
-        "kind": "cli",
-        "command": "cmd",
-        "promptArgs": [
-          "-p"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "sourceUrl": "https://commandcode.ai/docs/skills"
     },
     {
       "id": "pi",
@@ -1734,14 +1343,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/docs/skills.md",
-      "launch": {
-        "kind": "cli",
-        "command": "pi",
-        "promptArgs": [],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "interactive"
-      }
+      "sourceUrl": "https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/docs/skills.md"
     },
     {
       "id": "autohand",
@@ -1762,14 +1364,7 @@
       "readsUniversalDir": false,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://autohand.ai/docs/working-with-autohand-code/agent-skills.html",
-      "launch": {
-        "kind": "cli",
-        "command": "autohand",
-        "promptArgs": [],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "sourceUrl": "https://autohand.ai/docs/working-with-autohand-code/agent-skills.html"
     },
     {
       "id": "emdash",
@@ -1790,13 +1385,7 @@
       "readsUniversalDir": false,
       "supportsSymlink": true,
       "confidence": "high",
-      "sourceUrl": "https://docs.emdash.sh/library/skills",
-      "launch": {
-        "kind": "app",
-        "appName": "Emdash",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "sourceUrl": "https://docs.emdash.sh/library/skills"
     },
     {
       "id": "fast-agent",
@@ -1817,17 +1406,7 @@
       "confidence": "high",
       "sourceUrl": "https://fast-agent.ai/agents/skills/",
       "projectOnly": true,
-      "notes": "该 agent 未记录用户级技能目录，只能安装到项目内的 .fast-agent/skills。",
-      "launch": {
-        "kind": "cli",
-        "command": "fast-agent",
-        "promptArgs": [
-          "go",
-          "--message"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "notes": "该 agent 未记录用户级技能目录，只能安装到项目内的 .fast-agent/skills。"
     },
     {
       "id": "nanobot",
@@ -1848,16 +1427,7 @@
       "readsUniversalDir": false,
       "supportsSymlink": false,
       "confidence": "high",
-      "sourceUrl": "https://nanobot.wiki/docs/0.1.5/use-nanobot/skills",
-      "launch": {
-        "kind": "cli",
-        "command": "nanobot",
-        "promptArgs": [
-          "-m"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "sourceUrl": "https://nanobot.wiki/docs/0.1.5/use-nanobot/skills"
     },
     {
       "id": "vtcode",
@@ -1878,16 +1448,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "medium",
-      "sourceUrl": "https://github.com/vinhnx/vtcode/blob/main/docs/skills/SKILLS_GUIDE.md",
-      "launch": {
-        "kind": "cli",
-        "command": "vtcode",
-        "promptArgs": [
-          "-p"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "sourceUrl": "https://github.com/vinhnx/vtcode/blob/main/docs/skills/SKILLS_GUIDE.md"
     },
     {
       "id": "bub",
@@ -1908,16 +1469,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "medium",
-      "sourceUrl": "https://github.com/bubbuild/bub/blob/main/src/bub/skills.py",
-      "launch": {
-        "kind": "cli",
-        "command": "bub",
-        "promptArgs": [
-          "run"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "sourceUrl": "https://github.com/bubbuild/bub/blob/main/src/bub/skills.py"
     },
     {
       "id": "sarvam-code",
@@ -1938,13 +1490,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "medium",
-      "sourceUrl": "https://github.com/vercel-labs/skills/blob/main/src/agents.ts",
-      "launch": {
-        "kind": "cli",
-        "command": "sarvam",
-        "promptArg": false,
-        "instructionFile": "AGENTS.md"
-      }
+      "sourceUrl": "https://github.com/vercel-labs/skills/blob/main/src/agents.ts"
     },
     {
       "id": "zencoder",
@@ -2025,16 +1571,7 @@
       "readsUniversalDir": false,
       "supportsSymlink": false,
       "confidence": "medium",
-      "sourceUrl": "https://github.com/vercel-labs/skills/blob/main/src/agents.ts",
-      "launch": {
-        "kind": "cli",
-        "command": "bob",
-        "promptArgs": [
-          "run"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "sourceUrl": "https://github.com/vercel-labs/skills/blob/main/src/agents.ts"
     },
     {
       "id": "posit-assistant",
@@ -2075,13 +1612,7 @@
       "confidence": "high",
       "sourceUrl": "https://docs.replit.com/features/agent/skills",
       "projectOnly": true,
-      "notes": "该 agent 未记录用户级技能目录，只能安装到项目内的 .agents/skills。",
-      "launch": {
-        "kind": "web",
-        "url": "https://replit.com",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "notes": "该 agent 未记录用户级技能目录，只能安装到项目内的 .agents/skills。"
     },
     {
       "id": "adal",
@@ -2102,16 +1633,7 @@
       "readsUniversalDir": false,
       "supportsSymlink": false,
       "confidence": "medium",
-      "sourceUrl": "https://github.com/vercel-labs/skills/blob/main/src/agents.ts",
-      "launch": {
-        "kind": "cli",
-        "command": "adal",
-        "promptArgs": [
-          "-q"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "sourceUrl": "https://github.com/vercel-labs/skills/blob/main/src/agents.ts"
     },
     {
       "id": "forgecode",
@@ -2132,16 +1654,7 @@
       "readsUniversalDir": false,
       "supportsSymlink": false,
       "confidence": "medium",
-      "sourceUrl": "https://github.com/vercel-labs/skills/blob/main/src/agents.ts",
-      "launch": {
-        "kind": "cli",
-        "command": "forge",
-        "promptArgs": [
-          "-p"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "sourceUrl": "https://github.com/vercel-labs/skills/blob/main/src/agents.ts"
     },
     {
       "id": "kimchi",
@@ -2162,14 +1675,7 @@
       "readsUniversalDir": false,
       "supportsSymlink": false,
       "confidence": "medium",
-      "sourceUrl": "https://github.com/vercel-labs/skills/blob/main/src/agents.ts",
-      "launch": {
-        "kind": "cli",
-        "command": "kimchi",
-        "promptArgs": [],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "interactive"
-      }
+      "sourceUrl": "https://github.com/vercel-labs/skills/blob/main/src/agents.ts"
     },
     {
       "id": "dexto",
@@ -2190,16 +1696,7 @@
       "readsUniversalDir": true,
       "supportsSymlink": false,
       "confidence": "medium",
-      "sourceUrl": "https://github.com/vercel-labs/skills/blob/main/src/agents.ts",
-      "launch": {
-        "kind": "cli",
-        "command": "dexto",
-        "promptArgs": [
-          "run"
-        ],
-        "instructionFile": "AGENTS.md",
-        "promptMode": "oneshot"
-      }
+      "sourceUrl": "https://github.com/vercel-labs/skills/blob/main/src/agents.ts"
     },
     {
       "id": "web-chatgpt",
@@ -2217,13 +1714,7 @@
       "supportsSymlink": false,
       "confidence": "high",
       "sourceUrl": "https://chatgpt.com",
-      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。",
-      "launch": {
-        "kind": "web",
-        "url": "https://chatgpt.com",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。"
     },
     {
       "id": "web-claude",
@@ -2241,13 +1732,7 @@
       "supportsSymlink": false,
       "confidence": "high",
       "sourceUrl": "https://claude.ai/new",
-      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。",
-      "launch": {
-        "kind": "web",
-        "url": "https://claude.ai/new",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。"
     },
     {
       "id": "web-gemini",
@@ -2265,13 +1750,7 @@
       "supportsSymlink": false,
       "confidence": "high",
       "sourceUrl": "https://gemini.google.com/app",
-      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。",
-      "launch": {
-        "kind": "web",
-        "url": "https://gemini.google.com/app",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。"
     },
     {
       "id": "web-deepseek",
@@ -2289,13 +1768,7 @@
       "supportsSymlink": false,
       "confidence": "high",
       "sourceUrl": "https://chat.deepseek.com",
-      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。",
-      "launch": {
-        "kind": "web",
-        "url": "https://chat.deepseek.com",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。"
     },
     {
       "id": "web-kimi",
@@ -2313,13 +1786,7 @@
       "supportsSymlink": false,
       "confidence": "high",
       "sourceUrl": "https://www.kimi.com",
-      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。",
-      "launch": {
-        "kind": "web",
-        "url": "https://www.kimi.com",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。"
     },
     {
       "id": "web-qwen",
@@ -2337,13 +1804,7 @@
       "supportsSymlink": false,
       "confidence": "high",
       "sourceUrl": "https://chat.qwen.ai",
-      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。",
-      "launch": {
-        "kind": "web",
-        "url": "https://chat.qwen.ai",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。"
     },
     {
       "id": "web-doubao",
@@ -2361,13 +1822,7 @@
       "supportsSymlink": false,
       "confidence": "high",
       "sourceUrl": "https://www.doubao.com/chat/",
-      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。",
-      "launch": {
-        "kind": "web",
-        "url": "https://www.doubao.com/chat/",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。"
     },
     {
       "id": "web-yuanbao",
@@ -2385,13 +1840,7 @@
       "supportsSymlink": false,
       "confidence": "high",
       "sourceUrl": "https://yuanbao.tencent.com/chat/",
-      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。",
-      "launch": {
-        "kind": "web",
-        "url": "https://yuanbao.tencent.com/chat/",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。"
     },
     {
       "id": "web-glm",
@@ -2409,13 +1858,7 @@
       "supportsSymlink": false,
       "confidence": "high",
       "sourceUrl": "https://chatglm.cn/main/alltoolsdetail",
-      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。",
-      "launch": {
-        "kind": "web",
-        "url": "https://chatglm.cn/main/alltoolsdetail",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。"
     },
     {
       "id": "web-minimax",
@@ -2433,13 +1876,7 @@
       "supportsSymlink": false,
       "confidence": "high",
       "sourceUrl": "https://chat.minimaxi.com",
-      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。",
-      "launch": {
-        "kind": "web",
-        "url": "https://chat.minimaxi.com",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。"
     },
     {
       "id": "web-copilot",
@@ -2457,13 +1894,7 @@
       "supportsSymlink": false,
       "confidence": "high",
       "sourceUrl": "https://copilot.microsoft.com",
-      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。",
-      "launch": {
-        "kind": "web",
-        "url": "https://copilot.microsoft.com",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。"
     },
     {
       "id": "web-mistral",
@@ -2481,13 +1912,7 @@
       "supportsSymlink": false,
       "confidence": "high",
       "sourceUrl": "https://chat.mistral.ai/chat",
-      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。",
-      "launch": {
-        "kind": "web",
-        "url": "https://chat.mistral.ai/chat",
-        "instructionFile": "AGENTS.md",
-        "promptMode": "clipboard"
-      }
+      "notes": "网页版对话服务：没有本地技能目录，技能内容随提示词一起给出。"
     }
   ],
   "launchAddedAt": "2026-09-15T15:16:14.424Z"

@@ -9,21 +9,19 @@ import {
   Download,
   Layers,
   Upload,
-  Rocket,
   Bot,
   Plus,
   ChevronDown,
   ChevronRight,
   LayoutGrid,
   List as ListIcon,
-  Star,
-  Play
+  Star
 } from 'lucide-react'
-import type { LibraryItem } from '@shared/types'
+import type { LibraryItem, SkillEntry } from '@shared/types'
 import { fmtRelative, fmtStars, gradientFor, gradientTint } from '../api'
 import { useStore } from '../store'
 import { stagger } from '../ui'
-import { BulkInstallModal } from '../components/BulkInstallModal'
+import { InstallModal } from '../components/InstallModal'
 
 /**
  * The library, laid out the way Steam lays out a game library: a big banner for
@@ -48,7 +46,7 @@ export function LibraryView(): React.JSX.Element {
   const openDetail = useStore((s) => s.openDetail)
   const syncItem = useStore((s) => s.syncLibraryItem)
   const removeFromLibrary = useStore((s) => s.removeFromLibrary)
-  const install = useStore((s) => s.install)
+  const openInstall = useStore((s) => s.openInstall)
   const agents = useStore((s) => s.agents)
 
   const installedSkillsOf = (item: LibraryItem): number =>
@@ -79,21 +77,44 @@ export function LibraryView(): React.JSX.Element {
   */
   const installedSkills = Object.values(installMap).filter((l) => l.length).length
   const installedRecords = Object.values(installMap).reduce((n, l) => n + l.length, 0)
-  /** Skills not installed anywhere yet — what a bulk install would act on. */
-  const pendingIds = library.flatMap((item) =>
-    item.skills.filter((s) => !(installMap[s.id] || []).length).map((s) => s.id)
-  )
-  const pendingSkills = pendingIds.length
+  /** Every skill not installed anywhere yet — what the bulk action acts on. */
+  const pending = library.flatMap((item) => item.skills.filter((s) => !(installMap[s.id] || []).length))
+  const pendingSkills = pending.length
 
-  // Bulk install now asks where to put things rather than writing into every
-  // enabled agent; the modal owns the choice.
-  const [bulkOpen, setBulkOpen] = useState(false)
-  // Installing one skill reuses the same picker as the bulk action: the question
-  // ("which agents?") is identical, only the list of skills differs.
-  const [singleId, setSingleId] = useState<string | null>(null)
+  /**
+   * Installing a repository installs what it has that is not installed yet.
+   *
+   * Offering all of them again would mean a wall of "already exists" for anyone
+   * who came back for the two skills they skipped the first time.
+   */
+  const installMany = (skills: SkillEntry[]): void => {
+    const missing = skills.filter((s) => !(installMap[s.id] || []).length)
+    openInstall(missing.length ? missing : skills)
+  }
+
+  /** A skill found on this machine: its own folder is the source. */
+  const installLocal = (realPath: string, name: string, description?: string): void => {
+    openInstall([
+      {
+        id: `local:${realPath}`,
+        repoFullName: 'local',
+        path: '',
+        name,
+        title: name,
+        descriptionEn: description,
+        tags: [],
+        source: 'local',
+        localPath: realPath
+      }
+    ])
+  }
+
   const installOne = (skillId: string): void => {
-    setSingleId(skillId)
-    setBulkOpen(true)
+    if (skillId.startsWith('local:')) return
+    for (const item of library) {
+      const hit = item.skills.find((s) => s.id === skillId)
+      if (hit) return openInstall([hit])
+    }
   }
 
   if (library.length === 0) {
@@ -108,7 +129,7 @@ export function LibraryView(): React.JSX.Element {
             <div className="view-sub">{t('library.subtitle')}</div>
           </div>
         </div>
-        <MySkillsPanel onInstallOne={installOne} />
+        <MySkillsPanel onInstallOne={installOne} onInstallLocal={installLocal} />
         <div className="empty" style={{ marginTop: 18 }}>
           <Library size={30} className="icon" />
           <h3>{t('library.empty')}</h3>
@@ -129,24 +150,16 @@ export function LibraryView(): React.JSX.Element {
 
   return (
     <div className="view view-flush">
-      <MySkillsPanel onInstallOne={installOne} />
+      <InstallModal />
+      <MySkillsPanel onInstallOne={installOne} onInstallLocal={installLocal} />
 
-
-      <BulkInstallModal
-        open={bulkOpen}
-        pendingIds={singleId ? [singleId] : pendingIds}
-        onClose={() => {
-          setBulkOpen(false)
-          setSingleId(null)
-        }}
-      />
 
       {selected && (
         <LibraryHero
           item={selected}
           installedSkills={installedSkillsOf(selected)}
           agentCount={activeAgents.length}
-          onLaunch={() => void openLaunchForItem(selected)}
+          onInstall={() => installMany(selected.skills)}
           onDetail={() => void openDetail(selected.fullName)}
           onSync={() => void syncItem(selected.id)}
           onReveal={() => void window.skillhub.system.openPath(selected.sourcePath)}
@@ -205,16 +218,9 @@ export function LibraryView(): React.JSX.Element {
           </button>
           <button
             className="btn primary"
-            disabled={!agents.length || pendingSkills === 0}
-            onClick={() => setBulkOpen(true)}
-            title={
-              pendingSkills === 0
-                ? t('library.allInstalled')
-                : t('library.installPendingHint', {
-                    n: pendingSkills,
-                    agents: activeAgents.map((a) => a.name).join(', ')
-                  })
-            }
+            disabled={pendingSkills === 0}
+            onClick={() => openInstall(pending)}
+            title={pendingSkills === 0 ? t('library.allInstalled') : t('library.installPendingHint', { n: pendingSkills })}
           >
             {pendingSkills === 0 ? <Check size={13} /> : <Download size={13} />}
             {pendingSkills === 0 ? (
@@ -281,9 +287,14 @@ export function LibraryView(): React.JSX.Element {
                 <span className="stat">{fmtStars(item.meta.stars)}</span>
                 <span className="stat">{item.lastSyncAt ? fmtRelative(item.lastSyncAt, lang) : '—'}</span>
               </div>
-              <button className="btn primary sm" onClick={() => void openLaunchForItem(item)}>
-                <Play size={11} />
-                {t('launch.action')}
+              <button
+                className="btn primary sm"
+                disabled={!item.skills.length}
+                title={t('library.installRepoHint', { n: item.skills.length })}
+                onClick={() => installMany(item.skills)}
+              >
+                <Download size={11} />
+                {t('library.installRepo')}
               </button>
             </div>
           ))}
@@ -293,14 +304,6 @@ export function LibraryView(): React.JSX.Element {
   )
 }
 
-/** Launch the first installed skill of an item, or its detail page if none. */
-async function openLaunchForItem(item: LibraryItem): Promise<void> {
-  const s = useStore.getState()
-  const installed = item.skills.find((sk) => (s.installMap[sk.id] || []).length > 0)
-  const target = installed || item.skills[0]
-  if (target) await s.openLaunch({ from: 'library', skillId: target.id })
-  else await s.openDetail(item.fullName)
-}
 
 /* -------------------------------------------------------------- hero --- */
 
@@ -308,7 +311,7 @@ function LibraryHero({
   item,
   installedSkills,
   agentCount,
-  onLaunch,
+  onInstall,
   onDetail,
   onSync,
   onReveal,
@@ -317,7 +320,7 @@ function LibraryHero({
   item: LibraryItem
   installedSkills: number
   agentCount: number
-  onLaunch: () => void
+  onInstall: () => void
   onDetail: () => void
   onSync: () => void
   onReveal: () => void
@@ -366,9 +369,14 @@ function LibraryHero({
         </div>
 
         <div className="lh-actions">
-          <button className="btn-play" onClick={onLaunch} title={t('launch.action')}>
-            <Play size={17} />
-            {t('launch.action')}
+          <button
+            className="btn-play"
+            disabled={!item.skills.length}
+            onClick={onInstall}
+            title={t('library.installRepoHint', { n: item.skills.length })}
+          >
+            <Download size={17} />
+            {item.skills.length ? t('library.installRepo') : t('library.noSkills')}
           </button>
           <div className="lh-sub">
             <button className="btn ghost sm" onClick={onDetail}>
@@ -480,14 +488,19 @@ function Capsule({
  * because it answers a different question: "what can I run right now" versus
  * "what have I collected".
  */
-function MySkillsPanel({ onInstallOne }: { onInstallOne: (skillId: string) => void }): React.JSX.Element | null {
+function MySkillsPanel({
+  onInstallOne,
+  onInstallLocal
+}: {
+  onInstallOne: (skillId: string) => void
+  onInstallLocal: (realPath: string, name: string, description?: string) => void
+}): React.JSX.Element | null {
   const t = useStore((s) => s.t)
   const discovered = useStore((s) => s.discovered)
   const discovering = useStore((s) => s.discovering)
   const scanLocal = useStore((s) => s.scanLocal)
   const addToLibrary = useStore((s) => s.addToLibrary)
   const uninstall = useStore((s) => s.uninstall)
-  const openLaunch = useStore((s) => s.openLaunch)
   const submitSkill = useStore((s) => s.submitSkill)
   const submitting = useStore((s) => s.submitting)
   const library = useStore((s) => s.library)
@@ -635,7 +648,11 @@ function MySkillsPanel({ onInstallOne }: { onInstallOne: (skillId: string) => vo
                   <button
                     className="btn sm"
                     title={libId ? t('library.installOne') : t('library.installLocal')}
-                    onClick={() => onInstallOne(libId || `local:${r.realPath}`)}
+                    onClick={() =>
+                      libId
+                        ? onInstallOne(libId)
+                        : onInstallLocal(r.realPath, r.name, r.description)
+                    }
                   >
                     <Download size={12} />
                     {t('library.installOneShort')}
@@ -649,19 +666,7 @@ function MySkillsPanel({ onInstallOne }: { onInstallOne: (skillId: string) => vo
                     backend stays (core/submit.ts, `submissions/` in the repo);
                     only the button is gone.
                   */}
-                  <button
-                    className="btn primary sm"
-                    onClick={() =>
-                      void openLaunch(
-                        libId
-                          ? { from: 'library', skillId: libId }
-                          : { from: 'local', path: r.realPath, name: r.name, description: r.description }
-                      )
-                    }
-                  >
-                    <Rocket size={12} />
-                    {t('launch.action')}
-                  </button>
+
                 </div>
               )
             })}

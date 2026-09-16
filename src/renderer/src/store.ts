@@ -3,9 +3,6 @@ import { api } from './api'
 import type {
   AgentTarget,
   InstallTargetAdvice,
-  LaunchPlan,
-  LaunchSource,
-  LaunchTarget,
   LocalSkill,
   Scenario,
   GrowthRow,
@@ -109,11 +106,9 @@ interface State {
   discovering: boolean
   installTarget: InstallTargetAdvice | null
   showTargetModal: boolean
-  launchTargets: LaunchTarget[]
-  launchSource: LaunchSource | null
-  launchPlan: LaunchPlan | null
-  showLaunchModal: boolean
-  launching: boolean
+  installOpen: boolean
+  installPendingSkills: SkillEntry[]
+  installing: boolean
 
   t: (key: string, vars?: Record<string, string | number | undefined>) => string
   setChartMode: (m: 'stars' | 'growth') => void
@@ -122,10 +117,9 @@ interface State {
   applyInstallTarget: (path: string) => Promise<void>
   setShowTargetModal: (open: boolean) => void
   markSeen: (view: 'library' | 'agents') => Promise<void>
-  openLaunch: (source: LaunchSource) => Promise<void>
-  closeLaunch: () => void
-  buildLaunchPlan: (agentId: string, workspace: string) => Promise<LaunchPlan | null>
-  runLaunch: (plan: LaunchPlan) => Promise<void>
+  openInstall: (skills: SkillEntry[]) => void
+  closeInstall: () => void
+  installFromGithub: (destination: string) => Promise<boolean>
   loadScenarios: () => Promise<void>
   openScenario: (id: string | null) => Promise<void>
   goToScenarios: () => void
@@ -167,7 +161,6 @@ interface State {
   addToLibrary: (fullName: string, silent?: boolean) => Promise<LibraryItem | null>
   removeFromLibrary: (id: string, deleteFiles: boolean) => Promise<void>
   syncLibraryItem: (id: string) => Promise<void>
-  install: (skillIds: string[], agentIds: string[], mode?: 'symlink' | 'copy') => Promise<boolean>
   uninstall: (skillId: string, agentId: string) => Promise<void>
   uninstallAll: (skillId: string) => Promise<void>
   toggleAgent: (id: string, enabled: boolean) => Promise<void>
@@ -176,6 +169,9 @@ interface State {
   setAddLocal: (open: boolean) => void
   toggleSidebar: () => void
 }
+
+/* Newest-wins guard for the skill-index search, whose answers arrive late. */
+let skillSearchSeq = 0
 
 export const useStore = create<State>((set, get) => ({
   booted: false,
@@ -233,11 +229,9 @@ export const useStore = create<State>((set, get) => ({
   discovering: false,
   installTarget: null,
   showTargetModal: false,
-  launchTargets: [],
-  launchSource: null,
-  launchPlan: null,
-  showLaunchModal: false,
-  launching: false,
+  installOpen: false,
+  installPendingSkills: [],
+  installing: false,
 
   t: makeT('zh'),
 
@@ -296,59 +290,62 @@ export const useStore = create<State>((set, get) => ({
     }
   },
 
-  /** Open the launch dialog for a skill — library-managed or found on disk. */
-  async openLaunch(source) {
-    try {
-      const launchTargets = await api.launch.targets()
-      set({ launchTargets, launchSource: source, launchPlan: null, showLaunchModal: true })
-    } catch (err: any) {
-      get().toast('error', get().t('toast.failed', { msg: err?.message || err }))
+  /**
+   * Open the destination picker for a set of skills.
+   *
+   * One skill or fifty, the question is the same: which folder? The modal owns
+   * the answer, so nothing here decides on the user's behalf.
+   */
+  openInstall(skills) {
+    if (!skills.length) {
+      get().toast('info', get().t('detail.noneSelected'))
+      return
     }
+    set({ installPendingSkills: skills, installOpen: true })
   },
 
-  closeLaunch() {
-    set({ showLaunchModal: false, launchSource: null, launchPlan: null })
+  closeInstall() {
+    set({ installOpen: false, installPendingSkills: [] })
   },
 
   /**
-   * Lay the workspace out before anything is started, so the dialog can show
-   * exactly what will be created instead of surprising the user afterwards.
+   * Fetch the chosen skills straight from GitHub into the folder the user picked.
+   *
+   * Nothing is cached between runs: the store is an index, and every install is
+   * a fresh read of the source. That costs a few seconds and removes an entire
+   * class of "the copy on disk is stale" problems.
    */
-  async buildLaunchPlan(agentId, workspace) {
-    const source = get().launchSource
-    if (!source || !workspace.trim()) return null
+  async installFromGithub(destination) {
+    const skills = get().installPendingSkills
+    if (!skills.length || !destination.trim()) return false
+    const dest = destination.trim()
+    set({
+      installing: true,
+      installProgress: { phase: 'start', message: '', current: 0, total: skills.length }
+    })
     try {
-      const launchPlan = await api.launch.prepare({
-        ...(source.from === 'library'
-          ? { skillId: source.skillId }
-          : { localPath: source.path, localName: source.name, localDescription: source.description }),
-        agentId,
-        workspace: workspace.trim()
+      const res = await api.install.fromGithub({
+        skills: skills.map((s) => ({
+          skillId: s.id,
+          fullName: s.repoFullName,
+          path: s.path,
+          name: s.name,
+          // A locally found skill travels as its own folder; there is no repo.
+          ...(s.localPath ? { localPath: s.localPath } : {})
+        })),
+        destination: dest
       })
-      set({ launchPlan })
-      return launchPlan
-    } catch (err: any) {
-      set({ launchPlan: null })
-      get().toast('error', err?.message || String(err))
-      return null
-    }
-  },
-
-  async runLaunch(plan) {
-    set({ launching: true })
-    try {
-      const res = await api.launch.run(plan)
-      if (res.ok) {
-        // Long enough to switch to the app, open the folder and paste.
-        get().toast('success', res.message, plan.prompt, 20000)
-        set({ showLaunchModal: false, launchPlan: null, launchSource: null })
-      } else {
-        get().toast('error', res.message)
-      }
+      await Promise.all([get().refreshInstalls(), get().refreshAgents()])
+      if (res.ok.length) get().toast('success', get().t('toast.installedTo', { n: res.ok.length, path: dest }))
+      if (res.errors.length) get().toast('error', res.errors[0].reason, get().t('toast.nFailed', { n: res.errors.length }))
+      if (res.skipped.length && !res.errors.length) get().toast('info', res.skipped[0].reason)
+      if (res.ok.length) set({ installOpen: false, installPendingSkills: [] })
+      return res.ok.length > 0
     } catch (err: any) {
       get().toast('error', get().t('toast.failed', { msg: err?.message || err }))
+      return false
     } finally {
-      set({ launching: false })
+      set({ installing: false, installProgress: null })
     }
   },
 
@@ -490,15 +487,26 @@ export const useStore = create<State>((set, get) => ({
     if (!q.trim()) set({ skillHits: null })
   },
 
+  /*
+    Only the newest query may paint the grid.
+
+    The index is fetched from a mirror, so an answer can land well after the user
+    has typed something else — or after the query was cleared, which set the hits
+    to null and returned. Without a request identity the old answer won, and the
+    store showed matches for a term that was no longer in the box.
+  */
   async searchSkillIndex(term) {
+    const seq = ++skillSearchSeq
     if (!term.trim()) {
       set({ skillHits: null })
       return
     }
     try {
       const hits = await api.skillsIndex.search(term, 80)
+      if (seq !== skillSearchSeq) return
       set({ skillHits: hits })
     } catch {
+      if (seq !== skillSearchSeq) return
       set({ skillHits: [] })
     }
   },
@@ -926,36 +934,24 @@ export const useStore = create<State>((set, get) => ({
     }
   },
 
-  async install(skillIds, agentIds, mode) {
-    if (!skillIds.length || !agentIds.length) {
-      get().toast('info', get().t('detail.noneSelected'))
-      return false
-    }
-    set({ installProgress: { phase: 'start', message: '', current: 0, total: skillIds.length * agentIds.length } })
-    try {
-      const res = await api.install.run({ skillIds, agentIds, mode })
-      await Promise.all([get().refreshInstalls(), get().refreshAgents()])
-      if (res.ok.length) {
-        get().toast('success', get().t('toast.installed', { n: res.ok.length }))
-      }
-      if (res.errors.length) {
-        get().toast('error', res.errors[0].reason, get().t('toast.nFailed', { n: res.errors.length }))
-      }
-      if (res.skipped.length && !res.errors.length) {
-        get().toast('info', res.skipped[0].reason)
-      }
-      return res.ok.length > 0
-    } catch (err: any) {
-      get().toast('error', get().t('toast.failed', { msg: err?.message || err }))
-      return false
-    } finally {
-      set({ installProgress: null })
-    }
-  },
-
   async uninstall(skillId, agentId) {
-    await api.install.uninstall(skillId, agentId)
+    const res = await api.install.uninstall(skillId, agentId)
     await Promise.all([get().refreshInstalls(), get().refreshAgents()])
+    /*
+      Several agents can read one physical directory, so removing it removes the
+      skill for all of them. Say so: the old toast named one agent while the others
+      silently lost the skill.
+    */
+    if (!res.ok) {
+      // The old code toasted success whatever the call returned, so a removal
+      // that could not touch the filesystem looked like it had worked.
+      get().toast('error', get().t('toast.failed', { msg: get().t('toast.uninstalled') }))
+      return
+    }
+    if (res.agents.length > 1) {
+      get().toast('success', get().t('toast.uninstalledShared', { agents: res.agents.join(', ') }))
+      return
+    }
     get().toast('success', get().t('toast.uninstalled'))
   },
 

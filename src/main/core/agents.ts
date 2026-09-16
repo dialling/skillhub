@@ -1,10 +1,10 @@
 import { existsSync, readdirSync, lstatSync, readlinkSync, readFileSync } from 'node:fs'
-import { homedir } from 'node:os'
 import { join } from 'node:path'
 import type { AgentTarget } from '../../shared/types'
 import { curatedAgentRegistryPath, expandPath } from './paths'
 import { settings } from './db'
 import { m } from './msg'
+import { isManagedPath } from './managed'
 import { isAbsoluteOrHome, isInside, which } from './platform'
 
 /** Built-in fallback registry used only when data/agent-registry.json is absent. */
@@ -21,14 +21,6 @@ interface RegistryEntry {
   readsUniversalDir?: boolean
   supportsSymlink?: boolean
   projectOnly?: boolean
-  launch?: {
-    kind: 'cli' | 'app' | 'web'
-    command?: string
-    promptArg?: boolean
-    appName?: string
-    url?: string
-    instructionFile?: string
-  }
 }
 
 const FALLBACK_REGISTRY: RegistryEntry[] = [
@@ -197,15 +189,12 @@ export function listAgents(): AgentTarget[] {
     if (!path) {
       if (!entry.projectSkillsDir) {
         /*
-          A hosted chat has no skills directory anywhere — it is a launch target
-          and nothing else. Dropping it here removed every web AI from the launch
-          list, because "no directory to install into" was treated as "not an
-          agent at all". It still has to reach the launcher; it just cannot be an
-          install target, which the empty path and project kind already say.
+          Nothing to install into and nothing to start: a hosted chat has no
+          skills directory anywhere, so it is not a destination. It used to stay
+          in the list because it could be launched; with launching gone there is
+          no reason to offer it at all.
         */
-        if (!entry.launch) continue
-        kind = 'project'
-        path = ''
+        continue
       } else {
         kind = 'project'
         path = projectBase ? join(projectBase, entry.projectSkillsDir) : entry.projectSkillsDir
@@ -222,7 +211,19 @@ export function listAgents(): AgentTarget[] {
       path,
       detected: 'detected' in det ? !!det.detected : false,
       detectedBy: 'by' in det ? det.by : undefined,
-      enabled: enabled.has(entry.id) || (kind === 'global' && det.detected && !s.enabledAgents.length),
+      /*
+        Enabled means the user said so.
+
+        The auto-enable below is a first-run convenience: freeze what was detected
+        once, then the user's toggles are the only source of truth. Deriving it
+        from "the list is empty" instead meant an emptied list was read as "not
+        decided yet", so the last agent's switch could never be turned off and the
+        whole list came back on the next start. `firstRunDone` records that the
+        convenience already ran, and `ensureEnabledAgents` is what sets it.
+      */
+      enabled:
+        enabled.has(entry.id) ||
+        (kind === 'global' && det.detected && !s.enabledAgents.length && !s.firstRunDone),
       found,
       projectOnly: !entry.globalSkillsDir,
       confidence: entry.confidence,
@@ -316,7 +317,8 @@ export function agentDisplayName(agentId: string): string {
  */
 export function ensureEnabledAgents(): void {
   const s = settings.get()
-  if (s.enabledAgents.length > 0) return
+  // An empty list the user emptied himself is a decision, not a fresh install.
+  if (s.enabledAgents.length > 0 || s.firstRunDone) return
   const detected = listAgents()
     .filter((a) => a.enabled)
     .map((a) => a.id)
@@ -337,7 +339,6 @@ export interface DirEntry {
 export function scanAgentDir(agentId: string): DirEntry[] {
   const dir = resolveAgentDir(agentId)
   if (!dir || !existsSync(dir)) return []
-  const storeRoot = join(homedir(), '.skillhub', 'store')
   const out: DirEntry[] = []
   let entries: string[] = []
   try {
@@ -365,7 +366,11 @@ export function scanAgentDir(agentId: string): DirEntry[] {
       path: full,
       isSymlink,
       linkTarget,
-      managed: isInside(real, storeRoot),
+      // One definition, shared with the installer: a link into the library or a
+      // copy carrying our marker. This used to test a hardcoded
+      // `~/.skillhub/store`, which nothing creates, so every entry SkillHub
+      // placed was reported as the user's own.
+      managed: isManagedPath(full),
       hasSkillFile: existsSync(join(real, 'SKILL.md')),
       mtimeMs
     })

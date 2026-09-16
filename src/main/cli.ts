@@ -15,7 +15,7 @@ import { existsSync } from 'node:fs'
 import { flushAll, installs, library, settings, stars } from './core/db'
 import { listAgents, resolveAgentDir, scanAgentDir } from './core/agents'
 import { addRepo, libraryItems, removeItem, syncItem } from './core/library'
-import { installSkills, installedSkills, uninstall } from './core/installer'
+import { installFromGithub, installedSkills, uninstall } from './core/installer'
 import { searchSkills, rateLimit, tokenSource, getRepo, starsGained } from './core/github'
 import { leaderboard } from './core/leaderboard'
 import { curatedCatalog } from './core/catalog'
@@ -89,8 +89,8 @@ ${C.bold('SkillHub')} — ${m('cli.title')}
   ${C.cyan('remove')} <owner/repo>          ${m('cli.help.remove')}
   ${C.cyan('agents')} [--json]              ${m('cli.help.agents')}
   ${C.cyan('install')} <skillId|--all>      ${m('cli.help.install')}
+        --to <dir>            ${m('cli.help.toFlag')}
         --agents dsh,cursor   ${m('cli.help.agentsFlag')}
-        --copy                ${m('cli.help.copyFlag')}
   ${C.cyan('uninstall')} <skillId>          ${m('cli.help.uninstall')}
   ${C.cyan('installed')}                    ${m('cli.help.installed')}
   ${C.cyan('growth')} [1|7|30]              ${m('cli.help.growth')}
@@ -154,7 +154,13 @@ async function main(): Promise<number> {
         return 0
       }
       const map: Record<string, string[]> = {}
-      for (const r of installs.get().records) (map[r.skillId] ||= []).push(r.agentName)
+      // The same existence test the renderer's installMap applies: a record
+      // whose entry is gone is not an install — `skillhub installed` already
+      // prints that one as ✗.
+      for (const r of installs.get().records) {
+        if (!existsSync(r.linkPath)) continue
+        ;(map[r.skillId] ||= []).push(r.agentName)
+      }
       for (const item of items) {
         console.log(`${C.bold(item.fullName)} ${C.dim(m('cli.itemLine', { n: item.skills.length, status: item.status }))}`)
         for (const s of item.skills) {
@@ -196,7 +202,14 @@ async function main(): Promise<number> {
     }
 
     case 'install': {
-      const copy = has('copy')
+      /*
+        Installing is a fetch, not a copy from a local checkout.
+
+        The library only holds an index now, so this has to name a destination
+        and pull the files. `--to` is the explicit form; without it we use the
+        first enabled agent's own skills directory, which is the same default
+        the app's picker offers first.
+      */
       let skillIds: string[] = []
       if (has('all')) {
         skillIds = libraryItems().flatMap((i) => i.skills.map((s) => s.id))
@@ -205,20 +218,33 @@ async function main(): Promise<number> {
       }
       if (!skillIds.length) return fail(m('cli.usage.install'))
 
-      const wanted = has('agents') ? flag('agents')!.split(',').map((s) => s.trim()) : null
-      const all = listAgents()
-      const targets = wanted
-        ? all.filter((a) => wanted.includes(a.id) || wanted.includes(a.name))
-        : all.filter((a) => a.enabled)
-      if (!targets.length) return fail(m('cli.noTargets'))
-      for (const a of targets) {
-        if (!resolveAgentDir(a.id)) return fail(m('agent.dirUnresolved', { name: a.name }))
-        console.log(m('cli.target', { name: C.bold(a.name), path: tildify(expandPath(a.path)) }))
+      let destination = flag('to') || ''
+      if (!destination) {
+        const wanted = has('agents') ? flag('agents')!.split(',').map((s) => s.trim()) : null
+        const all = listAgents()
+        const target = wanted
+          ? all.find((a) => wanted.includes(a.id) || wanted.includes(a.name))
+          : all.find((a) => a.enabled)
+        if (!target) return fail(m('cli.noTargets'))
+        destination = resolveAgentDir(target.id) || ''
+        if (!destination) return fail(m('agent.dirUnresolved', { name: target.name }))
+        console.log(m('cli.target', { name: C.bold(target.name), path: tildify(expandPath(destination)) }))
       }
-      const res = installSkills(
-        { skillIds, agentIds: targets.map((a) => a.id), mode: copy ? 'copy' : 'symlink' },
-        (p) => p.message && p.phase === 'link' && console.log(`   ${p.message}`)
-      )
+
+      const byId = new Map(libraryItems().flatMap((i) => i.skills.map((s) => [s.id, s] as const)))
+      const wanted = skillIds
+        .map((id) => byId.get(id))
+        .filter((s): s is NonNullable<typeof s> => !!s)
+        .map((s) => ({ skillId: s.id, fullName: s.repoFullName, path: s.path, name: s.name }))
+      for (const id of skillIds) if (!byId.has(id)) console.log(`   ${C.red('✗')} ${id}: ${m('install.notInLibrary')}`)
+
+      const res = await installFromGithub({
+        skills: wanted,
+        destination,
+        onProgress: (p) => {
+          if (p.message && p.phase === 'link') console.log(`   ${p.message}`)
+        }
+      })
       console.log(`\n${C.green('✓')} ${m('cli.installSummary', { ok: res.ok.length, skipped: res.skipped.length, failed: res.errors.length })}`)
       for (const e of res.errors) console.log(`   ${C.red('✗')} ${e.skillId} → ${e.agentId}: ${e.reason}`)
       for (const s of res.skipped) console.log(`   ${C.yellow('!')} ${s.skillId} → ${s.agentId}: ${s.reason}`)

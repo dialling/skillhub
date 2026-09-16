@@ -7,8 +7,6 @@ import {
   Download,
   Layers,
   Trash2,
-  Link2,
-  Copy,
   RefreshCw,
   FolderOpen,
   FileText,
@@ -38,18 +36,14 @@ export function DetailPanel(): React.JSX.Element | null {
   const addToLibrary = useStore((s) => s.addToLibrary)
   const removeFromLibrary = useStore((s) => s.removeFromLibrary)
   const syncItem = useStore((s) => s.syncLibraryItem)
-  const install = useStore((s) => s.install)
+  const openInstall = useStore((s) => s.openInstall)
   const uninstall = useStore((s) => s.uninstall)
   const toast = useStore((s) => s.toast)
   const [selected, setSelected] = useState<Set<string>>(new Set())
-  const [targets, setTargets] = useState<Set<string>>(new Set())
-  const [mode, setMode] = useState<'symlink' | 'copy'>('symlink')
   const [busy, setBusy] = useState(false)
   const [skillPreview, setSkillPreview] = useState<{ name: string; body: string } | null>(null)
   const [closing, setClosing] = useState(false)
-  const [showAllAgents, setShowAllAgents] = useState(false)
   const [showSecondary, setShowSecondary] = useState(false)
-  const [agentQuery, setAgentQuery] = useState('')
   const bodyRef = useRef<HTMLDivElement>(null)
 
   const repoFullName = detail?.fullName
@@ -96,10 +90,6 @@ export function DetailPanel(): React.JSX.Element | null {
   useEffect(() => {
     setSelected(new Set())
     setSkillPreview(null)
-    setMode(useStore.getState().settings?.installMode || 'symlink')
-    setTargets(new Set(useStore.getState().agents.filter((a) => a.enabled).map((a) => a.id)))
-    setShowAllAgents(false)
-    setAgentQuery('')
     setShowSecondary(false)
   }, [repoFullName])
 
@@ -137,25 +127,23 @@ export function DetailPanel(): React.JSX.Element | null {
   */
   const selectedSkills = skills.filter((s) => selected.has(s.id))
   const installedSelection = selectedSkills.filter((s) => (installMap[s.id] || []).length > 0).length
-  const pendingSelection = selectedSkills.filter((s) =>
-    [...targets].some((a) => !(installMap[s.id] || []).includes(a))
-  ).length
+  /** Selected skills that are not installed anywhere yet. */
+  const pendingSelection = selectedSkills.filter((s) => !(installMap[s.id] || []).length).length
 
   const doInstall = async (): Promise<void> => {
     if (!selected.size) {
       toast('info', t('detail.noneSelected'))
       return
     }
-    if (!targets.size) {
-      toast('info', t('detail.chooseAgents'))
-      return
-    }
     setBusy(true)
     try {
-      let ok = inLibrary
-      if (!ok) ok = await doAdd()
-      if (!ok) return
-      await install([...selected], [...targets], mode)
+      /*
+        Collecting the repository first keeps the library in step with what the
+        user just installed. It is a metadata write now — no clone — so it costs
+        one API call and means the item shows up in the library afterwards.
+      */
+      if (!inLibrary && !(await doAdd())) return
+      openInstall(selectedSkills.length ? selectedSkills : skills)
     } finally {
       setBusy(false)
     }
@@ -548,35 +536,8 @@ export function DetailPanel(): React.JSX.Element | null {
                   {t('detail.install')}
                 </div>
                 <div className="panel-body">
-                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 600 }}>
-                    {t('detail.chooseAgents')}
-                  </div>
-                  <AgentPicker
-                    agents={agents}
-                    targets={targets}
-                    setTargets={setTargets}
-                    expanded={showAllAgents}
-                    onToggleExpanded={() => setShowAllAgents((v) => !v)}
-                    query={agentQuery}
-                    setQuery={setAgentQuery}
-                  />
-
-                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginBottom: 8, fontWeight: 600 }}>
-                    {t('detail.installMode')}
-                  </div>
-                  <div className="seg" style={{ width: '100%', marginBottom: 14 }}>
-                    <button
-                      className={mode === 'symlink' ? 'active' : ''}
-                      style={{ flex: 1 }}
-                      onClick={() => setMode('symlink')}
-                    >
-                      <Link2 size={11} style={{ verticalAlign: -1, marginRight: 4 }} />
-                      {t('detail.symlink')}
-                    </button>
-                    <button className={mode === 'copy' ? 'active' : ''} style={{ flex: 1 }} onClick={() => setMode('copy')}>
-                      <Copy size={11} style={{ verticalAlign: -1, marginRight: 4 }} />
-                      {t('detail.copy')}
-                    </button>
+                  <div className="hint" style={{ marginBottom: 12 }}>
+                    {t('detail.pickSkillsThenFolder')}
                   </div>
 
                   {/*
@@ -605,9 +566,7 @@ export function DetailPanel(): React.JSX.Element | null {
                       ? t('detail.alreadyInstalled')
                       : installedSelection > 0
                         ? t('detail.installRemaining', { n: pendingSelection })
-                        : inLibrary
-                          ? t('detail.doInstall')
-                          : t('detail.addAndInstall')}
+                        : t('detail.doInstall')}
                   </button>
                   {(meta?.repoKind === 'reference' || !skills.length) && (
                     <div className="hint" style={{ marginTop: 8, textAlign: 'center' }}>
@@ -615,7 +574,7 @@ export function DetailPanel(): React.JSX.Element | null {
                     </div>
                   )}
                   <div className="dim" style={{ fontSize: 11, marginTop: 8, textAlign: 'center' }}>
-                    {selected.size} {t('common.skills')} → {targets.size} {t('status.agents')}
+                    {selected.size} {t('common.skills')}
                   </div>
                 </div>
               </div>
@@ -628,7 +587,7 @@ export function DetailPanel(): React.JSX.Element | null {
                 <div className="panel-body">
                   <dl className="kv">
                     <dt>{t('detail.source')}</dt>
-                    <dd className="mono">{inLibrary ? item!.sourcePath : inLibrary ? '' : '—'}</dd>
+                    <dd className="mono">github.com/{detail.fullName}</dd>
                     <dt>{t('detail.lastSync')}</dt>
                     <dd>{item?.lastSyncAt ? fmtRelative(item.lastSyncAt, lang) : '—'}</dd>
                     <dt>{t('detail.license')}</dt>
@@ -678,115 +637,6 @@ export function DetailPanel(): React.JSX.Element | null {
             </div>
           </div>
         </div>
-      )}
-    </div>
-  )
-}
-
-/**
- * The registry covers 80 agents. Dumping 80 checkboxes into a 330px column is
- * useless, so show the enabled ones (which are pre-checked) plus anything the
- * user has already selected, and put the rest behind a searchable disclosure.
- */
-function AgentPicker({
-  agents,
-  targets,
-  setTargets,
-  expanded,
-  onToggleExpanded,
-  query,
-  setQuery
-}: {
-  agents: AgentTarget[]
-  targets: Set<string>
-  setTargets: (next: Set<string>) => void
-  expanded: boolean
-  onToggleExpanded: () => void
-  query: string
-  setQuery: (q: string) => void
-}): React.JSX.Element {
-  const t = useStore((s) => s.t)
-  const term = query.trim().toLowerCase()
-  const matches = (a: AgentTarget): boolean =>
-    !term ||
-    a.name.toLowerCase().includes(term) ||
-    (a.vendor || '').toLowerCase().includes(term) ||
-    a.path.toLowerCase().includes(term)
-
-  const primary = agents.filter((a) => a.enabled || targets.has(a.id))
-  const rest = agents.filter((a) => !primary.includes(a))
-  const shown = expanded ? agents.filter(matches) : primary
-  const toggle = (id: string): void => {
-    const next = new Set(targets)
-    if (next.has(id)) next.delete(id)
-    else next.add(id)
-    setTargets(next)
-  }
-
-  const confTitle = (a: AgentTarget): string =>
-    a.confidence === 'medium' || a.confidence === 'low'
-      ? t('agents.confMedium')
-      : t('agents.confHigh')
-
-  return (
-    <div style={{ marginBottom: 14 }}>
-      {expanded && (
-        <div className="searchbox" style={{ marginBottom: 8, height: 26 }}>
-          <Search size={12} className="dim" />
-          <input
-            value={query}
-            spellCheck={false}
-            placeholder={t('detail.agentSearch')}
-            onChange={(e) => setQuery(e.target.value)}
-            style={{ fontSize: 12 }}
-          />
-        </div>
-      )}
-
-      <div className="agent-picker">
-        {agents.length === 0 && (
-          <div className="dim" style={{ fontSize: 11.5 }}>
-            {t('detail.noAgents')}
-          </div>
-        )}
-        {shown.map((a) => {
-          const on = targets.has(a.id)
-          return (
-            <label key={a.id} className="agent-pick-row" title={`${a.path}\n${confTitle(a)}`}>
-              <button
-                className={`skill-check ${on ? 'on' : ''}`}
-                onClick={(e) => {
-                  e.preventDefault()
-                  toggle(a.id)
-                }}
-              >
-                <Check size={10} />
-              </button>
-              <span className="dot" style={{ background: a.color || 'var(--text-3)' }} />
-              <span className="nm">{a.name}</span>
-              {a.projectOnly && <span className="chip mono violet">{t('detail.projectOnly')}</span>}
-              {a.kind === 'custom' && <span className="chip mono">custom</span>}
-              {!a.detected && !a.projectOnly && <span className="chip mono dim">?</span>}
-              {a.confidence && a.confidence !== 'high' && (
-                <span
-                  className="chip mono"
-                  style={{ color: 'var(--warn)', borderColor: 'rgba(210,153,34,.3)' }}
-                  title={confTitle(a)}
-                >
-                  {a.confidence}
-                </span>
-              )}
-              <span className="mono dim cnt">{a.found || 0}</span>
-            </label>
-          )
-        })}
-        {shown.length === 0 && <div className="dim" style={{ fontSize: 11.5, padding: 6 }}>{t('palette.noMatch')}</div>}
-      </div>
-
-      {(rest.length > 0 || expanded) && (
-        <button className="btn block sm" style={{ marginTop: 8 }} onClick={onToggleExpanded}>
-          {expanded ? t('detail.hideAllAgents') : t('detail.showAllAgents', { n: agents.length })}
-        </button>
       )}
     </div>
   )

@@ -3627,9 +3627,15 @@ button.status-item:hover {
   border-color: var(--accent);
   background: color-mix(in srgb, var(--accent) 9%, var(--bg-2));
 }
-/* The native checkbox is hidden; the visible one is the span beside it, so the
-   row and the box cannot disagree. */
-.bulk-agent input[type='checkbox'] {
+/* The native control is hidden; the visible one is the span beside it, so the
+   row and the box cannot disagree.
+
+   Both types are covered: the destination picker is a single choice and uses a
+   radio, and leaving `radio` out of this rule put a native circle next to the
+   styled check — two indicators for one choice, disagreeing about which was
+   authoritative. */
+.bulk-agent input[type='checkbox'],
+.bulk-agent input[type='radio'] {
   position: absolute;
   opacity: 0;
   pointer-events: none;
@@ -3638,7 +3644,7 @@ button.status-item:hover {
   width: 15px;
   height: 15px;
   flex: none;
-  border-radius: 4px;
+  border-radius: 50%;
   border: 1px solid var(--border-3);
   display: flex;
   align-items: center;
@@ -3677,6 +3683,17 @@ button.status-item:hover {
 .chip.tiny {
   font-size: 9.5px;
   padding: 1px 5px;
+}
+/* "Choose another folder…" sits below the agent list, set apart from it because
+   it is a different kind of answer — not one of the suggestions. */
+.install-custom {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.install-custom .ba-check {
+  border-radius: 4px;
+  color: var(--text-2);
 }
 .chip.tiny.ok {
   color: var(--ok);

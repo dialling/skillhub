@@ -15,6 +15,11 @@ const M: Record<string, [zh: string, en: string]> = {
   /* install */
   'install.notInLibrary': ['技能不在库中，请先入库', 'Skill is not in the library yet — add the repo first'],
   'install.sourceMissing': ['本地文件缺失，请重新同步', 'Local files are missing — sync the library item again'],
+  'install.fetched': ['已写入 {files} 个文件', 'Wrote {files} files'],
+  'fetch.downloading': ['正在从 GitHub 获取技能文件…', 'Fetching skill files from GitHub…'],
+  'fetch.extracting': ['正在整理文件…', 'Sorting out the files…'],
+  'fetch.empty': ['该技能目录没有文件', 'That skill folder has no files'],
+  'fetch.pathMissing': ['源仓库中找不到 {path}', '{path} is not in the source repository'],
   'install.noSkillFile': ['该目录下没有 SKILL.md', 'That directory has no SKILL.md'],
   'install.noAgentDir': ['无法解析该 agent 的技能目录', 'Could not resolve that agent’s skills directory'],
   'install.sharedDir': ['共享目录 {dir}', 'Shares directory {dir}'],
@@ -32,9 +37,7 @@ const M: Record<string, [zh: string, en: string]> = {
   ],
 
   /* library */
-  'library.cloning': ['正在入库 {name}…', 'Adding {name}…'],
-  'library.alreadyCloned': ['检测到已有克隆，执行更新…', 'Existing clone found — updating…'],
-  'library.retryAuth': ['公开克隆失败，使用 GitHub 凭据重试…', 'Public clone failed — retrying with GitHub credentials…'],
+  'library.listing': ['正在读取 {name} 的技能清单…', 'Reading the skill list for {name}…'],
   'library.parsing': ['正在解析技能…', 'Reading skills…'],
   'library.addedDone': ['{name} 入库完成（{count} 个技能）', '{name} added ({count} skills)'],
   'library.addFailed': ['{name} 入库失败：{error}', 'Failed to add {name}: {error}'],
@@ -81,52 +84,17 @@ const M: Record<string, [zh: string, en: string]> = {
   'menu.close': ['关闭', 'Close'],
 
   /* launch */
-  'launch.skillNotInLibrary': ['该技能不在库中，请先入库', 'That skill is not in your library yet'],
-  'launch.skillFilesMissing': ['本地技能文件缺失，请重新同步', 'The local skill files are missing — sync the library item'],
-  'launch.agentNotLaunchable': ['该智能体没有可用的启动方式', 'This agent cannot be started automatically'],
   // The workspace is already scoped to this skill, so it is the working
   // directory — there is no second folder to name.
-  'launch.prompt': [
-    '请使用 {skill} 技能。先阅读它的 SKILL.md，然后按我的要求执行；素材和产出都放在当前工作目录下。',
-    'Use the {skill} skill. Read its SKILL.md first, then do what I ask; keep inputs and outputs in the current working directory.'
-  ],
   // The hosted chat gets the skill's own text, because it has no access to the
   // folder the skill lives in.
-  'launch.skillTruncated': ['\n\n…（技能文件过长，此处截断）', '\n\n…(skill file truncated)'],
-  'launch.skillUnreadable': ['（未能读取技能文件）', '(could not read the skill file)'],
-  'launch.promptWeb': [
-    '请按下面这份技能说明帮我做事。\n\n--- 技能：{skill} ---\n{body}\n--- 技能说明结束 ---\n\n接下来我会说明具体要求。素材与产出都放在 {folder}/。',
-    'Work from the skill description below.\n\n--- skill: {skill} ---\n{body}\n--- end of skill ---\n\nI will describe what I need next. Keep inputs and outputs in {folder}/.'
-  ],
-  'launch.startedCli': ['已在终端启动 {agent}', 'Started {agent} in Terminal'],
-  'launch.needsApp': ['这个技能属于应用 {app}，它需要 {app} 自身的运行环境（守护进程、凭据、依赖）。本机若没有安装并运行它，技能里的步骤会失败。', 'This skill belongs to the application {app} and needs that application\'s own runtime (daemon, credentials, dependencies). Without it installed and running, the steps in the skill will fail.'],
-  'launch.promptNeedsApp': ['注意：这个技能属于应用 {app}（{repo}）。如果它依赖的守护进程、凭据或依赖不在本机，请直接说明缺少什么，不要用替代方案冒充原结果。', 'Note: this skill belongs to the application {app} ({repo}). If its daemon, credentials or dependencies are not present, say what is missing rather than substituting something and presenting it as the real result.'],
-  'launch.startedApp': ['已打开 {agent}，提示词已复制 —— 直接粘贴即可', 'Opened {agent}. The prompt is on your clipboard — just paste it'],
-  'launch.modeInteractive': ['交互式，可继续对话', 'interactive, keeps the session'],
-  'launch.modeClipboard': ['提示词已复制，可直接粘贴', 'prompt copied, just paste it'],
-  'launch.modeOneshot': ['一次性，执行后退出', 'one-shot, exits when done'],
-  'launch.promptToken': ['提示词', 'prompt'],
-  'launch.detailCliFlag': ['{command} {flag} "<提示词>"', '{command} {flag} "<prompt>"'],
-  'launch.detailCli': ['{command}', '{command}'],
-  'launch.detailCliPrompt': ['{command} "<提示词>"', '{command} "<prompt>"'],
-  'launch.detailApp': ['open -a "{app}" <工作区>', 'open -a "{app}" <workspace>'],
-  'launch.noteTitle': ['## 已启用技能：{skill}', '## Active skill: {skill}'],
-  'launch.noteLocalSource': ['- 来源：本机已有技能 `{path}`', '- Source: skill already on this machine at `{path}`'],
-  'launch.noteSource': ['- 来源：{repo}', '- Source: {repo}'],
-  'launch.noteFolder': ['- 工作目录：`./{folder}/`', '- Working folder: `./{folder}/`'],
-  'launch.notePurpose': ['- 用途：{text}', '- Purpose: {text}'],
-  'launch.noteInstruction': [
-    '在本工作区中优先使用 `{skill}` 技能：先读取它的 SKILL.md，再执行我的任务。',
-    'Prefer the `{skill}` skill in this workspace: read its SKILL.md first, then carry out my request.'
-  ],
-  'launch.startedWeb': ['已打开网页端，提示词已复制 —— 直接粘贴即可', 'Opened the web app. The prompt is on your clipboard — just paste it'],
 
   /* cli */
   'cli.usage.search': ['用法：search <关键词>', 'Usage: search <term>'],
   'cli.usage.add': ['用法：add <owner/repo>', 'Usage: add <owner/repo>'],
   'cli.usage.sync': ['用法：sync <owner/repo>', 'Usage: sync <owner/repo>'],
   'cli.usage.remove': ['用法：remove <owner/repo>', 'Usage: remove <owner/repo>'],
-  'cli.usage.install': ['用法：install <skillId> | --all', 'Usage: install <skillId> | --all'],
+  'cli.usage.install': ['用法：install <skillId> | --all [--to <目录>]', 'Usage: install <skillId> | --all [--to <dir>]'],
   'cli.usage.uninstall': ['用法：uninstall <skillId>', 'Usage: uninstall <skillId>'],
   'cli.usage.stars': ['用法：stars <owner/repo>', 'Usage: stars <owner/repo>'],
   /* startup */
@@ -161,7 +129,7 @@ const M: Record<string, [zh: string, en: string]> = {
   'cli.help.agents': ['列出智能体与技能目录', 'List agents and their skill directories'],
   'cli.help.install': ['安装技能到智能体目录', 'Install skills into agent directories'],
   'cli.help.agentsFlag': ['指定目标（默认：所有已启用且已检测到的）', 'Target agents (default: every enabled, detected one)'],
-  'cli.help.copyFlag': ['使用复制而非软链接', 'Copy instead of symlinking'],
+  'cli.help.toFlag': ['装到这个目录（默认用第一个启用中的智能体目录）', 'Install into this folder (defaults to the first enabled agent’s directory)'],
   'cli.help.uninstall': ['从所有智能体卸载', 'Uninstall from every agent'],
   'cli.help.installed': ['列出已安装技能', 'List installed skills'],
   'cli.help.growth': ['星标增长排行榜', 'Star-growth leaderboard'],

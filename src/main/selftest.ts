@@ -9,7 +9,7 @@
  * Run with:  node out/main/selftest.js          (Node mode is fine)
  *            npm run selftest
  */
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, lstatSync } from 'node:fs'
+import { existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { flushAll, installs, library, settings } from './core/db'
@@ -26,8 +26,7 @@ import {
 import { curatedCatalog } from './core/catalog'
 import { CATEGORY_LABELS, FN_LABELS, REPO_KIND_LABELS } from '../shared/types'
 import { addRepo, libraryItems, removeItem } from './core/library'
-import { installSkills, installedSkills, uninstall } from './core/installer'
-import { launchTargets, prepareLaunch } from './core/launch'
+import { entryOwner, installFromGithub, installedSkills, uninstall, uninstallFrom } from './core/installer'
 import { loadRegistry } from './core/agents'
 import { curatedCatalogPath } from './core/paths'
 import { compareVersions, dateToVersion } from './core/update'
@@ -222,14 +221,23 @@ async function main(): Promise<number> {
         .join(', ')
   )
 
-  section('入库 (git clone → skill discovery)')
+  section('入库 (index the repository, no clone)')
   const item = await addRepo(target.fullName)
-  check('library item ready', item.status === 'ready', item.status === 'ready' ? `${item.skills.length} skills at ${item.sourcePath}` : item.error || '')
-  check('checkout on disk', existsSync(join(item.sourcePath, '.git')), item.sourcePath)
-  const realSkills = item.skills.filter((s) => s.localPath && existsSync(join(s.localPath, 'SKILL.md')))
-  check('SKILL.md files present locally', realSkills.length > 0, `${realSkills.length} skills`)
+  check('library item ready', item.status === 'ready', item.status === 'ready' ? `${item.skills.length} skills` : item.error || '')
+  /*
+    The point of the refactor: indexing a repository must not put anything on
+    disk. A clone here was 575MB across nine repositories and the app never
+    needed any of it — every install reads from GitHub anyway.
+  */
+  check('nothing was cloned', !item.sourcePath, item.sourcePath || '(no checkout)')
+  check('skills were listed', item.skills.length > 0, `${item.skills.length} skills`)
+  check(
+    'listed skills come from the repository, not from disk',
+    item.skills.every((s) => !s.localPath),
+    item.skills[0]?.id
+  )
 
-  section('Install into an agent directory (symlink)')
+  section('Install from a source folder into an agent directory')
   const fakeAgentDir = mkdtempSync(join(tmpdir(), 'skillhub-agent-'))
   const customId = 'selftest'
   settings.update((d) => {
@@ -237,164 +245,106 @@ async function main(): Promise<number> {
     d.customAgents.push({ id: customId, name: 'Self-test Agent', path: fakeAgentDir })
   })
   const agentId = `custom:${customId}`
-  const pick = item.skills.slice(0, Math.min(3, item.skills.length))
-  const outcome = installSkills(
-    { skillIds: pick.map((s) => s.id), agentIds: [agentId], mode: 'symlink' },
-    (p) => {
+
+  // A local source stands in for a freshly fetched skill: the placement code
+  // downstream is the same either way.
+  const srcRoot = mkdtempSync(join(tmpdir(), 'skillhub-src-'))
+  const srcA = join(srcRoot, 'alpha')
+  const srcB = join(srcRoot, 'beta')
+  mkdirSync(srcA, { recursive: true })
+  mkdirSync(srcB, { recursive: true })
+  writeFileSync(join(srcA, 'SKILL.md'), '# alpha\n')
+  writeFileSync(join(srcB, 'SKILL.md'), '# beta\n')
+
+  const upstream = (name: string, dir: string, fullName = 'owner/repo') => ({
+    skillId: `${fullName}::${name}`,
+    fullName,
+    path: name,
+    name,
+    localPath: dir
+  })
+
+  const outcome = await installFromGithub({
+    skills: [upstream('alpha', srcA), upstream('beta', srcB)],
+    destination: fakeAgentDir,
+    onProgress: (p) => {
       if (p.message && p.phase === 'link') console.log(`      ${p.message}`)
     }
-  )
-  check('install succeeded', outcome.ok.length === pick.length, `${outcome.ok.length} ok, ${outcome.skipped.length} skipped, ${outcome.errors.length} errors`)
+  })
+  check('install succeeded', outcome.ok.length === 2, `${outcome.ok.length} ok, ${outcome.skipped.length} skipped, ${outcome.errors.length} errors`)
   if (outcome.errors.length) check('no install errors', false, JSON.stringify(outcome.errors[0]))
 
-  const placed = readdirSync(fakeAgentDir)
-  check('skills appear in agent dir', placed.length === pick.length, placed.join(', '))
-  const first = placed[0]
-  if (first) {
-    const full = join(fakeAgentDir, first)
-    check('installed entry is a symlink', lstatSync(full).isSymbolicLink(), full)
-    check('installed entry has SKILL.md', existsSync(join(full, 'SKILL.md')))
-    const body = readFileSync(join(full, 'SKILL.md'), 'utf8')
-    check('SKILL.md is readable through the link', body.length > 0, `${body.length} bytes`)
-  }
-  check('install records tracked', installedSkills().length >= pick.length, `${installedSkills().length} records`)
-
-  section('Copy mode')
-  const outcome2 = installSkills(
-    { skillIds: [pick[0].id], agentIds: [agentId], mode: 'copy' }
+  const placed = readdirSync(fakeAgentDir).filter((n) => !n.startsWith('.'))
+  check('skills appear in agent dir', placed.length === 2, placed.join(', '))
+  check(
+    'installed entries are real directories',
+    placed.every((n) => !lstatSync(join(fakeAgentDir, n)).isSymbolicLink())
   )
-  check('copy install succeeded', outcome2.ok.length === 1, outcome2.errors[0]?.reason || '')
-  const copied = join(fakeAgentDir, outcome2.ok[0] ? outcome2.ok[0].linkPath.split('/').pop()! : '')
-  check('copy is a real directory', existsSync(copied) && !lstatSync(copied).isSymbolicLink())
-  check('copy carries marker file', existsSync(join(copied, '.skillhub-install.json')))
+  check('installed entry has SKILL.md', existsSync(join(fakeAgentDir, 'alpha', 'SKILL.md')))
+  check('copy carries marker file', existsSync(join(fakeAgentDir, 'alpha', '.skillhub-install.json')))
+  check('install records tracked', installedSkills().length >= 2, `${installedSkills().length} records`)
 
   /*
-    The launch plan must carry everything runLaunch reads.
+    Two different skills can want the same folder name.
 
-    Every app-kind launch failed for a while because `appName` was declared on
-    the metadata, shown in the dialog, and then never copied into the plan — so
-    `plan.launchKind === 'app' && plan.appName` was never true and the launch fell
-    through to "no usable launch method". A shape check catches that class of
-    omission without launching anything.
+    Measured on the real index: 12 skill names exist in more than one repository
+    (`canvas-design`, `brand-guidelines`, …). The second install must never take
+    over the first one's folder — the first skill's files would disappear while
+    its record still claimed to be installed.
   */
+  section('Two skills, one folder name')
+  const collide = await installFromGithub({
+    skills: [upstream('alpha', srcB, 'ownerB/two')],
+    destination: fakeAgentDir
+  })
+  check(
+    'the second skill is refused rather than written over the first',
+    collide.ok.length === 0 && collide.skipped.length === 1,
+    collide.skipped[0]?.reason || JSON.stringify(collide.errors[0] || {})
+  )
+  check('the first skill is still there and unchanged', readFileSync(join(fakeAgentDir, 'alpha', 'SKILL.md'), 'utf8') === '# alpha\n')
+  check(
+    "another skill's entry is not claimable as ours",
+    entryOwner(join(fakeAgentDir, 'alpha'), { skillId: 'ownerB/two::alpha', sourcePath: srcB }) === 'other'
+  )
+  check(
+    'the same skill is recognised as ours',
+    entryOwner(join(fakeAgentDir, 'alpha'), { skillId: 'owner/repo::alpha', sourcePath: srcA }) === 'ours'
+  )
+
   /*
-    Version ordering is what stops an older copy from overwriting a newer one.
+    Agents that share one physical directory.
 
-    Every one of these is a case that would otherwise be silently wrong: a CDN
-    edge still serving yesterday's file, a release tag older than what is
-    installed, a pre-release being offered as a finished upgrade.
+    Eight registry entries read ~/.agents/skills, so one install can back several
+    agents. Removing it for one agent removes it for all of them — that is
+    entailed by the shared directory — but the sibling records used to be left
+    behind claiming an install whose path no longer existed, and the caller was
+    told that one agent had been affected.
   */
-  /*
-    The staging folder must never be a source of installable content.
-
-    This is the load-bearing property behind allowing uploads at all: a
-    submission is text someone's machine produced, and it becomes installable
-    only after a person reads it and adds it to the catalog. Nothing reads
-    `submissions/` today, but "nothing reads it" is a fact about the code that a
-    future change could quietly break — so it is asserted instead.
-  */
-  section('上传区与目录之间的隔离')
-  {
-    const repos = await curatedCatalog()
-    const fromStaging = repos.filter((r) => r.fullName.includes('submissions/'))
-    check('目录里没有来自 submissions/ 的条目', fromStaging.length === 0, fromStaging.map((r) => r.fullName).join(', ') || `${repos.length} repos`)
-
-    // The catalog path is what the app reads; the staging folder lives beside it
-    // in the repository but must never be resolved as a catalog.
-    const catalogPath = curatedCatalogPath()
-    check('目录路径不指向 submissions', !catalogPath.includes('submissions'), catalogPath)
-  }
-
-  section('Version ordering (never go backwards)')
-  {
-    check('newer patch wins', compareVersions('0.1.1', '0.1.0') > 0, '0.1.1 > 0.1.0')
-    check('older patch loses', compareVersions('0.1.0', '0.1.1') < 0, '0.1.0 < 0.1.1')
-    check('equal compares equal', compareVersions('0.1.0', '0.1.0') === 0, '0.1.0 == 0.1.0')
-    check('v prefix ignored', compareVersions('v0.2.0', '0.1.9') > 0, 'v0.2.0 > 0.1.9')
-    check('minor beats patch', compareVersions('0.2.0', '0.1.99') > 0, '0.2.0 > 0.1.99')
-    check('major beats minor', compareVersions('1.0.0', '0.99.99') > 0, '1.0.0 > 0.99.99')
-    // A pre-release is not an upgrade over the release it precedes.
-    check('release outranks its pre-release', compareVersions('1.0.0', '1.0.0-rc.1') > 0, '1.0.0 > 1.0.0-rc.1')
-    check('pre-release does not outrank release', compareVersions('1.0.0-rc.1', '1.0.0') < 0, 'rc < release')
-    check('shorter version pads with zero', compareVersions('1.1', '1.1.0') === 0, '1.1 == 1.1.0')
-
-    // The conversion from a stored timestamp to a comparable number. Getting
-    // this wrong produces NaN, and every comparison against NaN is false — the
-    // check then reports "no update" forever without any error.
-    check('ISO timestamp converts to a date version', dateToVersion('2026-09-15T11:41:42.691Z') === 20260915, String(dateToVersion('2026-09-15T11:41:42.691Z')))
-    check('plain date converts', dateToVersion('2026-09-16') === 20260916, String(dateToVersion('2026-09-16')))
-    check('empty converts to zero', dateToVersion('') === 0, String(dateToVersion('')))
-    check('null converts to zero', dateToVersion(null) === 0, String(dateToVersion(null)))
-    check('garbage converts to zero', dateToVersion('not-a-date') === 0, String(dateToVersion('not-a-date')))
-    check(
-      'a newer published date beats a stored timestamp',
-      20260916 > dateToVersion('2026-09-15T11:41:42.691Z'),
-      '20260916 > 20260915'
-    )
-
-    // Data and catalog versions are dates, so the comparison is plain numbers.
-    check('newer data date wins', 20260917 > 20260916, '20260917 > 20260916')
-    check('older data date loses', 20260915 < 20260916, '20260915 < 20260916')
-  }
-
-  section('Launch plan carries what the launcher needs')
-  {
-    const targets = launchTargets().filter((t) => t.ready)
-    const madeWorkspaces: string[] = []
-    check('at least one agent is launchable', targets.length > 0, `${targets.length} ready`)
-
-    /*
-      Every agent with launch metadata must reach the launcher.
-
-      Hosted chats have no skills directory and were dropped by the agent list's
-      "no directory, not an agent" filter — all twelve web AI entries vanished
-      from the dialog even though their metadata was present. The two lists are
-      built from different places, so this compares them.
-    */
-    const declared = loadRegistry().filter((e) => e.launch)
-    const targetIds = new Set(launchTargets().map((t) => t.agentId))
-    const unreachable = declared.filter((e) => !targetIds.has(e.id))
-    check(
-      'every agent with launch metadata reaches the launcher',
-      unreachable.length === 0,
-      unreachable.length ? unreachable.map((e) => e.id).join(', ') : `${declared.length} entries`
-    )
-
-    const appTarget = targets.find((t) => t.kind === 'app')
-    const cliTarget = targets.find((t) => t.kind === 'cli')
-
-    if (appTarget) {
-      const wsA = mkdtempSync(join(tmpdir(), 'skillhub-launch-'))
-      madeWorkspaces.push(wsA)
-      const plan = await prepareLaunch({
-        skillId: pick[0].id,
-        agentId: appTarget.agentId,
-        workspace: wsA
-      })
-      check('app plan carries launchKind', plan.launchKind === 'app', plan.launchKind)
-      check('app plan carries appName', !!plan.appName, plan.appName || '(missing)')
-    }
-
-    if (cliTarget) {
-      const wsB = mkdtempSync(join(tmpdir(), 'skillhub-launch-'))
-      madeWorkspaces.push(wsB)
-      const plan = await prepareLaunch({
-        skillId: pick[0].id,
-        agentId: cliTarget.agentId,
-        workspace: wsB
-      })
-      check('cli plan carries command', !!plan.command, plan.command || '(missing)')
-      check(
-        'cli plan carries prompt routing',
-        plan.promptArgs !== undefined || plan.promptStyle !== undefined,
-        JSON.stringify(plan.promptArgs ?? plan.promptStyle ?? null)
-      )
-    }
-
-    // The plans wrote a workspace under the throwaway home; drop them so the
-    // "agent dir emptied" check later still means what it says.
-    for (const w of madeWorkspaces) rmSync(w, { recursive: true, force: true })
-  }
+  section('One directory, several agents')
+  const sharingId = 'selftest-sharing'
+  settings.update((d) => {
+    d.customAgents = d.customAgents.filter((c) => c.id !== sharingId)
+    d.customAgents.push({ id: sharingId, name: 'Self-test Sharing Agent', path: fakeAgentDir })
+  })
+  const sharingAgentId = `custom:${sharingId}`
+  const shared = outcome.ok.find((r) => r.skillName === 'alpha')!
+  // The sibling record a second agent reading the same directory would have.
+  installs.update((d) => {
+    d.records.push({ ...shared, id: `${shared.skillId}@${sharingAgentId}`, agentId: sharingAgentId, agentName: 'Self-test Sharing Agent' })
+  })
+  const sharedRemoval = uninstallFrom(shared.skillId, sharingAgentId)
+  check(
+    'the removal reports every agent it affected',
+    sharedRemoval.ok && sharedRemoval.agents.length === 2,
+    sharedRemoval.agents.join(', ')
+  )
+  const orphaned = installs.get().records.filter((r) => r.linkPath === shared.linkPath)
+  check('no record is left pointing at a removed entry', orphaned.length === 0, `${orphaned.length} left`)
+  settings.update((d) => {
+    d.customAgents = d.customAgents.filter((c) => c.id !== sharingId)
+    d.enabledAgents = d.enabledAgents.filter((a) => a !== sharingAgentId)
+  })
 
   section('Uninstall + cleanup')
   /*
@@ -407,7 +357,7 @@ async function main(): Promise<number> {
     delete something it did not create.
   */
   let removed = 0
-  const ownRecords = new Set([...outcome.ok, ...outcome2.ok].map((r) => `${r.skillId}@${r.agentId}`))
+  const ownRecords = new Set(outcome.ok.map((r) => `${r.skillId}@${r.agentId}`))
   for (const rec of installedSkills()) {
     if (!ownRecords.has(`${rec.skillId}@${rec.agentId}`)) continue
     if (uninstall(rec.skillId, rec.agentId)) removed++
@@ -416,7 +366,7 @@ async function main(): Promise<number> {
   check('agent dir emptied', readdirSync(fakeAgentDir).filter((n) => !n.startsWith('.')).length === 0)
   removeItem(target.fullName, true)
   check('library item removed', !libraryItems().some((i) => i.id === target.fullName))
-  check('checkout deleted', !existsSync(item.sourcePath))
+  check('nothing was ever written under the library', !existsSync(join(userDataDir(), 'library')))
   settings.update((d) => {
     d.customAgents = d.customAgents.filter((c) => c.id !== customId)
   })

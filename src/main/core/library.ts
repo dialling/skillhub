@@ -1,14 +1,12 @@
-import { execFile } from 'node:child_process'
-import { cpSync, existsSync, mkdirSync, rmSync } from 'node:fs'
+import { existsSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
-import type { JobProgress, LibraryItem, RepoMeta, SkillEntry } from '../../shared/types'
-import { ensureDir, expandPath, libraryFolderName } from './paths'
-import { cache, installs, library, logActivity, settings } from './db'
-import { getRepo, listSkillDirs, activeToken, getRawFile } from './github'
+import type { JobProgress, LibraryItem, RepoMeta } from '../../shared/types'
+import { expandPath } from './paths'
+import { cache, installs, library, logActivity } from './db'
+import { getRepo, listSkillDirs, getRawFile } from './github'
 import { buildLocalSkills, buildRemoteSkills, parseSkillMd } from './skills'
 import { m } from './msg'
 import { curatedCatalog } from './catalog'
-import { hasBinary } from './platform'
 
 export type ProgressSink = (p: JobProgress) => void
 
@@ -23,55 +21,6 @@ function emit(p: JobProgress): void {
   } catch {
     /* renderer may be gone */
   }
-}
-
-export function gitAvailable(): boolean {
-  return hasBinary('git')
-}
-
-function run(cmd: string, args: string[], opts: { cwd?: string; onLine?: (s: string) => void } = {}): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const child = execFile(
-      cmd,
-      args,
-      {
-        cwd: opts.cwd,
-        env: {
-          ...process.env,
-          GIT_TERMINAL_PROMPT: '0',
-          GIT_ASKPASS: 'echo',
-          GCM_INTERACTIVE: 'never'
-        },
-        maxBuffer: 32 * 1024 * 1024
-      },
-      (err, _stdout, stderr) => {
-        if (err) reject(new Error(String(stderr || err.message).trim()))
-        else resolve()
-      }
-    )
-    child.stderr?.on('data', (buf: Buffer) => {
-      const text = buf.toString()
-      for (const line of text.split(/\r?\n|\r/)) {
-        if (line.trim()) opts.onLine?.(line.trim())
-      }
-    })
-  })
-}
-
-function authedUrl(fullName: string): string {
-  const token = activeToken()
-  return token
-    ? `https://x-access-token:${token}@github.com/${fullName}.git`
-    : `https://github.com/${fullName}.git`
-}
-
-function cleanUrl(fullName: string): string {
-  return `https://github.com/${fullName}.git`
-}
-
-export function libraryDir(): string {
-  const dir = settings.get().libraryDir || join(ensureDir(join(require('node:os').homedir(), '.skillhub')), 'library')
-  return ensureDir(expandPath(dir))
 }
 
 /**
@@ -168,32 +117,6 @@ function upsert(item: LibraryItem): void {
   })
 }
 
-/** Read every SKILL.md inside a local checkout to produce rich skill entries. */
-async function enrichSkills(
-  fullName: string,
-  root: string,
-  meta: RepoMeta,
-  remoteDirs: string[],
-  onProgress?: (msg: string, pct?: number) => void
-): Promise<SkillEntry[]> {
-  const skills = buildLocalSkills(fullName, root, {
-    stars: meta.stars,
-    avatarUrl: meta.avatarUrl,
-    license: meta.license
-  })
-  if (!skills.length && remoteDirs.length) {
-    // Checkout has no SKILL.md (e.g. skills live on another branch) — keep the
-    // remote listing so the repo is still usable.
-    return buildRemoteSkills(fullName, remoteDirs, {
-      stars: meta.stars,
-      avatarUrl: meta.avatarUrl,
-      license: meta.license
-    })
-  }
-  void onProgress
-  return skills
-}
-
 export interface AddOptions {
   /** restrict the checkout to specific skill dirs (still a full clone today) */
   skillDirs?: string[]
@@ -207,7 +130,6 @@ export async function addRepo(fullName: string, opts: AddOptions = {}): Promise<
   if (existing && existing.status === 'ready') return existing
 
   const meta = await getRepo(fullName, { force: true })
-  const dir = join(libraryDir(), libraryFolderName(fullName))
 
   const item: LibraryItem = {
     id,
@@ -215,13 +137,13 @@ export async function addRepo(fullName: string, opts: AddOptions = {}): Promise<
     addedAt: existing?.addedAt || Date.now(),
     updatedAt: Date.now(),
     status: 'downloading',
-    sourcePath: dir,
+    sourcePath: '',
     branch: meta.defaultBranch,
     meta,
     skills: []
   }
   upsert(item)
-  emit({ job: 'clone', id, phase: 'start', message: m('library.cloning', { name: fullName }), percent: 2 })
+  emit({ job: 'clone', id, phase: 'start', message: m('library.listing', { name: fullName }), percent: 5 })
 
   try {
     let remoteDirs: string[] = []
@@ -230,51 +152,22 @@ export async function addRepo(fullName: string, opts: AddOptions = {}): Promise<
       remoteDirs = tree.dirs
       if (tree.truncated) meta.truncatedTree = true
     } catch {
-      /* non fatal */
+      /* a repo with no readable tree still gets an entry; it just has no skills */
     }
 
-    if (existsSync(join(dir, '.git'))) {
-      emit({ job: 'clone', id, phase: 'progress', message: m('library.alreadyCloned'), percent: 20 })
-      await run('git', ['-C', dir, 'pull', '--ff-only', '--depth', '1'], {
-        onLine: (l) => emit({ job: 'clone', id, phase: 'progress', message: l })
-      }).catch(async () => {
-        await run('git', ['-C', dir, 'fetch', '--depth', '1', 'origin', meta.defaultBranch || 'main'])
-        await run('git', ['-C', dir, 'reset', '--hard', 'FETCH_HEAD'])
-      })
-    } else {
-      if (existsSync(dir)) rmSync(dir, { recursive: true, force: true })
-      mkdirSync(dir, { recursive: true })
-      const depth = String(opts.depth || 1)
-      const args = ['clone', '--depth', depth, '--single-branch']
-      if (meta.defaultBranch) args.push('--branch', meta.defaultBranch)
-      args.push(cleanUrl(fullName), dir)
-      try {
-        await run('git', args, {
-          onLine: (l) => emit({ job: 'clone', id, phase: 'progress', message: l })
-        })
-      } catch (err: any) {
-        // Private repo or auth failure: retry with an authenticated URL, then
-        // scrub the token from the stored remote.
-        const token = activeToken()
-        if (!token) throw err
-        emit({ job: 'clone', id, phase: 'progress', message: m('library.retryAuth') })
-        if (existsSync(dir)) rmSync(dir, { recursive: true, force: true })
-        await run('git', [...args.filter((a) => a !== cleanUrl(fullName) && a !== dir), authedUrl(fullName), dir], {
-          onLine: (l) => emit({ job: 'clone', id, phase: 'progress', message: l })
-        })
-        await run('git', ['-C', dir, 'remote', 'set-url', 'origin', cleanUrl(fullName)]).catch(() => {})
-      }
-    }
-
-    emit({ job: 'clone', id, phase: 'progress', message: m('library.parsing'), percent: 85 })
-    const skills = await enrichSkills(fullName, dir, meta, remoteDirs)
+    emit({ job: 'clone', id, phase: 'progress', message: m('library.parsing'), percent: 70 })
+    const skills = buildRemoteSkills(fullName, remoteDirs, {
+      stars: meta.stars,
+      avatarUrl: meta.avatarUrl,
+      license: meta.license
+    })
     const ready: LibraryItem = {
       ...item,
       status: 'ready',
       lastSyncAt: Date.now(),
       updatedAt: Date.now(),
       skills,
-      meta: { ...meta, skillDirs: remoteDirs.length ? remoteDirs : skills.map((s) => s.path), skillCount: skills.length }
+      meta: { ...meta, skillDirs: remoteDirs, skillCount: skills.length }
     }
     upsert(ready)
     logActivity('add', 'activity.added', { name: fullName, count: skills.length })
@@ -340,18 +233,23 @@ export async function syncItem(id: string): Promise<LibraryItem> {
   if (item.local) return item
   emit({ job: 'sync', id, phase: 'start', message: m('library.syncing', { name: id }) })
   try {
-    await run('git', ['-C', item.sourcePath, 'pull', '--ff-only', '--depth', '1'], {
-      onLine: (l) => emit({ job: 'sync', id, phase: 'progress', message: l })
-    })
     const meta = await getRepo(id, { force: true })
-    const skills = buildLocalSkills(id, item.sourcePath, {
+    let remoteDirs: string[] = []
+    try {
+      const tree = await listSkillDirs(id, meta.defaultBranch)
+      remoteDirs = tree.dirs
+    } catch {
+      /* keep whatever the item already had rather than emptying it */
+      remoteDirs = item.meta.skillDirs || item.skills.map((s) => s.path)
+    }
+    const skills = buildRemoteSkills(id, remoteDirs, {
       stars: meta.stars,
       avatarUrl: meta.avatarUrl,
       license: meta.license
     })
     const next: LibraryItem = {
       ...item,
-      meta: { ...meta, skillDirs: skills.map((s) => s.path), skillCount: skills.length },
+      meta: { ...meta, skillDirs: remoteDirs, skillCount: skills.length },
       skills,
       lastSyncAt: Date.now(),
       updatedAt: Date.now(),
@@ -398,10 +296,15 @@ export function removeItem(id: string, deleteFiles = true): { removedInstalls: n
   return { removedInstalls }
 }
 
-/** Read a single SKILL.md from a checkout. */
+/**
+ * Read a single SKILL.md from disk — for locally imported folders only.
+ *
+ * There is no checkout for a GitHub repo anymore, so a null return here is the
+ * normal case and the caller falls through to raw.githubusercontent.
+ */
 export function readSkillFile(fullName: string, relPath: string): string | null {
   const item = getItem(fullName)
-  if (!item) return null
+  if (!item?.local || !item.sourcePath) return null
   const file = join(item.sourcePath, relPath, 'SKILL.md')
   if (!existsSync(file)) return null
   try {
@@ -453,5 +356,3 @@ export async function fetchRemoteSkillMeta(
   )
   return out
 }
-
-export { cpSync }

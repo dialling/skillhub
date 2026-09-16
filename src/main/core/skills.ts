@@ -2,6 +2,7 @@ import matter from 'gray-matter'
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import type { SkillEntry } from '../../shared/types'
+import { loadRegistry } from './agents'
 
 export interface ParsedSkill {
   name?: string
@@ -85,10 +86,35 @@ export function readSkillDir(dir: string): ParsedSkill | null {
   }
 }
 
+/**
+ * Dot-directories that hold skills on purpose.
+ *
+ * This walk skipped every dot-prefixed name to stay out of `.git`, and that
+ * silently excluded the skills the app itself installs at project level:
+ * `.agents/skills/x`, `.claude/skills/x`, `.cursor/skills/x`. Those paths are in
+ * the repository tree, are listed by the store, and could never be produced by
+ * the local scan — so selecting one on the detail page failed with "not in the
+ * library", and repositories whose skills live under an agent directory were
+ * under-reported (525 such paths in the shipped catalog).
+ *
+ * The set comes from the agent registry rather than a list written here, so it
+ * follows the agents the app actually knows about. Everything else stays skipped,
+ * `.git` included.
+ */
+function skillDotDirs(): Set<string> {
+  const out = new Set<string>()
+  for (const entry of loadRegistry()) {
+    const head = entry.projectSkillsDir?.split('/')[0]
+    if (head && head.startsWith('.')) out.add(head)
+  }
+  return out
+}
+
 /** Recursively find every directory containing a SKILL.md. */
 export function discoverSkillDirs(root: string, maxDepth = 5): string[] {
   const found: string[] = []
-  const skip = new Set(['.git', 'node_modules', '.venv', 'venv', 'dist', 'build', '__pycache__'])
+  const skip = new Set(['node_modules', '.venv', 'venv', 'dist', 'build', '__pycache__'])
+  const dotDirs = skillDotDirs()
   const walk = (dir: string, depth: number): void => {
     if (depth > maxDepth) return
     if (existsSync(join(dir, 'SKILL.md'))) {
@@ -102,7 +128,8 @@ export function discoverSkillDirs(root: string, maxDepth = 5): string[] {
       return
     }
     for (const name of entries) {
-      if (name.startsWith('.') || skip.has(name)) continue
+      if (skip.has(name)) continue
+      if (name.startsWith('.') && !dotDirs.has(name)) continue
       const full = join(dir, name)
       try {
         if (statSync(full).isDirectory()) walk(full, depth + 1)

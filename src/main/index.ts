@@ -100,7 +100,7 @@ function createWindow(): void {
   mainWindow.on('ready-to-show', () => mainWindow?.show())
 
   // Headless verification aid:
-  //   --shot=<path.png> [--shot-delay=8000] [--eval="<js>"] [--shot-settle=1200]
+  //   --shot=<path.png> [--shot-delay=8000] [--script="<js>"] [--shot-settle=1200]
   // Renders the window, optionally drives it, writes a PNG and exits. This is
   // how UI states that need interaction (a scrolled list, an open detail panel)
   // get verified without a human in the loop.
@@ -109,8 +109,17 @@ function createWindow(): void {
     const target = shot.slice('--shot='.length)
     const delayArg = process.argv.find((a) => a.startsWith('--shot-delay='))
     const delay = delayArg ? Number(delayArg.split('=')[1]) || 6000 : 6000
-    const evalArg = process.argv.find((a) => a.startsWith('--eval='))
-    const evalScript = evalArg ? evalArg.slice('--eval='.length) : null
+    /*
+      `--script=`, not `--eval=`.
+
+      Electron's main process parses Node's own CLI options before the app sees
+      them, and `--eval` is one of them: the flag was swallowed and every probe
+      silently returned `undefined`. The harness reported a written screenshot
+      with no result, which read as "the page did nothing" rather than "the
+      argument never arrived".
+    */
+    const scriptArg = process.argv.find((a) => a.startsWith('--script='))
+    const evalScript = scriptArg ? scriptArg.slice('--script='.length) : null
     const settleArg = process.argv.find((a) => a.startsWith('--shot-settle='))
     const settle = settleArg ? Number(settleArg.split('=')[1]) || 1200 : 1200
 
