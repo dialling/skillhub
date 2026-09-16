@@ -1,6 +1,6 @@
 {
   "name": "skillhub",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "SkillHub — a desktop store and manager for AI agent skills (SKILL.md), for macOS, Windows and Linux.",
   "main": "./out/main/index.js",
   "author": {
