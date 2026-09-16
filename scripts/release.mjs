@@ -179,7 +179,15 @@ const body = [
 ].join('\n')
 
 writeFileSync(join(root, '.release-notes.md'), body, 'utf8')
-const assets = [`release/SkillHub-${next}-arm64.dmg`, `release/SkillHub-${next}-arm64-mac.zip`]
+/*
+  The DMG only.
+
+  The zip was uploaded alongside it and is 124 MB of redundancy: macOS users take
+  the disk image, and with no code signing there is no auto-updater consuming the
+  zip. Uploading both took ~40 minutes through a proxy, twice as long for a file
+  nobody downloads.
+*/
+const assets = [`release/SkillHub-${next}-arm64.dmg`]
   .map((p) => join(root, p))
   .filter((p) => existsSync(p))
 if (!assets.length) {
