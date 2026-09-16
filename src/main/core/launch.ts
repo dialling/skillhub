@@ -254,14 +254,23 @@ export async function prepareLaunch(input: {
       mkdirSync(agentDir, { recursive: true })
       const target = join(agentDir, safeSegment(skillName) || folderName)
       if (!existsSync(target) && !isSymlink(target)) {
-        if (isWindows) {
+        /*
+          Same rule the installer follows, and for the same reason: an agent that
+          does not follow symlinks gets a real copy. Installing a link it cannot
+          read is not an install — it is a file in a directory the agent skips,
+          which is what "unknown or no longer available" was reporting all along.
+        */
+        const canLink = entry?.supportsSymlink !== false
+        if (canLink && isWindows) {
           try {
             symlinkSync(sourcePath, target, 'junction')
           } catch {
             cpSync(sourcePath, target, { recursive: true, dereference: true })
           }
-        } else {
+        } else if (canLink) {
           symlinkSync(sourcePath, target, 'dir')
+        } else {
+          cpSync(sourcePath, target, { recursive: true, dereference: true })
         }
         globalSkillPath = target
         installs.update((d) => {
@@ -275,7 +284,7 @@ export async function prepareLaunch(input: {
             agentName: entry?.name || input.agentId,
             targetDir: agentDir,
             linkPath: target,
-            mode: 'symlink',
+            mode: canLink ? 'symlink' : 'copy',
             installedAt: Date.now(),
             sourcePath
           })

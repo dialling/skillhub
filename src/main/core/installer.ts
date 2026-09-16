@@ -14,7 +14,7 @@ import { dirname, join } from 'node:path'
 import type { InstallMode, InstallProgress, InstallRecord, InstallRequest, SkillEntry } from '../../shared/types'
 import { expandPath } from './paths'
 import { installs, library, logActivity, settings } from './db'
-import { agentDisplayName, listAgents, resolveAgentDir } from './agents'
+import { agentDisplayName, listAgents, loadRegistry, resolveAgentDir } from './agents'
 import { m } from './msg'
 import { isInside, isWindows } from './platform'
 
@@ -104,7 +104,17 @@ export function installSkills(
   req: InstallRequest,
   onProgress?: (p: InstallProgress) => void
 ): InstallOutcome {
-  const mode: InstallMode = req.mode || settings.get().installMode || 'symlink'
+  /*
+    The install mode is per agent, not global.
+
+    `supportsSymlink: false` was recorded in the registry for DeepSeek Harness,
+    Cursor, Kimi and pi, shown in the UI, and then never consulted: everything was
+    installed as a symlink because that is the global default. An agent that does
+    not follow symlinks therefore never saw the skill — it reported "unknown or no
+    longer available" while the link sat in its own skills directory, which is
+    what every one of those reports turned out to be.
+  */
+  const requestedMode: InstallMode | undefined = req.mode || settings.get().installMode
   const libRoot = expandPath(settings.get().libraryDir)
   const outcome: InstallOutcome = { ok: [], skipped: [], errors: [] }
   const total = req.skillIds.length * req.agentIds.length
@@ -149,6 +159,11 @@ export function installSkills(
 
     for (const agentId of req.agentIds) {
       current++
+      const entry = loadRegistry().find((e) => e.id === agentId)
+      // An agent that cannot follow symlinks gets a real copy, whatever the
+      // global preference says: a link it cannot read is not an install.
+      const mode: InstallMode =
+        entry?.supportsSymlink === false ? 'copy' : requestedMode || 'symlink'
       const agentDir = resolveAgentDir(agentId)
       const agentName = agentDisplayName(agentId)
       if (!agentDir) {
