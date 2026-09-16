@@ -3,27 +3,32 @@ import { Download, Check, FolderOpen, HardDrive, Search } from 'lucide-react'
 import { useStore } from '../store'
 
 /**
- * Where should this skill go?
+ * Which agent should get this skill?
  *
- * The user picks the folder, and the skill lands in `<folder>/<skill name>/`.
- * Suggesting each agent's own skills directory makes the common case one click —
- * that is where an agent looks, and a skill placed there needs no further setup —
- * while "choose another folder" keeps it open for anyone who wants a project
- * directory or somewhere of their own.
+ * That is the question with a wrong answer: a skill is only usable by an agent
+ * that reads the directory it was written into, and installing into every
+ * enabled agent was the wrong default — people use one agent, and a skill in a
+ * directory they never load is clutter they did not ask for.
  *
- * The full destination path is shown for the selected row, because "install to
- * Cursor" and "install to ~/.cursor/skills" are not the same amount of
- * information and only one of them can be checked at a glance.
+ * Multi-select rather than single, because using two agents is a real case and
+ * the alternative is installing the same skill twice.
+ *
+ * The answer is remembered, so the common case stays one click: this dialog
+ * appears when the question has not been answered yet, and when the user asks to
+ * change the answer. "Choose another folder" remains for the other intent —
+ * putting a skill somewhere of one's own rather than into an agent.
  */
 export function InstallModal(): React.JSX.Element | null {
   const t = useStore((s) => s.t)
   const open = useStore((s) => s.installOpen)
   const pending = useStore((s) => s.installPendingSkills)
   const agents = useStore((s) => s.agents)
+  const settings = useStore((s) => s.settings)
   const installTarget = useStore((s) => s.installTarget)
   const close = useStore((s) => s.closeInstall)
-  const run = useStore((s) => s.installFromGithub)
-  const [chosen, setChosen] = useState('')
+  const run = useStore((s) => s.installToPaths)
+  const saveAgents = useStore((s) => s.setInstallAgents)
+  const [picked, setPicked] = useState<Set<string>>(new Set())
   const [custom, setCustom] = useState('')
   const [filter, setFilter] = useState('')
   const [busy, setBusy] = useState(false)
@@ -58,53 +63,64 @@ export function InstallModal(): React.JSX.Element | null {
 
   const absOf = (a: (typeof detected)[number]): string => absByAgent.get(a.id) || a.path
 
-  /*
-    What gets pre-selected, in order of how much the user meant it.
-
-    A location they went into Settings and picked outranks a guess, and a guess
-    made from their own machine outranks nothing. This is the only thing the
-    stored preference does — it steers the default — because a folder an agent
-    never reads is worse than no default at all: the skill installs "successfully"
-    and then cannot be found.
-  */
-  const suggested = useMemo(() => {
-    if (installTarget?.reason === 'configured' && installTarget.absPath) return installTarget.absPath
-    return detected[0] ? absByAgent.get(detected[0].id) || detected[0].path : ''
-  }, [installTarget, detected, absByAgent])
-
   useEffect(() => {
     if (!open) return
     setCustom('')
     setFilter('')
-    setChosen(suggested)
-  }, [open, suggested])
-
-  /*
-    Keep the choice in step with the suggestion while the dialog is open.
-
-    The advice arrives from an async call, so it can land after the dialog has
-    already opened on the fallback; without this the user sees their configured
-    folder listed as an option while the footer says something else is selected.
-  */
-  useEffect(() => {
-    if (!open || custom) return
-    if (!suggested) return
-    setChosen((current) => (detected.some((a) => absOf(a) === current) ? current : suggested))
-  }, [open, custom, suggested, detected, absByAgent])
+    setBusy(false)
+    /*
+      Pre-check what the user last chose. Failing that, one agent rather than all
+      of them: a single default is what the common case wants, and it keeps
+      confirming a genuine one-click when the dialog does appear.
+    */
+    const remembered = settings?.installAgents
+    const configured =
+      installTarget?.reason === 'configured'
+        ? installTarget.candidates.find((c) => c.absPath === installTarget.absPath)?.agentId
+        : undefined
+    const initial = remembered?.length ? remembered : [configured || detected[0]?.id].filter(Boolean)
+    setPicked(new Set(initial as string[]))
+  }, [open, detected, settings, installTarget])
 
   if (!open) return null
 
   const shown = filter.trim()
     ? detected.filter((a) => a.name.toLowerCase().includes(filter.trim().toLowerCase()))
     : detected
-  const destination = custom || chosen
-  const skillCount = pending.length
+  const chosenAgents = detected.filter((a) => picked.has(a.id))
+  const count = pending.length
+  const targets = custom ? [custom] : chosenAgents.map(absOf)
+  /*
+    Two modes, one dialog.
+
+    With skills pending it installs them; with none it is only recording the
+    answer. Keeping them together means the chooser cannot drift from the thing
+    it configures — and `count === 0` is exactly the signal, because an install
+    of nothing is not a thing anyone asks for.
+  */
+  const chooseOnly = count === 0
+  const canConfirm = targets.length > 0 && (chooseOnly || count > 0)
+
+  const toggle = (id: string): void => {
+    const next = new Set(picked)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    setPicked(next)
+  }
 
   const confirm = async (): Promise<void> => {
-    if (!destination || !skillCount) return
+    if (!canConfirm) return
     setBusy(true)
     try {
-      await run(destination)
+      if (custom) {
+        await run([custom])
+      } else {
+        // Remembered before installing, so a failed fetch still leaves the
+        // answer recorded and the next attempt is one click.
+        await saveAgents(chosenAgents.map((a) => a.id))
+        if (!chooseOnly) await run(chosenAgents.map(absOf))
+        else close()
+      }
     } finally {
       setBusy(false)
     }
@@ -116,7 +132,11 @@ export function InstallModal(): React.JSX.Element | null {
         <div className="modal-head">
           <Download size={15} />
           <div className="modal-title">
-            {skillCount === 1 ? t('install.titleOne', { name: pending[0]?.name || '' }) : t('install.title', { n: skillCount })}
+            {chooseOnly
+              ? t('install.chooseTarget')
+              : count === 1
+                ? t('install.titleOne', { name: pending[0]?.name || '' })
+                : t('install.title', { n: count })}
           </div>
           <button className="btn ghost sm" style={{ marginLeft: 'auto' }} onClick={() => close()}>
             {t('common.cancel')}
@@ -125,7 +145,7 @@ export function InstallModal(): React.JSX.Element | null {
 
         <div className="modal-body">
           <div className="dim" style={{ fontSize: 12, marginBottom: 12, lineHeight: 1.6 }}>
-            {t('install.explain')}
+            {t('install.chooseAgentsHint')}
           </div>
 
           <div className="searchbox" style={{ marginBottom: 10 }}>
@@ -140,29 +160,23 @@ export function InstallModal(): React.JSX.Element | null {
 
           <div className="bulk-agents">
             {shown.map((a) => (
-              <label key={a.id} className={`bulk-agent${!custom && chosen === absOf(a) ? ' on' : ''}`}>
+              <label key={a.id} className={`bulk-agent${!custom && picked.has(a.id) ? ' on' : ''}`}>
                 <input
-                  type="radio"
-                  name="install-destination"
-                  checked={!custom && chosen === absOf(a)}
+                  type="checkbox"
+                  checked={!custom && picked.has(a.id)}
                   onChange={() => {
                     setCustom('')
-                    setChosen(absOf(a))
+                    toggle(a.id)
                   }}
                 />
-                <span className="ba-check">{!custom && chosen === absOf(a) && <Check size={11} />}</span>
+                <span className="ba-check">{!custom && picked.has(a.id) && <Check size={11} />}</span>
                 <span className="ba-main">
                   <span className="ba-name">{a.name}</span>
-                  <span className="ba-path mono" title={a.path}>
+                  <span className="ba-path mono" title={absOf(a)}>
                     {a.path}
                   </span>
                 </span>
                 <span className="ba-tags">
-                  {/*
-                    Say when a row is the configured location rather than just
-                    "enabled": the two are different reasons to be first, and the
-                    user should be able to see which one is winning.
-                  */}
                   {installTarget?.reason === 'configured' && installTarget.absPath === absOf(a) ? (
                     <span className="chip tiny violet">{t('install.suggested')}</span>
                   ) : (
@@ -171,15 +185,26 @@ export function InstallModal(): React.JSX.Element | null {
                 </span>
               </label>
             ))}
+            {shown.length === 0 && (
+              <div className="dim" style={{ fontSize: 11.5, padding: 6 }}>
+                {t('palette.noMatch')}
+              </div>
+            )}
           </div>
 
+          {/* A folder is a destination for skills, not an answer to "which
+              agent" — with nothing pending there is nothing to put there. */}
+          {!chooseOnly && (
           <div className="install-custom">
             <button
               className={`bulk-agent${custom ? ' on' : ''}`}
               style={{ width: '100%', textAlign: 'left' }}
               onClick={async () => {
-                const picked = await window.skillhub.system.pickDirectory()
-                if (picked) setCustom(picked)
+                const dir = await window.skillhub.system.pickDirectory()
+                if (dir) {
+                  setCustom(dir)
+                  setPicked(new Set())
+                }
               }}
             >
               <span className="ba-check">{custom ? <Check size={11} /> : <FolderOpen size={11} />}</span>
@@ -189,6 +214,7 @@ export function InstallModal(): React.JSX.Element | null {
               </span>
             </button>
           </div>
+          )}
         </div>
 
         <div className="modal-foot">
@@ -196,9 +222,15 @@ export function InstallModal(): React.JSX.Element | null {
               checking before anything is written. */}
           <span className="dim mono" style={{ fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis' }}>
             <HardDrive size={11} style={{ verticalAlign: -1, marginRight: 4 }} />
-            {destination ? `${destination}/${pending[0]?.name || ''}` : t('install.pickFirst')}
+            {targets.length === 0
+              ? t('install.pickFirst')
+              : chooseOnly
+                ? targets.join(t('common.listSep'))
+                : targets.length === 1
+                  ? `${targets[0]}/${pending[0]?.name || ''}`
+                  : t('install.intoN', { n: targets.length })}
           </span>
-          <button className="btn primary" disabled={busy || !destination || !skillCount} onClick={() => void confirm()}>
+          <button className="btn primary" disabled={busy || !canConfirm} onClick={() => void confirm()}>
             {busy ? <span className="spinner" /> : <Download size={13} />}
             {t('install.confirm')}
           </button>

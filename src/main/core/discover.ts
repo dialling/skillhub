@@ -105,9 +105,24 @@ export async function detectLocalSkills(): Promise<LocalSkill[]> {
  * of directories, not a list of agents.
  */
 export function installDestinations(): { agentId: string; agentName: string; path: string }[] {
+  const chosen = settings.get().installAgents
+  const want = chosen && chosen.length ? new Set(chosen) : null
   const byPath = new Map<string, { agentId: string; agentName: string; path: string }>()
   for (const agent of listAgents()) {
-    if (!agent.enabled || agent.projectOnly) continue
+    // Once the user has said where, that answer governs — including agents they
+    // have since switched off, because turning an agent off is not the same
+    // statement as "stop putting my skills there".
+    if (want ? !want.has(agent.id) : !agent.enabled) continue
+    if (agent.projectOnly) continue
+    /*
+      A path we cannot resolve is the one real "找不到目标文件夹" case.
+
+      Returning nothing for this agent is how it used to disappear: the install
+      reported success and one agent silently received nothing. It is left out of
+      the list on purpose — the caller decides whether to fall back or to say so —
+      but it must be visible, which `installDestinations` alone cannot express.
+      `agentsWithoutDestination` is that half.
+    */
     const dir = resolveAgentDir(agent.id)
     if (!dir) continue
     const abs = expandPath(dir)
@@ -118,6 +133,26 @@ export function installDestinations(): { agentId: string; agentName: string; pat
     byPath.set(abs, { agentId: agent.id, agentName: agent.name, path: abs })
   }
   return [...byPath.values()].sort((a, b) => a.agentName.localeCompare(b.agentName))
+}
+
+/**
+ * Enabled agents a one-click install cannot place anything into, and why.
+ *
+ * The other half of `installDestinations`, so a caller can tell "you chose one
+ * agent and it worked" apart from "one of your agents has nowhere to put it".
+ * Silence here was the whole failure mode: the install said success while an
+ * agent received nothing at all.
+ */
+export function agentsWithoutDestination(): { agentId: string; agentName: string }[] {
+  const chosen = settings.get().installAgents
+  const want = chosen && chosen.length ? new Set(chosen) : null
+  const out: { agentId: string; agentName: string }[] = []
+  for (const agent of listAgents()) {
+    if (want ? !want.has(agent.id) : !agent.enabled) continue
+    if (agent.projectOnly) continue
+    if (!resolveAgentDir(agent.id)) out.push({ agentId: agent.id, agentName: agent.name })
+  }
+  return out
 }
 
 export async function recommendInstallTarget(): Promise<InstallTargetAdvice> {

@@ -67,7 +67,10 @@ const api = {
   install: {
     fromGithub: (input: any) => call<any>('install:fromGithub', input),
     destinations: () =>
-      call<{ agentId: string; agentName: string; path: string }[]>('install:destinations'),
+      call<{
+        paths: { agentId: string; agentName: string; path: string }[]
+        unresolved: { agentId: string; agentName: string }[]
+      }>('install:destinations'),
     uninstall: (skillId: string, agentId: string) =>
       call<{ ok: boolean; agents: string[] }>('install:uninstall', skillId, agentId),
     uninstallAll: (skillId: string) => call<number>('install:uninstallAll', skillId),

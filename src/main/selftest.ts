@@ -29,7 +29,7 @@ import { addRepo, libraryItems, removeItem } from './core/library'
 import { entryOwner, installFromGithub, installedSkills, uninstall, uninstallFrom } from './core/installer'
 import { loadRegistry } from './core/agents'
 import { curatedCatalogPath, fetchedCatalogPath } from './core/paths'
-import { recommendInstallTarget } from './core/discover'
+import { agentsWithoutDestination, installDestinations, recommendInstallTarget } from './core/discover'
 import { compareVersions, dateToVersion } from './core/update'
 import { buildRemoteSkills } from './core/skills'
 import { userDataDir } from './core/paths'
@@ -213,6 +213,67 @@ async function main(): Promise<number> {
       ? ''
       : `${advice.absPath} not among ${advice.candidates.length} candidates`
   )
+
+  /*
+    Where a one-click install writes, and the two ways that used to go wrong.
+
+    Writing into every enabled agent is wrong in the common case — people use one
+    agent — so the choice is explicit and remembered. And an agent whose skills
+    directory cannot be resolved used to vanish from the list while the install
+    still reported success, which is the "找不到目标文件夹" report: the user is
+    told it worked and one agent received nothing.
+  */
+  section('Install destinations follow the chosen agent')
+  const customDir = mkdtempSync(join(tmpdir(), 'skillhub-dest-'))
+  // Its own source, so this section does not depend on one defined further
+  // down the file — a test that only passes in one ordering is a trap.
+  const destSrc = mkdtempSync(join(tmpdir(), 'skillhub-destsrc-'))
+  writeFileSync(join(destSrc, 'SKILL.md'), '---\nname: mkdir-probe\ndescription: probe\n---\n\n# Body\n')
+  settings.update((d) => {
+    d.customAgents = [
+      { id: 'selftest-a', name: 'Dest Agent A', path: join(customDir, 'a') },
+      { id: 'selftest-b', name: 'Dest Agent B', path: join(customDir, 'b') }
+    ]
+    d.enabledAgents = ['custom:selftest-a', 'custom:selftest-b']
+    d.installAgents = undefined
+  })
+  check('unanswered: every enabled agent is offered, so the question can be asked', installDestinations().length === 2, `${installDestinations().length}`)
+
+  settings.update((d) => {
+    d.installAgents = ['custom:selftest-b']
+  })
+  const narrowed = installDestinations()
+  check('answered: only the chosen agent', narrowed.length === 1 && narrowed[0].agentId === 'custom:selftest-b', JSON.stringify(narrowed.map((d) => d.agentId)))
+  check('and it is the agent the user named', narrowed[0].agentName === 'Dest Agent B', narrowed[0].agentName)
+
+  // A directory that does not exist yet is created, not refused.
+  check('the directory does not exist yet', !existsSync(join(customDir, 'b')))
+  const into = await installFromGithub({
+    skills: [{ skillId: 'a/b::mkdir-probe', fullName: 'a/b', path: '', name: 'mkdir-probe', localPath: destSrc }],
+    destinations: narrowed.map((d) => d.path)
+  })
+  check('a missing skills directory is created rather than refused', into.ok.length === 1 && existsSync(join(customDir, 'b', 'mkdir-probe', 'SKILL.md')), JSON.stringify(into.errors.map((e) => e.reason)))
+  check('and the agent that was not chosen stays empty', !existsSync(join(customDir, 'a')))
+
+  // An agent with no resolvable directory must be reported, not silently dropped.
+  settings.update((d) => {
+    d.customAgents = [{ id: 'selftest-nowhere', name: 'Nowhere Agent', path: '' }]
+    d.enabledAgents = ['custom:selftest-nowhere']
+    d.installAgents = ['custom:selftest-nowhere']
+  })
+  check(
+    'an agent with nowhere to install is reported instead of vanishing',
+    installDestinations().length === 0 && agentsWithoutDestination().some((a) => a.agentName === 'Nowhere Agent'),
+    JSON.stringify(agentsWithoutDestination())
+  )
+
+  settings.update((d) => {
+    d.customAgents = []
+    d.enabledAgents = []
+    d.installAgents = undefined
+  })
+  rmSync(customDir, { recursive: true, force: true })
+  rmSync(destSrc, { recursive: true, force: true })
 
   /*
     The published catalog, and the rule that keeps it from going backwards.

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Search, Layers, Star, ExternalLink, Download, Check, X } from 'lucide-react'
+import { Search, Layers, Star, ExternalLink, Download, Check, X, Bot } from 'lucide-react'
 import type { SkillIndexEntry } from '@shared/types'
 import { AGENT_SKILL_LABELS, FN_LABELS, type FnCategory } from '@shared/types'
 import { fmtStars } from '../api'
@@ -70,6 +70,9 @@ export function SkillBrowser(): React.JSX.Element {
   const installQuick = useStore((s) => s.installQuick)
   const installing = useStore((s) => s.installing)
   const installMap = useStore((s) => s.installMap)
+  const agentTargets = useStore((s) => s.agents)
+  const settings = useStore((s) => s.settings)
+  const openAgentPicker = useStore((s) => s.openAgentPicker)
   const library = useStore((s) => s.library)
 
   const [fn, setFn] = useState<FnCategory | 'all'>('all')
@@ -96,6 +99,19 @@ export function SkillBrowser(): React.JSX.Element {
     const handle = setTimeout(() => void runSearch(query), 300)
     return () => clearTimeout(handle)
   }, [query, runSearch])
+
+  /*
+    The remembered answer, as names.
+
+    An id with no matching agent means the agent was removed or is no longer
+    detected; showing nothing at all would be more honest than showing a stale
+    name, but the id itself would be least useful of the three.
+  */
+  const targetLabel = useMemo(() => {
+    const ids = settings?.installAgents || []
+    const names = ids.map((id) => agentTargets.find((a) => a.id === id)?.name).filter(Boolean)
+    return names.length ? names.join(t('common.listSep')) : ''
+  }, [settings, agentTargets, t])
 
   const rows: SkillIndexEntry[] = useMemo(() => {
     if (hits) return hits
@@ -179,6 +195,27 @@ export function SkillBrowser(): React.JSX.Element {
           ))}
         </div>
       )}
+
+      {/*
+        Where 安装 writes, stated once and changeable.
+
+        Without this the remembered answer would be invisible and unchangeable
+        from the screen that uses it — the user would have to guess that a dialog
+        they saw once had set something.
+      */}
+      <div className="row" style={{ marginBottom: 10, gap: 8, alignItems: 'center' }}>
+        <span className="dim" style={{ fontSize: 11.5 }}>
+          {t('install.target')}
+        </span>
+        <button
+          className="btn sm"
+          title={t('install.changeTarget')}
+          onClick={() => openAgentPicker()}
+        >
+          <Bot size={11} />
+          {targetLabel || t('install.noTarget')}
+        </button>
+      </div>
 
       {loading && !rows.length ? (
         <div className="flex" style={{ padding: 40, justifyContent: 'center', gap: 10, color: 'var(--text-2)' }}>

@@ -402,6 +402,15 @@ export interface Settings {
   theme?: string
   /** the suggested destination shown in the picker; never decides an install */
   installRoot?: string
+  /**
+   * Which agents a one-click install writes to, by agent id.
+   *
+   * Absent means the question has not been answered yet — not "all of them".
+   * Installing into every enabled agent was wrong in the common case: people
+   * use one agent, and a skill they will never load is clutter in someone
+   * else's directory. Asked once, then remembered, so the flow stays one click.
+   */
+  installAgents?: string[]
   curatedUpdatedAt?: number
   firstRunDone?: boolean
   /**

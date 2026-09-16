@@ -83,8 +83,11 @@ export interface SkillHubApi {
     reveal(p: string): Promise<boolean>
   }
   install: {
-    /** where a one-click install writes: one entry per enabled agent directory */
-    destinations(): Promise<{ agentId: string; agentName: string; path: string }[]>
+    /** where a one-click install writes, plus any agent it cannot place into */
+    destinations(): Promise<{
+      paths: { agentId: string; agentName: string; path: string }[]
+      unresolved: { agentId: string; agentName: string }[]
+    }>
     fromGithub(input: {
       skills: {
         skillId: string

@@ -195,6 +195,19 @@ const DICT: Dict = {
     '技能直接从 GitHub 取最新版本，不经过任何缓存。选一个目录，技能会放进该目录下的同名文件夹里；建议选智能体自己的技能目录，那样它就能直接读到。',
     'Skills are read fresh from GitHub — nothing is cached in between. Pick a folder and each skill goes into its own subfolder inside it; an agent\u2019s own skills directory is the safe choice, since that is where it looks.'
   ],
+  'install.chooseAgentsHint': [
+    '选一个智能体装进去 —— 技能只有放在它会读取的目录里才有用。选一次就记住了，之后点安装是一步。',
+    'Pick the agent to install into — a skill only works where that agent actually looks. The choice is remembered, so later installs are a single click.'
+  ],
+  'install.chooseTarget': ['选择安装的智能体', 'Choose the agent'],
+  'install.intoN': ['{n} 个目录', '{n} directories'],
+  'install.target': ['装到', 'To'],
+  'install.noTarget': ['未选择', 'Not set'],
+  'install.changeTarget': ['更改安装的智能体', 'Change which agent receives skills'],
+  'toast.agentNoDir': [
+    '{agents} 的技能目录找不到，这次没有装进去',
+    'Could not resolve a skills directory for {agents} — nothing was placed there'
+  ],
   'install.filter': ['筛选智能体…', 'Filter agents…'],
   'install.otherFolder': ['选择其他文件夹…', 'Choose another folder…'],
   'install.otherFolderHint': ['项目目录、自己的文件夹，都行', 'A project folder, or one of your own'],

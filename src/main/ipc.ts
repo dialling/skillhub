@@ -61,6 +61,7 @@ import { m } from './core/msg'
 import { buildRemoteSkills, parseSkillMd } from './core/skills'
 import { cleanSkillDirs } from './core/skilldirs'
 import {
+  agentsWithoutDestination,
   auditAgentDirs,
   detectLocalSkills,
   installDestinations,
@@ -331,7 +332,10 @@ export function registerIpc(send: Broadcast): void {
    * way to expand them. That exact mismatch already shipped once — the picker
    * opened with the right folder in the footer and no row selected.
    */
-  handle('install:destinations', () => installDestinations())
+  handle('install:destinations', () => ({
+    paths: installDestinations(),
+    unresolved: agentsWithoutDestination()
+  }))
   handle('install:uninstall', (skillId: string, agentId: string) => uninstallFrom(skillId, agentId))
   handle('install:uninstallAll', (skillId: string) => uninstallAll(skillId))
   handle('install:records', () => installRecords())

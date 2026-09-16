@@ -119,9 +119,13 @@ interface State {
   markSeen: (view: 'library' | 'agents') => Promise<void>
   openInstall: (skills: SkillEntry[]) => void
   closeInstall: () => void
-  installFromGithub: (destination: string) => Promise<boolean>
+  /** open the agent picker on its own — no skills pending, just the choice */
+  openAgentPicker: () => void
   installQuick: (skills: SkillEntry[]) => Promise<boolean>
+  /** install whatever is pending into these paths, no dialog */
+  installToPaths: (destinations: string[]) => Promise<boolean>
   runInstall: (destinations: string[]) => Promise<boolean>
+  setInstallAgents: (ids: string[]) => Promise<void>
   loadScenarios: () => Promise<void>
   openScenario: (id: string | null) => Promise<void>
   goToScenarios: () => void
@@ -311,16 +315,31 @@ export const useStore = create<State>((set, get) => ({
   },
 
   /**
+   * Ask "which agent" without anything to install.
+   *
+   * The answer is remembered and governs every later one-click install, so it
+   * has to be changeable from somewhere other than a dialog that only appears
+   * when the question is unanswered.
+   */
+  openAgentPicker() {
+    set({ installOpen: true, installPendingSkills: [] })
+  },
+
+  /**
    * Fetch the chosen skills straight from GitHub into the folder the user picked.
    *
    * Nothing is cached between runs: the store is an index, and every install is
    * a fresh read of the source. That costs a few seconds and removes an entire
    * class of "the copy on disk is stale" problems.
    */
-  async installFromGithub(destination) {
-    const dest = destination.trim()
-    if (!dest) return false
-    const done = await get().runInstall([dest])
+  /** Persist the answer to "which agent", so the next install is one click. */
+  async setInstallAgents(ids) {
+    const settings = await api.settings.update({ installAgents: ids })
+    set({ settings })
+  },
+
+  async installToPaths(destinations) {
+    const done = await get().runInstall(destinations)
     if (done) set({ installOpen: false, installPendingSkills: [] })
     return done
   },
@@ -342,6 +361,8 @@ export const useStore = create<State>((set, get) => ({
       get().toast('info', get().t('detail.noneSelected'))
       return false
     }
+    /** Whether the user has already said which agent to install into. */
+    const settingsChosen = (): boolean => !!get().settings?.installAgents?.length
     /*
       Collect the repositories first, silently.
 
@@ -355,14 +376,32 @@ export const useStore = create<State>((set, get) => ({
         .filter((r) => r && r !== 'local' && !get().library.some((i) => i.fullName === r))
         .map((r) => get().addToLibrary(r, true).catch(() => null))
     )
-    const targets = await api.install.destinations()
-    if (!targets.length) {
-      // Nothing enabled is a real state, not an error: fall back to asking.
+    const { paths, unresolved } = await api.install.destinations()
+    /*
+      No answer yet: ask once, then remember.
+
+      Installing into every enabled agent was the wrong default — people use one
+      agent, and a skill in a directory they never load is clutter they did not
+      ask for. But asking on *every* install would break the one-click promise,
+      so the question is asked once and the answer is kept.
+    */
+    if (!paths.length || (!settingsChosen() && paths.length > 1)) {
       get().openInstall(skills)
       return false
     }
     set({ installPendingSkills: skills })
-    return get().runInstall(targets.map((t) => t.path))
+    if (unresolved.length) {
+      /*
+        Say it, do not swallow it.
+
+        An agent whose skills directory cannot be resolved is left out of the
+        install, and the only acceptable behaviour is to name it — otherwise the
+        install reports success and that agent quietly receives nothing, which is
+        precisely the "找不到目标文件夹" case.
+      */
+      get().toast('info', get().t('toast.agentNoDir', { agents: unresolved.map((a) => a.agentName).join(get().t('common.listSep')) }))
+    }
+    return get().installToPaths(paths.map((t) => t.path))
   },
 
   /** The shared body of both install paths: fetch once, place into each target. */
