@@ -62,8 +62,7 @@ const RULES = [
     test: (line) => /['"]Electron\.app['"]/.test(line),
     waived: {
       'src/main/core/paths.ts': '只在 macOS 分支调用（pinDockIcon 先行 return），且用于取 .icns',
-      'scripts/run.mjs': '位于 process.platform 三元表达式的 darwin 分支内',
-      'scripts/make-icon.mjs': '同上；且整支只在 macOS 上跑得到（iconutil 是 macOS 独有），Windows/Linux 走 icon.png'
+      'scripts/run.mjs': '位于 process.platform 三元表达式的 darwin 分支内'
     }
   }
 ]
