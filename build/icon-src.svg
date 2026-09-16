@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!--
+    SkillHub's application mark.
+
+    The layer stack is the app's own visual language — the skill count on every
+    library tile is a Layers glyph — so the icon says "a collection of skills"
+    in the same shape the interface already uses for it.
+
+    Geometry follows the macOS icon grid: an 824pt tile centred in a 1024pt
+    canvas with a 185pt corner radius, which is what makes a third-party icon sit
+    correctly next to Apple's instead of looking oversized in the Dock.
+  -->
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0.85" y2="1">
+      <stop offset="0" stop-color="#7793f7"/>
+      <stop offset="0.55" stop-color="#4a68e0"/>
+      <stop offset="1" stop-color="#2d47ad"/>
+    </linearGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.20"/>
+      <stop offset="0.6" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#tile)"/>
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#sheen)"/>
+
+  <g transform="translate(248 248) scale(22)"
+     fill="none" stroke="#ffffff" stroke-width="1.8"
+     stroke-linecap="round" stroke-linejoin="round">
+    <!-- the skill you are looking at, solid -->
+    <path d="M12 2.6 2.6 7.4 12 12.2 21.4 7.4Z" fill="#ffffff" stroke-width="1.6"/>
+    <!-- the ones underneath it -->
+    <path d="M2.6 12.4 12 17.2 21.4 12.4" opacity="0.86"/>
+    <path d="M2.6 17 12 21.8 21.4 17" opacity="0.62"/>
+  </g>
+</svg>

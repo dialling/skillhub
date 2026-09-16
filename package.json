@@ -26,7 +26,8 @@
     "dist:dir": "npm run build && electron-builder --dir",
     "catalog": "node scripts/label-software-repos.mjs --check && node scripts/fill-missing-blurbs.mjs --check && node scripts/classify-catalog.mjs --check",
     "install:app": "node scripts/install-app.mjs",
-    "release": "node scripts/release.mjs"
+    "release": "node scripts/release.mjs",
+    "icon": "node scripts/make-icon.mjs"
   },
   "keywords": [
     "agent-skills",
@@ -91,7 +92,8 @@
       "gatekeeperAssess": false,
       "identity": "-",
       "entitlements": "build/entitlements.mac.plist",
-      "entitlementsInherit": "build/entitlements.mac.plist"
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "icon": "build/icon.icns"
     },
     "dmg": {
       "title": "SkillHub ${version}"
@@ -110,7 +112,8 @@
             "x64"
           ]
         }
-      ]
+      ],
+      "icon": "build/icon.png"
     },
     "nsis": {
       "oneClick": false,
@@ -138,7 +141,8 @@
       ],
       "category": "Development",
       "synopsis": "Store and manager for AI agent skills",
-      "description": "Browse, collect and install SKILL.md agent skills into any AI coding agent."
+      "description": "Browse, collect and install SKILL.md agent skills into any AI coding agent.",
+      "icon": "build/icon.png"
     },
     "portable": {
       "artifactName": "${productName}-${version}-${arch}-portable.${ext}"

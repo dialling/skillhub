@@ -20,6 +20,7 @@ export function InstallModal(): React.JSX.Element | null {
   const open = useStore((s) => s.installOpen)
   const pending = useStore((s) => s.installPendingSkills)
   const agents = useStore((s) => s.agents)
+  const installTarget = useStore((s) => s.installTarget)
   const close = useStore((s) => s.closeInstall)
   const run = useStore((s) => s.installFromGithub)
   const [chosen, setChosen] = useState('')
@@ -35,12 +36,61 @@ export function InstallModal(): React.JSX.Element | null {
     [agents]
   )
 
+  /*
+    Everything is compared as an absolute path, and the rows were the problem.
+
+    `AgentTarget.path` is a *display* path and may start with `~`, while the
+    configured location and the folder picker both hand back absolute paths. A
+    suggestion of `/Users/me/.dsh/skills` therefore matched no row — the dialog
+    opened with the right destination in the footer and nothing ticked, which
+    reads as a broken selection rather than a comparison that never succeeded.
+
+    `recommendInstallTarget` already resolved all of this: each candidate carries
+    the absolute path next to the tildified one and names the agent it belongs to.
+  */
+  const absByAgent = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const c of installTarget?.candidates || []) {
+      if (c.agentId && c.absPath) map.set(c.agentId, c.absPath)
+    }
+    return map
+  }, [installTarget])
+
+  const absOf = (a: (typeof detected)[number]): string => absByAgent.get(a.id) || a.path
+
+  /*
+    What gets pre-selected, in order of how much the user meant it.
+
+    A location they went into Settings and picked outranks a guess, and a guess
+    made from their own machine outranks nothing. This is the only thing the
+    stored preference does — it steers the default — because a folder an agent
+    never reads is worse than no default at all: the skill installs "successfully"
+    and then cannot be found.
+  */
+  const suggested = useMemo(() => {
+    if (installTarget?.reason === 'configured' && installTarget.absPath) return installTarget.absPath
+    return detected[0] ? absByAgent.get(detected[0].id) || detected[0].path : ''
+  }, [installTarget, detected, absByAgent])
+
   useEffect(() => {
     if (!open) return
     setCustom('')
     setFilter('')
-    setChosen(detected[0]?.path || '')
-  }, [open, detected])
+    setChosen(suggested)
+  }, [open, suggested])
+
+  /*
+    Keep the choice in step with the suggestion while the dialog is open.
+
+    The advice arrives from an async call, so it can land after the dialog has
+    already opened on the fallback; without this the user sees their configured
+    folder listed as an option while the footer says something else is selected.
+  */
+  useEffect(() => {
+    if (!open || custom) return
+    if (!suggested) return
+    setChosen((current) => (detected.some((a) => absOf(a) === current) ? current : suggested))
+  }, [open, custom, suggested, detected, absByAgent])
 
   if (!open) return null
 
@@ -90,17 +140,17 @@ export function InstallModal(): React.JSX.Element | null {
 
           <div className="bulk-agents">
             {shown.map((a) => (
-              <label key={a.id} className={`bulk-agent${!custom && chosen === a.path ? ' on' : ''}`}>
+              <label key={a.id} className={`bulk-agent${!custom && chosen === absOf(a) ? ' on' : ''}`}>
                 <input
                   type="radio"
                   name="install-destination"
-                  checked={!custom && chosen === a.path}
+                  checked={!custom && chosen === absOf(a)}
                   onChange={() => {
                     setCustom('')
-                    setChosen(a.path)
+                    setChosen(absOf(a))
                   }}
                 />
-                <span className="ba-check">{!custom && chosen === a.path && <Check size={11} />}</span>
+                <span className="ba-check">{!custom && chosen === absOf(a) && <Check size={11} />}</span>
                 <span className="ba-main">
                   <span className="ba-name">{a.name}</span>
                   <span className="ba-path mono" title={a.path}>
@@ -108,7 +158,16 @@ export function InstallModal(): React.JSX.Element | null {
                   </span>
                 </span>
                 <span className="ba-tags">
-                  {a.enabled && <span className="chip tiny">{t('agents.enabled')}</span>}
+                  {/*
+                    Say when a row is the configured location rather than just
+                    "enabled": the two are different reasons to be first, and the
+                    user should be able to see which one is winning.
+                  */}
+                  {installTarget?.reason === 'configured' && installTarget.absPath === absOf(a) ? (
+                    <span className="chip tiny violet">{t('install.suggested')}</span>
+                  ) : (
+                    a.enabled && <span className="chip tiny">{t('agents.enabled')}</span>
+                  )}
                 </span>
               </label>
             ))}

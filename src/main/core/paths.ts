@@ -138,6 +138,18 @@ export function userDataDir(): string {
   return ensureDir(join(skillhubRoot(), 'state'))
 }
 
+/**
+ * The downloaded copy of the catalog, when this machine has one.
+ *
+ * The bundled catalog lives inside the asar and cannot be replaced, so a catalog
+ * improvement used to require a full release even though the file is 800 KB of
+ * JSON. This is where the published copy lands instead — see `catalog.ts` for
+ * the rule about when it is allowed to win.
+ */
+export function fetchedCatalogPath(): string {
+  return join(userDataDir(), 'catalog.json')
+}
+
 /** Make an arbitrary GitHub path segment safe to use as a folder name. */
 export function safeSegment(input: string): string {
   return (

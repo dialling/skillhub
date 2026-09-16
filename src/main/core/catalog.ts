@@ -1,20 +1,83 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import type { Category, CuratedCatalog, FnCategory, RepoMeta, Scenario } from '../../shared/types'
-import { curatedCatalogPath, scenariosPath } from './paths'
+import { curatedCatalogPath, fetchedCatalogPath, scenariosPath } from './paths'
 import { cache, settings, snapshotStars } from './db'
 import { getRepo, cleanTopics } from './github'
 
 let catalogCache: { at: number; repos: RepoMeta[] } | null = null
 
-function readBundled(): CuratedCatalog | null {
+function parseCatalog(raw: string): CuratedCatalog | null {
   try {
-    const p = curatedCatalogPath()
-    if (!existsSync(p)) return null
-    return JSON.parse(readFileSync(p, 'utf8')) as CuratedCatalog
-  } catch (err) {
-    console.error('[catalog] failed to read curated catalog', err)
+    const parsed = JSON.parse(raw) as CuratedCatalog
+    // Validate before trusting: a truncated download must not be allowed to
+    // empty the store, and the version is what every comparison keys on.
+    if (!parsed || !Array.isArray(parsed.repos) || typeof parsed.version !== 'number') return null
+    if (!parsed.repos.length) return null
+    return parsed
+  } catch {
     return null
   }
+}
+
+function readFile(path: string): CuratedCatalog | null {
+  try {
+    if (!existsSync(path)) return null
+    return parseCatalog(readFileSync(path, 'utf8'))
+  } catch (err) {
+    console.error('[catalog] failed to read catalog', path, err)
+    return null
+  }
+}
+
+/**
+ * The catalog this install is actually using.
+ *
+ * The bundled copy ships inside the asar; a downloaded copy lands in the state
+ * directory. The downloaded one wins only when it is genuinely newer, which is
+ * the same "never go backwards" rule the live star data uses — a stale CDN edge
+ * serving last month's catalog must not replace a newer one that arrived with
+ * the build.
+ *
+ * Without this, the update check had a signal it could not honour: the manifest
+ * carries the *repository's* catalog version, so any catalog edit made every
+ * installed app report "目录有更新" while the only button on offer refreshed
+ * star counts. There was no code path that could change the catalog, so the
+ * notice could never be satisfied.
+ */
+function readBundled(): CuratedCatalog | null {
+  const bundled = readFile(curatedCatalogPath())
+  const fetched = readFile(fetchedCatalogPath())
+  if (!fetched) return bundled
+  if (!bundled) return fetched
+  return (fetched.version || 0) > (bundled.version || 0) ? fetched : bundled
+}
+
+/**
+ * Adopt a published catalog, if it is newer than the one in hand.
+ *
+ * Returns what happened so the caller can say so — `stale` is a normal outcome,
+ * not an error.
+ */
+export function applyFetchedCatalog(raw: string): { ok: boolean; version: number; stale: boolean } {
+  const incoming = parseCatalog(raw)
+  if (!incoming) return { ok: false, version: 0, stale: false }
+  const current = readBundled()
+  if (current && (incoming.version || 0) <= (current.version || 0)) {
+    return { ok: true, version: current.version || 0, stale: true }
+  }
+  try {
+    writeFileSync(fetchedCatalogPath(), raw, 'utf8')
+  } catch (err) {
+    console.error('[catalog] failed to store fetched catalog', err)
+    return { ok: false, version: 0, stale: false }
+  }
+  catalogCache = null
+  return { ok: true, version: incoming.version || 0, stale: false }
+}
+
+/** The version of the catalog in use, or 0 when it carries none. */
+export function localCatalogVersion(): number {
+  return readBundled()?.version || 0
 }
 
 /** The offline seed catalog, enriched with fresh star counts from cache. */

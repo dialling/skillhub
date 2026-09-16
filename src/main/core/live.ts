@@ -1,5 +1,6 @@
 import { cache, settings, stars } from './db'
 import type { GrowthRow } from '../../shared/types'
+import { applyFetchedCatalog } from './catalog'
 
 /**
  * The shared star data published by this project's own GitHub Action.
@@ -47,6 +48,10 @@ export interface LiveResult {
    */
   stale?: boolean
   publishedAt?: string
+  /** a newer published catalog was adopted during this refresh */
+  catalogUpdated?: boolean
+  /** the catalog version now in use, whatever its source */
+  catalogVersion?: number
 }
 
 /**
@@ -203,6 +208,24 @@ export async function refreshLiveData(): Promise<LiveResult> {
     }
   }
 
+  /*
+    The catalog travels with the data.
+
+    `version.json` reports the repository's catalog version, so the app can see
+    a newer catalog exists — and until this, nothing could act on that. Same
+    file, same CDN, same newer-only rule as the star counts above.
+  */
+  const catalogFile = await fetchFile('data/curated-catalog.json', 20000)
+  let catalogVersion = 0
+  let catalogUpdated = false
+  if (catalogFile) {
+    const applied = applyFetchedCatalog(catalogFile.text)
+    if (applied.ok) {
+      catalogVersion = applied.version
+      catalogUpdated = !applied.stale
+    }
+  }
+
   const metaFile = await fetchFile(`${DIR}/meta.json`, 6000)
   let meta: LiveMeta | undefined
   if (metaFile) {
@@ -218,7 +241,7 @@ export async function refreshLiveData(): Promise<LiveResult> {
     d.liveDate = parsed.updatedAt || meta?.updatedAt || null
   })
 
-  return { ok: true, source: starsFile.source, meta, changed, growthRows }
+  return { ok: true, source: starsFile.source, meta, changed, growthRows, catalogUpdated, catalogVersion }
 }
 
 /** Shared growth cached from the last successful pull, if it is still fresh. */

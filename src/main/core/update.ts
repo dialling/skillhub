@@ -1,9 +1,8 @@
-import { existsSync, readFileSync } from 'node:fs'
 import type { UpdateInfo } from '../../shared/types'
 import { app } from 'electron'
-import { curatedCatalogPath } from './paths'
 import { settings } from './db'
 import { activeToken } from './github'
+import { localCatalogVersion } from './catalog'
 
 /**
  * Update checks.
@@ -51,16 +50,17 @@ export function compareVersions(a: string, b: string): number {
   return av.pre > bv.pre ? 1 : -1
 }
 
-/** The catalog's own version number, or 0 when it carries none. */
-function localCatalogVersion(): number {
-  try {
-    const p = curatedCatalogPath()
-    if (!existsSync(p)) return 0
-    return Number(JSON.parse(readFileSync(p, 'utf8')).version || 0)
-  } catch {
-    return 0
-  }
-}
+/*
+  The catalog version comes from `catalog.ts`, not from re-reading the bundled
+  file here.
+
+  This function used to open `curatedCatalogPath()` itself, which meant it
+  reported the version of the copy inside the asar no matter which catalog the
+  app was actually serving. Once a downloaded catalog could win, the check and
+  the app would have disagreed: the check would say "you are behind, update
+  available" while the store in front of the user was already the new one, and
+  the banner would never clear.
+*/
 
 /**
  * The data version this machine last applied, e.g. 20260916.

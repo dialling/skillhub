@@ -797,6 +797,9 @@ export const useStore = create<State>((set, get) => ({
         const rows = Object.values(live.growthRows).reduce((n, v) => n + v, 0)
         const settings = await api.settings.get()
         set({ settings })
+        if (live.catalogUpdated) {
+          get().toast('success', get().t('toast.catalogUpdated', { version: live.catalogVersion || 0 }))
+        }
         get().toast(
           'success',
           rows > 0

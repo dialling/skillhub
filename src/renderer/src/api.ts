@@ -154,6 +154,9 @@ export interface SkillHubApi {
       /** the published copy was not newer, so nothing was written */
       stale?: boolean
       publishedAt?: string
+      /** a newer published catalog was adopted during this refresh */
+      catalogUpdated?: boolean
+      catalogVersion?: number
     }>
     status(): Promise<{ at: number | null; publishedAt: string | null }>
   }

@@ -23,12 +23,13 @@ import {
   tokenSource,
   viewer
 } from './core/github'
-import { curatedCatalog } from './core/catalog'
+import { applyFetchedCatalog, curatedCatalog, localCatalogVersion } from './core/catalog'
 import { CATEGORY_LABELS, FN_LABELS, REPO_KIND_LABELS } from '../shared/types'
 import { addRepo, libraryItems, removeItem } from './core/library'
 import { entryOwner, installFromGithub, installedSkills, uninstall, uninstallFrom } from './core/installer'
 import { loadRegistry } from './core/agents'
-import { curatedCatalogPath } from './core/paths'
+import { curatedCatalogPath, fetchedCatalogPath } from './core/paths'
+import { recommendInstallTarget } from './core/discover'
 import { compareVersions, dateToVersion } from './core/update'
 import { buildRemoteSkills } from './core/skills'
 import { userDataDir } from './core/paths'
@@ -184,6 +185,83 @@ async function main(): Promise<number> {
 
   const withSkills = catalog.filter((r) => (r.skillDirs || []).length > 0)
   check('repos with SKILL.md dirs', withSkills.length > 0, `${withSkills.length}/${catalog.length}`)
+
+  /*
+    The destination picker's pre-selection depends on this shape.
+
+    `AgentTarget.path` is a display path that may start with `~`, while the
+    configured location is absolute. The dialog compares what it is given
+    against the agent rows, so a candidate with no absolute path — or one that
+    does not name its agent — silently matches nothing: the dialog opens with the
+    right folder in the footer and no row ticked.
+  */
+  section('Install target advice (what the picker matches on)')
+  const advice = await recommendInstallTarget()
+  check('a target is recommended', !!advice.absPath, `${advice.path} (${advice.reason})`)
+  check('the recommended path is absolute', advice.absPath.startsWith('/'), advice.absPath)
+  check('every candidate is absolute', advice.candidates.length > 0 && advice.candidates.every((c) => c.absPath.startsWith('/')), `${advice.candidates.length} candidates`)
+  check(
+    'every candidate names the agent it belongs to',
+    advice.candidates.every((c) => !!c.agentId),
+    advice.candidates.filter((c) => !c.agentId).map((c) => c.path).join(', ')
+  )
+  check(
+    'the recommendation is one of the candidates',
+    advice.candidates.some((c) => c.absPath === advice.absPath),
+    // Only on failure, and only the fact: 68 absolute paths is not a detail.
+    advice.candidates.some((c) => c.absPath === advice.absPath)
+      ? ''
+      : `${advice.absPath} not among ${advice.candidates.length} candidates`
+  )
+
+  /*
+    The published catalog, and the rule that keeps it from going backwards.
+
+    `version.json` reports the repository's catalog version. Before this, the
+    app could see that a newer catalog existed and had no way to apply it — every
+    installed copy reported "目录有更新" and the only button on offer refreshed
+    star counts, so the notice could never be satisfied. The two sides are one
+    file now, and these are the properties that make the comparison meaningful.
+  */
+  section('Published catalog (never goes backwards)')
+  const bundledRaw = JSON.parse(readFileSync(curatedCatalogPath(), 'utf8'))
+  const bundledVersion = Number(bundledRaw.version || 0)
+  check('the bundled catalog carries a version', bundledVersion > 0, String(bundledVersion))
+  check('version reports the catalog in use', localCatalogVersion() === bundledVersion, String(localCatalogVersion()))
+
+  const newer = JSON.stringify({ ...bundledRaw, version: bundledVersion + 1 })
+  const applied = applyFetchedCatalog(newer)
+  check('a newer published catalog is adopted', applied.ok && !applied.stale && applied.version === bundledVersion + 1, JSON.stringify(applied))
+  check('and version now reports it', localCatalogVersion() === bundledVersion + 1, String(localCatalogVersion()))
+
+  /*
+    The stale direction is the one that matters. jsDelivr caches a branch ref for
+    up to twelve hours, so a mirror can serve yesterday's file after the mirror
+    beside it has today's; adopting it would walk the user's catalog backwards.
+  */
+  const older = JSON.stringify({ ...bundledRaw, version: bundledVersion - 1 })
+  const rejected = applyFetchedCatalog(older)
+  check('an older published catalog is refused', rejected.ok && rejected.stale, JSON.stringify(rejected))
+  check('and the newer one stays in place', localCatalogVersion() === bundledVersion + 1, String(localCatalogVersion()))
+
+  const same = applyFetchedCatalog(newer)
+  check('an equal catalog is a no-op, not a rewrite', same.stale, JSON.stringify(same))
+
+  // Shape validation: a truncated or partial download must not empty the store.
+  for (const [label, body] of [
+    ['not JSON', '{ "repos": ['],
+    ['no repos key', JSON.stringify({ version: bundledVersion + 99 })],
+    ['empty repo list', JSON.stringify({ version: bundledVersion + 99, repos: [] })],
+    ['no version', JSON.stringify({ ...bundledRaw, version: undefined })]
+  ] as const) {
+    const bad = applyFetchedCatalog(body)
+    check(`a malformed catalog is refused (${label})`, !bad.ok && localCatalogVersion() === bundledVersion + 1, JSON.stringify(bad))
+  }
+
+  // Put the machine back on the bundled catalog: the rest of the suite should
+  // not run against a file this section invented.
+  rmSync(fetchedCatalogPath(), { force: true })
+  check('falls back to the bundled catalog when the fetched copy is gone', localCatalogVersion() === bundledVersion, String(localCatalogVersion()))
 
   section('Live search')
   const sres = await searchSkills('claude skills', { perPage: 12 })

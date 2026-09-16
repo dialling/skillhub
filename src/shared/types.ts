@@ -521,6 +521,15 @@ export interface ActivityEvent {
 }
 
 export interface CuratedCatalog {
+  /**
+   * `YYYYMMDD` of the last catalog change.
+   *
+   * It is the whole basis for "is a newer catalog published?", and it is the
+   * same number the live manifest reports — which is what lets the app compare
+   * two catalogs rather than two unrelated timestamps. `update.ts` treats an
+   * absent value as 0, i.e. never newer than anything.
+   */
+  version?: number
   generatedAt: string
   source: string
   repos: RepoMeta[]
