@@ -2,7 +2,7 @@ import { existsSync, readdirSync } from 'node:fs'
 import type { LocalSkill, InstallTargetAdvice, InstallTargetCandidate } from '../../shared/types'
 import { expandPath, tildify, ensureDir } from './paths'
 import { library, settings } from './db'
-import { listAgents, resolveAgentDir, scanAgentDir } from './agents'
+import { listAgents, resolveAgentDir, resolveAgentDirs, scanAgentDir } from './agents'
 import { pathEndsWith } from './platform'
 import { curatedCatalog } from './catalog'
 import { readSkillDir } from './skills'
@@ -123,14 +123,33 @@ export function installDestinations(): { agentId: string; agentName: string; pat
       but it must be visible, which `installDestinations` alone cannot express.
       `agentsWithoutDestination` is that half.
     */
-    const dir = resolveAgentDir(agent.id)
-    if (!dir) continue
-    const abs = expandPath(dir)
-    // The most widely-read directory gives the best name for a shared path: the
-    // first agent in registry order is arbitrary, the universal one is not.
-    const previous = byPath.get(abs)
-    if (previous && !agent.readsUniversalDir) continue
-    byPath.set(abs, { agentId: agent.id, agentName: agent.name, path: abs })
+    /*
+      Every directory this agent reads, not just the first.
+
+      DeepSeek Harness keeps two: the CLI's `~/.dsh/skills` and the desktop app's
+      `.../dsh-desktop/harness/skills`. They do not read each other, and the user
+      thinks of them as one product — so one choice has to mean both, or the app
+      makes them install twice for the same agent.
+    */
+    const all = resolveAgentDirs(agent.id)
+    if (!all.length) continue
+    /*
+      The ones that exist — or the first, to be created.
+
+      Filtering on existence alone was wrong: it dropped an agent whose skills
+      directory has not been made yet, which is exactly the case the installer
+      handles by creating it. But keeping all of them would create a second
+      directory for an agent that only ever uses one of its two.
+    */
+    const existingDirs = all.filter((d) => existsSync(d))
+    const dirs = existingDirs.length ? existingDirs : [all[0]]
+    for (const abs of dirs) {
+      // The most widely-read directory gives the best name for a shared path:
+      // the first agent in registry order is arbitrary, the universal one is not.
+      const previous = byPath.get(abs)
+      if (previous && !agent.readsUniversalDir) continue
+      byPath.set(abs, { agentId: agent.id, agentName: agent.name, path: abs })
+    }
   }
   return [...byPath.values()].sort((a, b) => a.agentName.localeCompare(b.agentName))
 }
@@ -150,7 +169,7 @@ export function agentsWithoutDestination(): { agentId: string; agentName: string
   for (const agent of listAgents()) {
     if (want ? !want.has(agent.id) : !agent.enabled) continue
     if (agent.projectOnly) continue
-    if (!resolveAgentDir(agent.id)) out.push({ agentId: agent.id, agentName: agent.name })
+    if (!resolveAgentDirs(agent.id).length) out.push({ agentId: agent.id, agentName: agent.name })
   }
   return out
 }

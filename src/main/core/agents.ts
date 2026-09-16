@@ -14,6 +14,20 @@ interface RegistryEntry {
   vendor?: string
   color?: string
   globalSkillsDir?: string | null
+  /**
+   * Every user-level directory this agent reads, when there is more than one.
+   *
+   * DeepSeek Harness is the case that forced this: the CLI keeps its home at
+   * `~/.dsh` while the desktop app points `DSH_HOME` at
+   * `~/Library/Application Support/dsh-desktop/harness`, and the two do not read
+   * each other's skills. Recording only the CLI's path meant an install reported
+   * success into a directory the client never opens — the skill was invisible
+   * with no error anywhere.
+   *
+   * When present this replaces `globalSkillsDir` for resolution; the single
+   * field stays for the other ninety-odd entries.
+   */
+  globalSkillsDirs?: string[] | null
   projectSkillsDir?: string | null
   detect?: { dirs?: string[]; files?: string[]; binaries?: string[] }
   confidence?: 'high' | 'medium' | 'low'
@@ -276,26 +290,50 @@ export function projectTargets(projectDir: string): AgentTarget[] {
 }
 
 /** Resolve the skills dir a skill should be installed into for an agent id. */
-export function resolveAgentDir(agentId: string): string | null {
-  // Launch-only agents (hosted chats) have no install directory; returning an
-  // empty string here would make the installer write to the current directory.
+/**
+ * Every directory this agent reads at user level.
+ *
+ * Exported so an install can write to all of them: the user thinks of the CLI
+ * and the desktop app as one thing called DeepSeek Harness, and having to
+ * install twice for one agent is the app leaking its own plumbing.
+ */
+export function resolveAgentDirs(agentId: string): string[] {
   if (agentId.startsWith('custom:')) {
     const c = settings.get().customAgents.find((x) => `custom:${x.id}` === agentId)
-    return c ? expandPath(c.path) : null
+    return c && c.path ? [expandPath(c.path)] : []
   }
   if (agentId.startsWith('project:')) {
     const base = settings.get().projectDir
-    if (!base) return null
+    if (!base) return []
     const realId = agentId.slice('project:'.length)
     const entry = loadRegistry().find((e) => e.id === realId)
-    return entry?.projectSkillsDir ? join(base, entry.projectSkillsDir) : null
+    return entry?.projectSkillsDir ? [join(base, entry.projectSkillsDir)] : []
   }
   const entry = loadRegistry().find((e) => e.id === agentId)
-  if (!entry) return null
-  if (entry.globalSkillsDir) return expandPath(entry.globalSkillsDir)
+  if (!entry) return []
+  const listed = entry.globalSkillsDirs?.length ? entry.globalSkillsDirs : entry.globalSkillsDir ? [entry.globalSkillsDir] : []
+  if (listed.length) return listed.map((d) => expandPath(d))
   const base = settings.get().projectDir
-  return base && entry.projectSkillsDir ? join(base, entry.projectSkillsDir) : null
+  return base && entry.projectSkillsDir ? [join(base, entry.projectSkillsDir)] : []
 }
+
+export function resolveAgentDir(agentId: string): string | null {
+  /*
+    The one that exists, when several are listed.
+
+    Display and single-target callers want "where is this agent, really" — and
+    for a machine with only the CLI installed that is `~/.dsh/skills` while on a
+    machine with only the desktop app it is the harness directory. Falls back to
+    the first so a fresh machine still has somewhere to create.
+  */
+  const dirs = resolveAgentDirs(agentId)
+  if (dirs.length > 1) {
+    const existing = dirs.find((d) => existsSync(d))
+    if (existing) return existing
+  }
+  return dirs[0] || null
+}
+
 
 export function agentDisplayName(agentId: string): string {
   if (agentId.startsWith('custom:')) {

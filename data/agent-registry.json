@@ -481,6 +481,10 @@
       "vendor": "DeepSeek",
       "color": "#4D6BFE",
       "globalSkillsDir": "~/.dsh/skills",
+      "globalSkillsDirs": [
+        "~/.dsh/skills",
+        "~/Library/Application Support/dsh-desktop/harness/skills"
+      ],
       "projectSkillsDir": ".dsh/skills",
       "detect": {
         "dirs": [

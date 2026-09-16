@@ -9,6 +9,7 @@
  * Run with:  node out/main/selftest.js          (Node mode is fine)
  *            npm run selftest
  */
+import { homedir } from 'node:os'
 import { existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -27,7 +28,7 @@ import { applyFetchedCatalog, curatedCatalog, localCatalogVersion } from './core
 import { CATEGORY_LABELS, FN_LABELS, REPO_KIND_LABELS } from '../shared/types'
 import { addRepo, libraryItems, removeItem } from './core/library'
 import { entryOwner, installFromGithub, installedSkills, uninstall, uninstallFrom } from './core/installer'
-import { loadRegistry } from './core/agents'
+import { loadRegistry, resolveAgentDirs } from './core/agents'
 import { curatedCatalogPath, fetchedCatalogPath } from './core/paths'
 import { agentsWithoutDestination, installDestinations, recommendInstallTarget } from './core/discover'
 import { compareVersions, dateToVersion } from './core/update'
@@ -261,10 +262,40 @@ async function main(): Promise<number> {
     d.enabledAgents = ['custom:selftest-nowhere']
     d.installAgents = ['custom:selftest-nowhere']
   })
+  /*
+    An agent with more than one user-level directory.
+
+    DeepSeek Harness is the case: the CLI keeps `~/.dsh/skills` while the desktop
+    app sets its own `DSH_HOME` and reads `.../dsh-desktop/harness/skills`. They
+    do not read each other. Recording only the CLI's path meant an install
+    reported success into a directory the client never opens — the skill was
+    invisible, with no error anywhere to explain it.
+  */
   check(
     'an agent with nowhere to install is reported instead of vanishing',
     installDestinations().length === 0 && agentsWithoutDestination().some((a) => a.agentName === 'Nowhere Agent'),
-    JSON.stringify(agentsWithoutDestination())
+    JSON.stringify({ unmet: agentsWithoutDestination(), dests: installDestinations() })
+  )
+
+  section('An agent can read more than one directory')
+  const dshDirs = resolveAgentDirs('dsh')
+  check('dsh lists every directory it reads', dshDirs.length >= 2, dshDirs.map((d) => d.replace(homedir(), '~')).join(', '))
+  check(
+    'and the desktop harness root is among them',
+    dshDirs.some((d) => d.includes('dsh-desktop/harness/skills')),
+    dshDirs.map((d) => d.replace(homedir(), '~')).join(', ')
+  )
+  check(
+    'picking dsh reaches all of its directories, not just the first',
+    (() => {
+      settings.update((d) => {
+        d.enabledAgents = ['dsh']
+        d.installAgents = ['dsh']
+      })
+      const got = installDestinations().filter((d) => d.agentId === 'dsh')
+      return got.length >= 2 && got.every((g) => g.agentName === 'DeepSeek Harness')
+    })(),
+    'one agent id, every directory'
   )
 
   settings.update((d) => {
