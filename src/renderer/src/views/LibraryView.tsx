@@ -624,16 +624,22 @@ function MySkillsPanel({ onInstallOne }: { onInstallOne: (skillId: string) => vo
                     the library-wide button, so wanting a single skill meant
                     either wiring up everything or nothing.
                   */}
-                  {libId && (
-                    <button
-                      className="btn sm"
-                      title={t('library.installOne')}
-                      onClick={() => onInstallOne(libId)}
-                    >
-                      <Download size={12} />
-                      {t('library.installOneShort')}
-                    </button>
-                  )}
+                  {/*
+                    Offered for every skill, not only the ones the store knows.
+
+                    A skill that lives only on this machine is installable too —
+                    its own folder is the source — and leaving the button off
+                    those rows made it look like a missing feature rather than a
+                    different kind of skill.
+                  */}
+                  <button
+                    className="btn sm"
+                    title={libId ? t('library.installOne') : t('library.installLocal')}
+                    onClick={() => onInstallOne(libId || `local:${r.realPath}`)}
+                  >
+                    <Download size={12} />
+                    {t('library.installOneShort')}
+                  </button>
                   {/*
                     No submit button here on purpose.
 

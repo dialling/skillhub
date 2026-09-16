@@ -30,7 +30,6 @@ export function LaunchModal(): React.JSX.Element | null {
   const library = useStore((s) => s.library)
   const settings = useStore((s) => s.settings)
   const installMap = useStore((s) => s.installMap)
-  const install = useStore((s) => s.install)
 
   const [workspace, setWorkspace] = useState('')
   const [agentId, setAgentId] = useState('')
@@ -144,12 +143,9 @@ export function LaunchModal(): React.JSX.Element | null {
             than being told here.
           */}
           {needsGlobalInstall && (
-            <div className="notice notice-warn" style={{ marginBottom: 14 }}>
-              <TriangleAlert size={14} />
-              <span style={{ flex: 1 }}>{t('launch.needsGlobalInstall', { agent: agentLabel })}</span>
-              <button className="btn sm" onClick={() => void install(skillIdsForLaunch, [agentId])}>
-                {t('launch.installNow')}
-              </button>
+            <div className="notice notice-plain" style={{ marginBottom: 14 }}>
+              <Info size={14} />
+              <span style={{ flex: 1 }}>{t('launch.willInstallGlobally', { agent: agentLabel })}</span>
             </div>
           )}
 

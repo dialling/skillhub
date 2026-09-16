@@ -6,7 +6,7 @@ import { clipboard, shell } from 'electron'
 import type { LaunchPlan, LaunchTarget } from '../../shared/types'
 import { expandPath, sandboxDir, tildify, safeSegment } from './paths'
 import { curatedCatalog } from './catalog'
-import { library, logActivity, settings } from './db'
+import { installs, library, logActivity, settings } from './db'
 import { loadRegistry, listAgents, resolveAgentDir } from './agents'
 import { isWindows, which } from './platform'
 import { m } from './msg'
@@ -233,6 +233,62 @@ export async function prepareLaunch(input: {
     cpSync(sourcePath, projectSkillPath, { recursive: true, dereference: true })
   }
 
+  /*
+    1b. also install it where the agent itself looks.
+
+    The project-level copy above only helps an agent whose working directory is
+    this workspace. A terminal gets `cd <workspace>` and therefore sees it; a GUI
+    client cannot be handed a folder at all — DSH Desktop has no such entry point
+    — so that copy sits in a directory nobody opens and the agent reports the
+    skill as unknown while the files are right there. That is exactly what
+    happened the first time this was used for real.
+
+    Installing into the agent's own skills directory is what makes "click launch
+    and it works" true rather than hopeful, so it happens here instead of being
+    left as advice.
+  */
+  let globalSkillPath: string | null = null
+  const agentDir = resolveAgentDir(input.agentId)
+  if (agentDir) {
+    try {
+      mkdirSync(agentDir, { recursive: true })
+      const target = join(agentDir, safeSegment(skillName) || folderName)
+      if (!existsSync(target) && !isSymlink(target)) {
+        if (isWindows) {
+          try {
+            symlinkSync(sourcePath, target, 'junction')
+          } catch {
+            cpSync(sourcePath, target, { recursive: true, dereference: true })
+          }
+        } else {
+          symlinkSync(sourcePath, target, 'dir')
+        }
+        globalSkillPath = target
+        installs.update((d) => {
+          d.records = d.records.filter((r) => !(r.skillId === skillId && r.agentId === input.agentId))
+          d.records.push({
+            id: `${skillId}@${input.agentId}`,
+            skillId,
+            skillName,
+            repoFullName,
+            agentId: input.agentId,
+            agentName: entry?.name || input.agentId,
+            targetDir: agentDir,
+            linkPath: target,
+            mode: 'symlink',
+            installedAt: Date.now(),
+            sourcePath
+          })
+        })
+        logActivity('launch', 'activity.installed', { count: 1, agents: entry?.name || input.agentId })
+      } else {
+        globalSkillPath = target
+      }
+    } catch {
+      /* a missing global directory is not fatal: the workspace copy remains */
+    }
+  }
+
   // 2. tell the agent, in a file it reads on startup
   const instructionFile = meta.instructionFile || 'AGENTS.md'
   const instructionPath = join(workspace, instructionFile)
@@ -300,6 +356,7 @@ export async function prepareLaunch(input: {
     workspace,
     workFolder,
     projectSkillPath,
+    globalSkillPath,
     instructionFile,
     instructionPath,
     prompt,

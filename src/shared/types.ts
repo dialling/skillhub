@@ -166,6 +166,7 @@ export interface SkillIndexEntry {
 /** Display names for the agents a skill can be tied to. */
 export const AGENT_SKILL_LABELS: Record<string, { zh: string; en: string }> = {
   'claude-code': { zh: 'Claude Code 专用', en: 'Claude Code' },
+  dsh: { zh: 'DeepSeek Harness 专用', en: 'DeepSeek Harness' },
   codex: { zh: 'Codex 专用', en: 'Codex' },
   cursor: { zh: 'Cursor 专用', en: 'Cursor' },
   copilot: { zh: 'Copilot 专用', en: 'Copilot' },
@@ -198,6 +199,17 @@ export interface RepoMeta {
    * one, which is the common case.
    */
   agent?: string
+  /**
+   * Set on an application repository that calls itself a plugin for one agent —
+   * "Best DeepSeek Harness Design Plugin". Its skills only work inside that
+   * agent, so the store says so rather than leaving it to be discovered.
+   */
+  appAgent?: string
+  /**
+   * The application a `software` repository is, when it is not a plugin for one
+   * agent. Its skills need that application installed and running.
+   */
+  appNeeds?: string
   /** evidence behind repoKind, kept so the classification is auditable */
   repoFacts?: {
     language: string | null
@@ -558,6 +570,14 @@ export interface LaunchPlan {
   workFolder: string
   /** where the skill was installed at project level, if anywhere */
   projectSkillPath: string | null
+  /**
+   * Where the skill was installed in the agent's own directory, if it was.
+   *
+   * Project-level is enough for a terminal, which is started in the workspace. A
+   * GUI client cannot be opened at a folder, so it needs the skill in its own
+   * directory or it will never see it.
+   */
+  globalSkillPath?: string | null
   instructionFile: string
   instructionPath: string
   prompt: string

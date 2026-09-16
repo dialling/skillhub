@@ -34,24 +34,26 @@ export async function curatedCatalog(): Promise<RepoMeta[]> {
     // `...fresh.meta` overwrites the whole object indiscriminately — and for a
     // repository with no GitHub description the API value is empty, which
     // silently blanked hand-written copy (JimLiu/baoyu-skills, MiniMax-AI/skills).
-    const merged = {
+    /*
+      Overlay only the *facts* the API knows, on top of the bundled entry.
+
+      This used to run the other way — start from the live cache, then restore a
+      hand-written allow-list — which meant every authored field had to be
+      remembered here or it silently vanished. That has gone wrong twice: authored
+      descriptions were blanked for repositories whose GitHub description is
+      empty, and later the `appAgent` label disappeared the same way. An allow-list
+      of facts cannot lose an authored field, because it never touches them.
+    */
+    const merged: RepoMeta = {
       ...r,
-      ...fresh.meta,
-      // cleaned by the skill-dir pass; a raw tree crawl is not
-      skillDirs: r.skillDirs,
-      skillCount: r.skillCount,
-      skillDirsAll: r.skillDirsAll,
-      // classification output
-      repoKind: r.repoKind,
-      repoFacts: r.repoFacts,
-      // authored copy
-      fn: r.fn,
-      category: r.category,
-      taglineZh: r.taglineZh,
-      taglineEn: r.taglineEn,
-      useWhen: r.useWhen,
-      useWhenEn: r.useWhenEn,
-      aboutZh: r.aboutZh,
+      stars: fresh.meta.stars ?? r.stars,
+      forks: fresh.meta.forks ?? r.forks,
+      pushedAt: fresh.meta.pushedAt || r.pushedAt,
+      avatarUrl: fresh.meta.avatarUrl || r.avatarUrl,
+      htmlUrl: fresh.meta.htmlUrl || r.htmlUrl,
+      topics: cleanTopics(fresh.meta.topics?.length ? fresh.meta.topics : r.topics),
+      // The API description is a fallback, never an overwrite: a repository with
+      // no GitHub description would otherwise blank authored copy.
       descriptionEn: r.descriptionEn || fresh.meta.descriptionEn,
       descriptionZh: r.descriptionZh || fresh.meta.descriptionZh
     }

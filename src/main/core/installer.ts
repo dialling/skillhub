@@ -50,7 +50,32 @@ export function isManagedPath(p: string, libraryRoot: string): boolean {
   return false
 }
 
+/**
+ * Resolve a skill id to something installable.
+ *
+ * Library ids are `owner/repo::path`. Skills that exist only on this machine —
+ * a folder in `~/.cursor/skills`, say — have no library entry, and everything
+ * that installs was therefore blind to them: the library showed a launch button
+ * and no install button, because there was nothing to resolve. They carry a
+ * `local:<path>` id instead, which resolves against the filesystem.
+ */
 function findSkill(skillId: string): { skill: SkillEntry; repoFullName: string } | null {
+  if (skillId.startsWith('local:')) {
+    const dir = expandPath(skillId.slice('local:'.length))
+    if (!existsSync(join(dir, 'SKILL.md'))) return null
+    const name = dir.split(/[\\/]/).filter(Boolean).pop() || 'skill'
+    const skill: SkillEntry = {
+      id: skillId,
+      repoFullName: 'local',
+      path: '',
+      name,
+      title: name,
+      tags: [],
+      source: 'local',
+      localPath: dir
+    }
+    return { skill, repoFullName: 'local' }
+  }
   const [repoFullName] = skillId.split('::')
   const item = library.get().items.find((i) => i.id === repoFullName)
   if (!item) return null

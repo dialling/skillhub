@@ -173,7 +173,8 @@
           "package.json",
           "tsconfig.json"
         ]
-      }
+      },
+      "appNeeds": "openclaw"
     },
     {
       "fullName": "obra/superpowers",
@@ -658,7 +659,8 @@
           "package.json",
           "pyproject.toml"
         ]
-      }
+      },
+      "appNeeds": "ECC"
     },
     {
       "fullName": "multica-ai/andrej-karpathy-skills",
@@ -916,7 +918,8 @@
           "package.json"
         ]
       },
-      "agent": "claude-code"
+      "agent": "claude-code",
+      "appNeeds": "gstack"
     },
     {
       "fullName": "nextlevelbuilder/ui-ux-pro-max-skill",
@@ -1053,7 +1056,8 @@
           "go.mod",
           "package.json"
         ]
-      }
+      },
+      "appNeeds": "caveman"
     },
     {
       "fullName": "nexu-io/open-design",
@@ -1500,7 +1504,8 @@
         "manifests": [
           "package.json"
         ]
-      }
+      },
+      "appAgent": "dsh"
     },
     {
       "fullName": "addyosmani/agent-skills",
@@ -1656,7 +1661,8 @@
           "package.json",
           "tsconfig.json"
         ]
-      }
+      },
+      "appNeeds": "claude-mem"
     },
     {
       "fullName": "Leonxlnx/taste-skill",
@@ -2882,7 +2888,8 @@
         "manifests": [
           "package.json"
         ]
-      }
+      },
+      "appNeeds": "career-ops"
     },
     {
       "fullName": "stablyai/orca",
@@ -2949,7 +2956,8 @@
           "package.json",
           "tsconfig.json"
         ]
-      }
+      },
+      "appNeeds": "orca"
     },
     {
       "fullName": "tt-a1i/archify",
@@ -3355,7 +3363,8 @@
         "manifests": [
           "package.json"
         ]
-      }
+      },
+      "appNeeds": "hyperframes"
     },
     {
       "fullName": "kepano/obsidian-skills",
@@ -8154,7 +8163,8 @@
           "package.json",
           "tsconfig.json"
         ]
-      }
+      },
+      "appNeeds": "skills"
     },
     {
       "fullName": "vercel-labs/agent-skills",
@@ -8204,7 +8214,8 @@
         "manifests": [
           "package.json"
         ]
-      }
+      },
+      "appNeeds": "agent-skills"
     },
     {
       "fullName": "googleworkspace/cli",
@@ -8358,7 +8369,8 @@
           "Cargo.toml",
           "package.json"
         ]
-      }
+      },
+      "appNeeds": "cli"
     },
     {
       "fullName": "virgiliojr94/book-to-skill",
@@ -8734,7 +8746,8 @@
           "go.mod",
           "package.json"
         ]
-      }
+      },
+      "appNeeds": "open-code-review"
     },
     {
       "fullName": "phuryn/pm-skills",
@@ -9493,7 +9506,8 @@
         "manifests": [
           "package.json"
         ]
-      }
+      },
+      "appNeeds": "baoyu-skills"
     },
     {
       "fullName": "agentskills/agentskills",
@@ -10045,7 +10059,8 @@
           "Makefile",
           "pyproject.toml"
         ]
-      }
+      },
+      "appNeeds": "notebooklm-py"
     },
     {
       "fullName": "muratcankoylan/Agent-Skills-for-Context-Engineering",
@@ -10181,7 +10196,8 @@
           "package.json",
           "pyproject.toml"
         ]
-      }
+      },
+      "appNeeds": "SkillSpector"
     },
     {
       "fullName": "composio-community/awesome-codex-skills",
@@ -11390,7 +11406,8 @@
           "pyproject.toml",
           "requirements.txt"
         ]
-      }
+      },
+      "appNeeds": "Skill_Seekers"
     },
     {
       "fullName": "MiniMax-AI/skills",
@@ -12862,7 +12879,8 @@
           "go.mod",
           "package.json"
         ]
-      }
+      },
+      "appNeeds": "gentle-ai"
     },
     {
       "fullName": "anbeime/skill",
@@ -13192,7 +13210,8 @@
         "manifests": [
           "package.json"
         ]
-      }
+      },
+      "appNeeds": "agent-skills"
     },
     {
       "fullName": "MengTo/Skills",
@@ -13947,7 +13966,8 @@
           "package.json",
           "tsconfig.json"
         ]
-      }
+      },
+      "appNeeds": "skills-manager"
     },
     {
       "fullName": "zebbern/claude-code-guide",
@@ -16782,7 +16802,8 @@
           "package.json",
           "tsconfig.json"
         ]
-      }
+      },
+      "appNeeds": "ai-devkit"
     },
     {
       "fullName": "rohitg00/skillkit",
@@ -16851,7 +16872,8 @@
           "package.json",
           "tsconfig.json"
         ]
-      }
+      },
+      "appNeeds": "skillkit"
     },
     {
       "fullName": "sunchaokun/PPT-Design-Skill",
@@ -17043,7 +17065,8 @@
         "manifests": [
           "package.json"
         ]
-      }
+      },
+      "appNeeds": "ai-agent-skills"
     },
     {
       "fullName": "dpearson2699/swift-ios-skills",
@@ -17363,7 +17386,8 @@
           "package.json",
           "tsconfig.json"
         ]
-      }
+      },
+      "appNeeds": "Skills-Manager"
     },
     {
       "fullName": "forcedotcom/sf-skills",
@@ -18235,7 +18259,8 @@
           "package.json",
           "tsconfig.json"
         ]
-      }
+      },
+      "appNeeds": "claude-plugins"
     },
     {
       "fullName": "antfu/skills-npm",
@@ -18280,7 +18305,8 @@
           "package.json",
           "tsconfig.json"
         ]
-      }
+      },
+      "appNeeds": "skills-npm"
     },
     {
       "fullName": "astronomer/agents",
@@ -18712,5 +18738,6 @@
   },
   "classifiedAt": "2026-09-15T08:07:44.363Z",
   "addedAt": "2026-09-15T11:20:07.467Z",
-  "updatedAt": "2026-09-16T00:57:25.981400+00:00"
+  "updatedAt": "2026-09-16T00:57:25.981400+00:00",
+  "appLabelsAt": "2026-09-16T02:37:29.276Z"
 }

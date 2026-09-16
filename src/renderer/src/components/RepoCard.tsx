@@ -83,6 +83,24 @@ export function RepoCard({
           {repo.category === 'official' && (
             <span className="chip green">{categoryText}</span>
           )}
+          {/* A skill from an application repository needs that application to be
+              installed and running, and a plugin for one agent only works inside
+              it. Saying so here is the difference between "I can use this" and
+              finding out afterwards from the agent. */}
+          {repo.appAgent && (
+            <span className="chip agent-chip" title={t('card.appAgentHint')}>
+              {AGENT_SKILL_LABELS[repo.appAgent]
+                ? lang === 'zh'
+                  ? AGENT_SKILL_LABELS[repo.appAgent].zh
+                  : AGENT_SKILL_LABELS[repo.appAgent].en
+                : repo.appAgent}
+            </span>
+          )}
+          {repo.appNeeds && (
+            <span className="chip need-chip" title={t('card.appNeedsHint', { app: repo.appNeeds })}>
+              {t('card.needsApp', { app: repo.appNeeds })}
+            </span>
+          )}
           {skillCount > 0 && (
             <span className="chip mono">
               <Layers size={10} />

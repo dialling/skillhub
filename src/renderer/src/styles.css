@@ -3792,3 +3792,11 @@ button.status-item:hover {
 .notice.notice-warn svg {
   color: var(--warn);
 }
+
+/* Application-owned skills: a different kind of fact from a category, so it
+   gets its own tone rather than another accent-coloured chip. */
+.chip.need-chip {
+  color: var(--warn);
+  border-color: color-mix(in srgb, var(--warn) 38%, transparent);
+  background: color-mix(in srgb, var(--warn) 8%, transparent);
+}
