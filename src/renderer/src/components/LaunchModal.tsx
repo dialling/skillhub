@@ -30,6 +30,7 @@ export function LaunchModal(): React.JSX.Element | null {
   const library = useStore((s) => s.library)
   const settings = useStore((s) => s.settings)
   const installMap = useStore((s) => s.installMap)
+  const install = useStore((s) => s.install)
 
   const [workspace, setWorkspace] = useState('')
   const [agentId, setAgentId] = useState('')
@@ -84,7 +85,19 @@ export function LaunchModal(): React.JSX.Element | null {
     .flatMap((i) => i.skills)
     .filter((sk) => (skillIdPrefix ? sk.id.startsWith(skillIdPrefix) : false))
     .map((sk) => sk.id)
+  const agentLabel = targets.find((x) => x.agentId === agentId)?.name || agentId
   const installedHere = skillIdsForLaunch.some((id) => (installMap[id] || []).includes(agentId))
+
+  /*
+    A client cannot be opened at the workspace.
+
+    Terminals get `cd <workspace>` and therefore see the project-level copy that
+    launch lays down. A GUI app cannot be handed a folder — DSH Desktop has no
+    such entry point at all — so that copy can sit in a folder nobody opens, and
+    the agent reports the skill as unknown while the files are right there.
+    Installing into the agent's own directory is what makes it findable.
+  */
+  const needsGlobalInstall = plan?.launchKind !== 'cli' && !installedHere && skillIdsForLaunch.length > 0
 
   if (!open) return null
 
@@ -105,16 +118,45 @@ export function LaunchModal(): React.JSX.Element | null {
           <p className="dim" style={{ fontSize: 12.5, marginBottom: 16, lineHeight: 1.65 }}>
             {t('launch.intro')}
           </p>
-          {agentId && (
+          {/* One notice, not two: the client case below already says the skill is
+              missing here and what to do about it, so repeating the install state
+              in a second box just says the same thing twice. */}
+          {agentId && !needsGlobalInstall && (
             <div className={`notice ${installedHere ? 'notice-ok' : 'notice-plain'}`} style={{ marginBottom: 14 }}>
               <Info size={14} />
               <span>
                 {installedHere
-                  ? t('launch.installedHere', { agent: targets.find((x) => x.agentId === agentId)?.name || agentId })
-                  : t('launch.notInstalledHere', {
-                      agent: targets.find((x) => x.agentId === agentId)?.name || agentId
-                    })}
+                  ? t('launch.installedHere', { agent: agentLabel })
+                  : plan?.launchKind === 'cli'
+                    ? // A terminal gets `cd <workspace>`, so the project-level copy is
+                      // genuinely enough here.
+                      t('launch.notInstalledHere', { agent: agentLabel })
+                    : // A client does not, so promising "it still works" would be false.
+                      t('launch.notInstalledClient', { agent: agentLabel })}
               </span>
+            </div>
+          )}
+
+          {/*
+            Say this before anything starts. A skill from an application needs
+            that application's runtime, and without it an agent can only explain
+            that it improvised a substitute — which is a worse way to find out
+            than being told here.
+          */}
+          {needsGlobalInstall && (
+            <div className="notice notice-warn" style={{ marginBottom: 14 }}>
+              <TriangleAlert size={14} />
+              <span style={{ flex: 1 }}>{t('launch.needsGlobalInstall', { agent: agentLabel })}</span>
+              <button className="btn sm" onClick={() => void install(skillIdsForLaunch, [agentId])}>
+                {t('launch.installNow')}
+              </button>
+            </div>
+          )}
+
+          {plan?.needsApp && (
+            <div className="notice notice-warn" style={{ marginBottom: 14 }}>
+              <TriangleAlert size={14} />
+              <span>{t('launch.needsApp', { app: plan.needsApp.name, repo: plan.needsApp.repo })}</span>
             </div>
           )}
 

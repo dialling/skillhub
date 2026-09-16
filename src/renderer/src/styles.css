@@ -3783,3 +3783,12 @@ button.status-item:hover {
   border-radius: var(--r-sm);
   padding: 10px 12px;
 }
+
+/* A warning, not a failure: the launch still works, the skill may not. */
+.notice.notice-warn {
+  border-color: color-mix(in srgb, var(--warn) 40%, transparent);
+  background: color-mix(in srgb, var(--warn) 9%, transparent);
+}
+.notice.notice-warn svg {
+  color: var(--warn);
+}

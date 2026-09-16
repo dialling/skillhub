@@ -5,6 +5,7 @@ import { homedir } from 'node:os'
 import { clipboard, shell } from 'electron'
 import type { LaunchPlan, LaunchTarget } from '../../shared/types'
 import { expandPath, sandboxDir, tildify, safeSegment } from './paths'
+import { curatedCatalog } from './catalog'
 import { library, logActivity, settings } from './db'
 import { loadRegistry, listAgents, resolveAgentDir } from './agents'
 import { isWindows, which } from './platform'
@@ -150,7 +151,13 @@ export function launchTargets(): LaunchTarget[] {
  *   3. the agent has been told the skill is active, in a file it reads on
  *      startup, so it works even when the launch cannot pass a prompt
  */
-export function prepareLaunch(input: {
+/**
+ * Lay out a workspace for one skill and describe how to start the agent.
+ *
+ * Async because it consults the catalog: a skill can come from a repository that
+ * is an application, and knowing that changes what the agent is told.
+ */
+export async function prepareLaunch(input: {
   skillId?: string
   /** set instead of skillId to launch a skill discovered on disk */
   localPath?: string
@@ -158,7 +165,7 @@ export function prepareLaunch(input: {
   localDescription?: string
   agentId: string
   workspace: string
-}): LaunchPlan {
+}): Promise<LaunchPlan> {
   // Two sources, one flow. A skill the user already has on disk is just as
   // launchable as one the library manages — making them import it first would
   // be busywork.
@@ -240,6 +247,22 @@ export function prepareLaunch(input: {
 
   // 3. the prompt handed to the agent when the launcher supports one
   /*
+    A skill can belong to an application rather than stand on its own.
+
+    `nexu-io/open-design` is catalogued as software and carries 385 skills — they
+    are that product's own skills, and they reach for its daemon, its environment
+    variables and its credentials. Installing the markdown alone hands an agent
+    something it cannot run, and the honest outcome is an agent explaining that it
+    improvised a substitute. Saying so before anything starts is better than
+    finding out from the transcript.
+  */
+  const sourceRepo = repoFullName
+    ? (await curatedCatalog()).find((r) => r.fullName === repoFullName)
+    : undefined
+  const needsApp =
+    sourceRepo?.repoKind === 'software' ? { repo: sourceRepo.fullName, name: sourceRepo.name } : undefined
+
+  /*
     A web chat cannot read anything on this disk.
 
     The terminal and app prompts can say "read its SKILL.md" because the agent
@@ -256,12 +279,15 @@ export function prepareLaunch(input: {
           folder: folderName,
           body: readSkillText(skillMdPath)
         })
-      : m('launch.prompt', { skill: skillName, folder: folderName })
+      : `${m('launch.prompt', { skill: skillName, folder: folderName })}${
+          needsApp ? `\n\n${m('launch.promptNeedsApp', { app: needsApp.name, repo: needsApp.repo })}` : ''
+        }`
 
   const plan: LaunchPlan = {
     skillId,
     skillName,
     repoFullName,
+    needsApp,
     fromLocal,
     agentId: input.agentId,
     agentName: entry?.name || input.agentId,

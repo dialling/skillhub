@@ -97,6 +97,8 @@ const M: Record<string, [zh: string, en: string]> = {
     'Work from the skill description below.\n\n--- skill: {skill} ---\n{body}\n--- end of skill ---\n\nI will describe what I need next. Keep inputs and outputs in {folder}/.'
   ],
   'launch.startedCli': ['已在终端启动 {agent}', 'Started {agent} in Terminal'],
+  'launch.needsApp': ['这个技能属于应用 {app}，它需要 {app} 自身的运行环境（守护进程、凭据、依赖）。本机若没有安装并运行它，技能里的步骤会失败。', 'This skill belongs to the application {app} and needs that application\'s own runtime (daemon, credentials, dependencies). Without it installed and running, the steps in the skill will fail.'],
+  'launch.promptNeedsApp': ['注意：这个技能属于应用 {app}（{repo}）。如果它依赖的守护进程、凭据或依赖不在本机，请直接说明缺少什么，不要用替代方案冒充原结果。', 'Note: this skill belongs to the application {app} ({repo}). If its daemon, credentials or dependencies are not present, say what is missing rather than substituting something and presenting it as the real result.'],
   'launch.startedApp': ['已打开 {agent}，提示词已复制 —— 直接粘贴即可', 'Opened {agent}. The prompt is on your clipboard — just paste it'],
   'launch.modeInteractive': ['交互式，可继续对话', 'interactive, keeps the session'],
   'launch.modeClipboard': ['提示词已复制，可直接粘贴', 'prompt copied, just paste it'],

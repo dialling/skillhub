@@ -542,6 +542,12 @@ export interface LaunchPlan {
   skillName: string
   /** repo full name for library skills; empty for discovered ones */
   repoFullName: string
+  /**
+   * Set when the skill comes from a repository that is an application rather
+   * than a skill pack — those skills need that application's runtime, and
+   * without it an agent can only improvise a substitute.
+   */
+  needsApp?: { repo: string; name: string }
   /** true when the skill was not added to the library */
   fromLocal: boolean
   agentId: string
