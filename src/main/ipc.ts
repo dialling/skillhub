@@ -50,6 +50,7 @@ import {
   installSkills,
   installedSkills,
   managedCountByAgent,
+  reconcileInstalls,
   removeRawPath,
   uninstall,
   uninstallAll
@@ -298,7 +299,18 @@ export function registerIpc(send: Broadcast): void {
   handle('install:uninstall', (skillId: string, agentId: string) => uninstall(skillId, agentId))
   handle('install:uninstallAll', (skillId: string) => uninstallAll(skillId))
   handle('install:records', () => installRecords())
-  handle('install:map', () => installMap())
+  /*
+    Reconcile before reporting.
+
+    The filesystem decides what exists; the record says who placed it. When the
+    two drift — a lost record, a deleted link — the app either shows an install
+    it cannot manage or, worse, hides one that is really there. Comparing them on
+    every read keeps the two honest, and the scan is one readdir per directory.
+  */
+  handle('install:map', () => {
+    reconcileInstalls()
+    return installMap()
+  })
   handle('install:list', () => installedSkills())
   handle('install:managedByAgent', () => managedCountByAgent())
 

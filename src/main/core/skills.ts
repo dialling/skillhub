@@ -116,12 +116,26 @@ export function discoverSkillDirs(root: string, maxDepth = 5): string[] {
 }
 
 /** Build SkillEntry records for a checked-out repository. */
+/**
+ * One entry per skill, not per copy of it.
+ *
+ * Repositories commonly ship the same skill twice — `design-templates/x` beside
+ * `plugins/_official/examples/x`, byte for byte identical, verified by hash. Both
+ * were listed, so a repository with 385 distinct skills displayed as 532 and
+ * offered each of the duplicates as a separate thing to install. The catalog
+ * counts distinct skills; the library counted folders, and the two numbers sat
+ * next to each other disagreeing.
+ *
+ * The shallowest path wins, which is the copy the repository treats as canonical
+ * — the same rule the catalog was built with.
+ */
 export function buildLocalSkills(fullName: string, root: string, meta?: { stars?: number; avatarUrl?: string; license?: string | null }): SkillEntry[] {
-  return discoverSkillDirs(root).map((dir) => {
+  const seen = new Map<string, SkillEntry>()
+  for (const dir of discoverSkillDirs(root)) {
     const rel = relative(root, dir).split('\\').join('/')
     const parsed = readSkillDir(dir)
     const folderName = rel ? rel.split('/').pop()! : fullName.split('/').pop()!
-    return {
+    const entry: SkillEntry = {
       id: `${fullName}::${rel}`,
       repoFullName: fullName,
       path: rel,
@@ -136,7 +150,17 @@ export function buildLocalSkills(fullName: string, root: string, meta?: { stars?
       localPath: dir,
       available: true
     }
-  })
+    const previous = seen.get(folderName)
+    if (!previous) {
+      seen.set(folderName, entry)
+    } else {
+      const depth = (p: string): number => p.split('/').length
+      if (depth(rel) < depth(previous.path) || (depth(rel) === depth(previous.path) && rel < previous.path)) {
+        seen.set(folderName, entry)
+      }
+    }
+  }
+  return [...seen.values()]
 }
 
 /** Build SkillEntry placeholders from remote tree paths (no local checkout). */
@@ -145,7 +169,19 @@ export function buildRemoteSkills(
   dirs: string[],
   meta?: { stars?: number; avatarUrl?: string; license?: string | null }
 ): SkillEntry[] {
-  return dirs.map((rel) => {
+  // Same rule as the local pass: one entry per distinct skill, shallowest path
+  // wins, so both paths into the app agree on how many skills a repo has.
+  const shallowest = new Map<string, string>()
+  for (const rel of dirs) {
+    const name = rel ? rel.split('/').pop()! : fullName.split('/').pop()!
+    const prev = shallowest.get(name)
+    const depth = (p: string): number => p.split('/').filter(Boolean).length
+    if (!prev || depth(rel) < depth(prev) || (depth(rel) === depth(prev) && rel < prev)) {
+      shallowest.set(name, rel)
+    }
+  }
+  const unique = [...new Set(shallowest.values())].sort()
+  return unique.map((rel) => {
     const folderName = rel ? rel.split('/').pop()! : fullName.split('/').pop()!
     return {
       id: `${fullName}::${rel}`,

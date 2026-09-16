@@ -74,8 +74,39 @@ export function libraryDir(): string {
   return ensureDir(expandPath(dir))
 }
 
+/**
+ * One entry per distinct skill, deduped on the way out.
+ *
+ * Deduping at the point of scanning is not enough: the skill list is persisted
+ * when a repository is added, so items already in the library keep whatever the
+ * older scan produced and go on disagreeing with the catalog. Doing it here
+ * covers both — new scans and everything already stored — without rewriting
+ * anyone's state.
+ *
+ * The shallowest path wins, matching how the catalog counts.
+ */
+function dedupeByName(skills: LibraryItem['skills']): LibraryItem['skills'] {
+  const best = new Map<string, LibraryItem['skills'][number]>()
+  for (const s of skills) {
+    const prev = best.get(s.name)
+    if (!prev) {
+      best.set(s.name, s)
+      continue
+    }
+    const depth = (p: string): number => p.split('/').filter(Boolean).length
+    if (depth(s.path) < depth(prev.path) || (depth(s.path) === depth(prev.path) && s.path < prev.path)) {
+      best.set(s.name, s)
+    }
+  }
+  return best.size === skills.length ? skills : [...best.values()]
+}
+
 export function libraryItems(): LibraryItem[] {
-  return library.get().items
+  const items = library.get().items
+  return items.map((i) => {
+    const skills = dedupeByName(i.skills)
+    return skills === i.skills ? i : { ...i, skills }
+  })
 }
 
 /**
@@ -93,10 +124,14 @@ export async function libraryItemsEnriched(): Promise<LibraryItem[]> {
   if (!items.length) return items
   const byName = new Map((await curatedCatalog()).map((r) => [r.fullName, r]))
   return items.map((item) => {
+    // Dedupe here too: this is the accessor the UI actually reads, and the
+    // stored list predates the dedupe for anything added before it.
+    const skills = dedupeByName(item.skills)
     const curated = byName.get(item.fullName)
-    if (!curated) return item
+    if (!curated) return skills === item.skills ? item : { ...item, skills }
     return {
       ...item,
+      skills,
       meta: {
         ...item.meta,
         // authored copy wins

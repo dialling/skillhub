@@ -2,6 +2,8 @@ import {
   cpSync,
   existsSync,
   lstatSync,
+  readdirSync,
+  readlinkSync,
   mkdirSync,
   rmSync,
   symlinkSync,
@@ -12,7 +14,7 @@ import { dirname, join } from 'node:path'
 import type { InstallMode, InstallProgress, InstallRecord, InstallRequest, SkillEntry } from '../../shared/types'
 import { expandPath } from './paths'
 import { installs, library, logActivity, settings } from './db'
-import { agentDisplayName, resolveAgentDir } from './agents'
+import { agentDisplayName, listAgents, resolveAgentDir } from './agents'
 import { m } from './msg'
 import { isInside, isWindows } from './platform'
 
@@ -377,4 +379,102 @@ export function managedCountByAgent(): Record<string, number> {
     if (existsSync(r.linkPath)) out[r.agentId] = (out[r.agentId] || 0) + 1
   }
   return out
+}
+
+/**
+ * Rebuild install records from what is actually on disk.
+ *
+ * A record is the only thing that tells the app a link was placed deliberately,
+ * so a lost record makes the link unmanageable: it cannot be listed, and it
+ * cannot be removed. That happened for real — a debounced write lost the record
+ * while the symlink stayed, and the library then reported "0 installed" for a
+ * skill that was installed.
+ *
+ * The filesystem is the authority for what exists; the record says who put it
+ * there. Scanning is how the two are brought back together, and it is cheap: one
+ * readdir per agent directory.
+ */
+/**
+ * The library skill a link points at, if any.
+ *
+ * Compared by real path, because the link target is the checkout directory while
+ * the library stores the same thing with `~` unexpanded.
+ */
+function libraryOwnerOf(target: string): { skill: SkillEntry; fullName: string } | null {
+  const real = target
+  for (const item of library.get().items) {
+    for (const skill of item.skills) {
+      if (skill.localPath && expandPath(skill.localPath) === real) {
+        return { skill, fullName: item.fullName }
+      }
+    }
+  }
+  return null
+}
+
+export function reconcileInstalls(): number {
+  const libRoot = expandPath(settings.get().libraryDir)
+  const known = new Set(installs.get().records.map((r) => `${r.linkPath}`))
+  const found: InstallRecord[] = []
+
+  for (const agent of listAgents()) {
+    const dir = resolveAgentDir(agent.id)
+    if (!dir || !existsSync(dir)) continue
+    let entries: string[]
+    try {
+      entries = readdirSync(dir)
+    } catch {
+      continue
+    }
+    for (const name of entries) {
+      if (name.startsWith('.')) continue
+      const link = join(dir, name)
+      // Only links into the library are ours. A folder the user made themselves
+      // is not something this app placed, and claiming it would be wrong.
+      let target: string | null = null
+      try {
+        if (lstatSync(link).isSymbolicLink()) target = expandPath(readlinkSync(link))
+      } catch {
+        continue
+      }
+      if (!target || !isInside(target, libRoot)) continue
+      if (known.has(link)) continue
+
+      /*
+        Match the link target to the library entry that owns it.
+
+        Reconstructing the id from the path is not enough: the id is
+        `owner/repo::<path inside the repo>`, and that path is not the folder
+        name — `design-templates/audio-jingle`, not `audio-jingle`. A guessed id
+        produces a record that looks right and matches nothing, so the library
+        still reports zero installed. The library already knows the real path of
+        every skill it materialized, so ask it.
+      */
+      const owner = libraryOwnerOf(target)
+      const relative = target.slice(libRoot.length + 1)
+      const [repoPart] = relative.split('/')
+      const repoFullName = owner?.fullName || (repoPart ? repoPart.replace('__', '/') : '')
+      found.push({
+        id: `${owner?.skill.id || `${repoFullName}::${name}`}@${agent.id}`,
+        skillId: owner?.skill.id || `${repoFullName}::${name}`,
+        skillName: owner?.skill.name || name,
+        repoFullName,
+        agentId: agent.id,
+        agentName: agent.name,
+        targetDir: dir,
+        linkPath: link,
+        mode: 'symlink',
+        installedAt: Date.now(),
+        sourcePath: target
+      })
+    }
+  }
+
+  if (found.length) {
+    installs.update((d) => {
+      d.records.push(...found)
+    })
+    logActivity('install', 'activity.reconciled', { count: found.length })
+  }
+  return found.length
 }
