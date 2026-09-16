@@ -62,10 +62,24 @@ function localCatalogVersion(): number {
   }
 }
 
-/** The data version this machine last applied, e.g. 20260916. */
+/**
+ * The data version this machine last applied, e.g. 20260916.
+ *
+ * `liveDate` holds a full ISO timestamp, not a date — stripping the dashes from
+ * "2026-09-15T11:41:42.691Z" yields "20260915T11:41:42.691Z", which Number()
+ * turns into NaN, and every comparison against NaN is false. That is how the
+ * check silently reported "no update" no matter what was published. Take the
+ * date part first.
+ */
+export function dateToVersion(value: string | null | undefined): number {
+  if (!value) return 0
+  const date = String(value).slice(0, 10)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return 0
+  return Number(date.replace(/-/g, ''))
+}
+
 function localDataVersion(): number {
-  const date = settings.get().liveDate
-  return date ? Number(String(date).replace(/-/g, '')) : 0
+  return dateToVersion(settings.get().liveDate)
 }
 
 async function fetchJson<T>(url: string, timeoutMs = 12000, auth = false): Promise<T | null> {

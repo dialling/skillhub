@@ -13,6 +13,7 @@ export function UpdateModal(): React.JSX.Element | null {
   const info = useStore((s) => s.updateInfo)
   const open = useStore((s) => s.updateOpen)
   const checkUpdates = useStore((s) => s.checkUpdates)
+  const refreshAll = useStore((s) => s.refreshAll)
   const dismiss = useStore((s) => s.dismissUpdate)
 
   if (!open || !info?.available) return null
@@ -21,12 +22,12 @@ export function UpdateModal(): React.JSX.Element | null {
   const latest = app?.latest || String(info.catalog?.latest || info.data?.latest || '')
 
   return (
-    <div className="overlay" onClick={() => void dismiss()}>
+    <div className="overlay" onClick={() => void dismiss(false)}>
       <div className="modal" style={{ width: 'min(520px, 92vw)' }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
           <Sparkles size={15} style={{ color: 'var(--accent-hi)' }} />
           <div className="modal-title">{t('update.title', { version: latest })}</div>
-          <button className="btn ghost sm" style={{ marginLeft: 'auto' }} onClick={() => void dismiss()}>
+          <button className="btn ghost sm" style={{ marginLeft: 'auto' }} onClick={() => void dismiss(false)}>
             <X size={13} />
           </button>
         </div>
@@ -58,7 +59,8 @@ export function UpdateModal(): React.JSX.Element | null {
         </div>
 
         <div className="modal-foot">
-          <button className="btn" onClick={() => void dismiss()}>
+          {/* The only control that records a decision. */}
+          <button className="btn" onClick={() => void dismiss(true)}>
             <Clock size={13} />
             {t('update.later')}
           </button>
@@ -67,7 +69,7 @@ export function UpdateModal(): React.JSX.Element | null {
               className="btn primary"
               onClick={() => {
                 void window.skillhub.system.openExternal(app.url)
-                void dismiss()
+                void dismiss(false)
               }}
             >
               <Download size={13} />
@@ -77,8 +79,9 @@ export function UpdateModal(): React.JSX.Element | null {
             <button
               className="btn primary"
               onClick={() => {
-                void dismiss()
-                void checkUpdates()
+                void dismiss(false)
+                // Data-only update: this is the refresh button's job, so run it.
+                void refreshAll()
               }}
             >
               <Download size={13} />

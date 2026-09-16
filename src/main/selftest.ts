@@ -29,7 +29,7 @@ import { addRepo, libraryItems, removeItem } from './core/library'
 import { installSkills, installedSkills, uninstall } from './core/installer'
 import { launchTargets, prepareLaunch } from './core/launch'
 import { loadRegistry } from './core/agents'
-import { compareVersions } from './core/update'
+import { compareVersions, dateToVersion } from './core/update'
 import { buildRemoteSkills } from './core/skills'
 import { userDataDir } from './core/paths'
 import { leaderboard } from './core/leaderboard'
@@ -295,6 +295,20 @@ async function main(): Promise<number> {
     check('release outranks its pre-release', compareVersions('1.0.0', '1.0.0-rc.1') > 0, '1.0.0 > 1.0.0-rc.1')
     check('pre-release does not outrank release', compareVersions('1.0.0-rc.1', '1.0.0') < 0, 'rc < release')
     check('shorter version pads with zero', compareVersions('1.1', '1.1.0') === 0, '1.1 == 1.1.0')
+
+    // The conversion from a stored timestamp to a comparable number. Getting
+    // this wrong produces NaN, and every comparison against NaN is false — the
+    // check then reports "no update" forever without any error.
+    check('ISO timestamp converts to a date version', dateToVersion('2026-09-15T11:41:42.691Z') === 20260915, String(dateToVersion('2026-09-15T11:41:42.691Z')))
+    check('plain date converts', dateToVersion('2026-09-16') === 20260916, String(dateToVersion('2026-09-16')))
+    check('empty converts to zero', dateToVersion('') === 0, String(dateToVersion('')))
+    check('null converts to zero', dateToVersion(null) === 0, String(dateToVersion(null)))
+    check('garbage converts to zero', dateToVersion('not-a-date') === 0, String(dateToVersion('not-a-date')))
+    check(
+      'a newer published date beats a stored timestamp',
+      20260916 > dateToVersion('2026-09-15T11:41:42.691Z'),
+      '20260916 > 20260915'
+    )
 
     // Data and catalog versions are dates, so the comparison is plain numbers.
     check('newer data date wins', 20260917 > 20260916, '20260917 > 20260916')

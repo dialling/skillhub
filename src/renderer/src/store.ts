@@ -130,7 +130,7 @@ interface State {
   loadStarred: (force?: boolean) => Promise<void>
   toggleStar: (fullName: string) => Promise<void>
   checkUpdates: () => Promise<void>
-  dismissUpdate: () => Promise<void>
+  dismissUpdate: (remember?: boolean) => Promise<void>
   loadSubmissions: () => Promise<void>
   submitSkill: (input: { localPath: string; name: string; origin?: string }) => Promise<void>
   setLibraryFilter: (f: 'all' | 'pending' | 'installed') => void
@@ -722,10 +722,18 @@ export const useStore = create<State>((set, get) => ({
     }
   },
 
-  async dismissUpdate() {
+  /**
+   * Close the prompt.
+   *
+   * `remember` is the difference between "not now" and "never for this version".
+   * Clicking away or pressing the close button must not record anything: those
+   * are the ways to leave a dialog by accident, and a stray click silently
+   * silencing an update forever is worse than being asked again next refresh.
+   */
+  async dismissUpdate(remember = false) {
     const info = get().updateInfo
     const latest = info?.app?.latest || String(info?.catalog?.latest || info?.data?.latest || '')
-    if (latest) await api.update.dismiss(latest)
+    if (remember && latest) await api.update.dismiss(latest)
     set({ updateOpen: false })
   },
 
