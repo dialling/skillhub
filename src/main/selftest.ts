@@ -29,6 +29,7 @@ import { addRepo, libraryItems, removeItem } from './core/library'
 import { installSkills, installedSkills, uninstall } from './core/installer'
 import { launchTargets, prepareLaunch } from './core/launch'
 import { loadRegistry } from './core/agents'
+import { curatedCatalogPath } from './core/paths'
 import { compareVersions, dateToVersion } from './core/update'
 import { buildRemoteSkills } from './core/skills'
 import { userDataDir } from './core/paths'
@@ -283,6 +284,27 @@ async function main(): Promise<number> {
     edge still serving yesterday's file, a release tag older than what is
     installed, a pre-release being offered as a finished upgrade.
   */
+  /*
+    The staging folder must never be a source of installable content.
+
+    This is the load-bearing property behind allowing uploads at all: a
+    submission is text someone's machine produced, and it becomes installable
+    only after a person reads it and adds it to the catalog. Nothing reads
+    `submissions/` today, but "nothing reads it" is a fact about the code that a
+    future change could quietly break — so it is asserted instead.
+  */
+  section('上传区与目录之间的隔离')
+  {
+    const repos = await curatedCatalog()
+    const fromStaging = repos.filter((r) => r.fullName.includes('submissions/'))
+    check('目录里没有来自 submissions/ 的条目', fromStaging.length === 0, fromStaging.map((r) => r.fullName).join(', ') || `${repos.length} repos`)
+
+    // The catalog path is what the app reads; the staging folder lives beside it
+    // in the repository but must never be resolved as a catalog.
+    const catalogPath = curatedCatalogPath()
+    check('目录路径不指向 submissions', !catalogPath.includes('submissions'), catalogPath)
+  }
+
   section('Version ordering (never go backwards)')
   {
     check('newer patch wins', compareVersions('0.1.1', '0.1.0') > 0, '0.1.1 > 0.1.0')

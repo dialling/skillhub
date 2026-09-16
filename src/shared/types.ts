@@ -135,6 +135,8 @@ export interface SubmissionResult {
   uploaded: number
   slug?: string
   message: string
+  /** suspicious patterns found in the uploaded text, e.g. "SKILL.md:12 pipeToShell" */
+  flags?: string[]
 }
 
 /** One skill inside a catalog repository, as published by the extraction pass. */

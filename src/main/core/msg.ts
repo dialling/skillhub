@@ -134,6 +134,9 @@ const M: Record<string, [zh: string, en: string]> = {
   'boot.ok': ['好', 'OK'],
 
   /* submissions */
+  'submit.notSignedIn': ['未登录 GitHub，无法上传', 'Not signed in to GitHub'],
+  'submit.noWriteAccess': ['当前账号对 {repo} 没有写入权限 —— 只有仓库所有者可以上传，这是有意如此', 'This account cannot write to {repo} — only the repository owner can upload, by design'],
+  'submit.repoUnreadable': ['无法读取仓库信息：{msg}', 'Could not read the repository: {msg}'],
   'submit.readFailed': ['无法读取技能目录：{msg}', 'Could not read the skill folder: {msg}'],
   'submit.empty': ['这个目录是空的', 'That folder is empty'],
   'submit.noSkillFile': ['这个目录里没有 SKILL.md，不是一个技能', 'No SKILL.md in that folder — it is not a skill'],

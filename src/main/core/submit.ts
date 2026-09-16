@@ -117,8 +117,76 @@ export async function listSubmissions(): Promise<SubmissionRecord[]> {
  * Nothing here touches the catalog, so the store is unaffected until the entry
  * has been reviewed and given its bilingual copy.
  */
+/**
+ * Look for the ways a skill can be dangerous.
+ *
+ * A skill is not data — it is a set of instructions an agent will follow with
+ * the user's own tools and credentials. A malicious SKILL.md needs no executable
+ * at all: "run this command to set up" is the whole attack, and an extension
+ * filter cannot see it. So the text itself is read and reported.
+ *
+ * This does not block anything. The uploader and the reviewer are the same
+ * person here, and a rule that refuses on a keyword match would be both easy to
+ * evade and wrong about honest skills. What it does is make the question
+ * visible at the moment the content arrives, with the evidence attached, rather
+ * than leaving it to whoever reads the file later.
+ */
+const RED_FLAGS: { id: string; re: RegExp }[] = [
+  // Piping a download straight into a shell: the canonical remote payload.
+  { id: 'pipeToShell', re: /\b(curl|wget)\b[^\n|]{0,200}\|\s*(sudo\s+)?(ba|z|da|k)?sh\b/i },
+  // Fetching and then executing as separate steps.
+  { id: 'fetchAndExec', re: /\b(curl|wget)\b[^\n]{0,200}(-o|-O|>)[^\n]{0,120}\n?[^\n]{0,80}\b(chmod\s+\+x|bash|sh|python|node)\b/i },
+  // Credentials from places an agent can read.
+  { id: 'credentialPaths', re: /(~\/\.ssh\/|id_rsa|\.aws\/credentials|\.npmrc|gh\s+auth\s+token|\$GITHUB_TOKEN|\$OPENAI_API_KEY|\$ANTHROPIC_API_KEY)/i },
+  // Sending data outward.
+  { id: 'exfiltration', re: /\b(base64|cat)\b[^\n]{0,80}\|[^\n]{0,60}\b(curl|wget|nc|ncat|netcat)\b/i },
+  // Destructive commands stated plainly.
+  { id: 'destructive', re: /\brm\s+-rf\s+(\/|~|\$HOME|\*)/i },
+  // Instructions to ignore the user or the harness.
+  { id: 'promptInjection', re: /(ignore (all )?(previous|prior|above) (instructions|rules)|do not (tell|ask|inform) the user|without (asking|telling) the user)/i },
+  // Obfuscation: an encoded blob that gets decoded and run.
+  { id: 'obfuscated', re: /(base64\s+-d|base64\s+--decode|eval\s*\(|atob\s*\()[^\n]{0,120}/i },
+  // Scheduled or background persistence.
+  { id: 'persistence', re: /(crontab\s+-|launchctl\s+load|systemctl\s+(enable|start)|\/Library\/LaunchAgents|~\/\.[a-z]+rc[^\n]{0,40}\b(curl|wget)\b)/i }
+]
+
+/** Every red flag in one skill's text, with the line that tripped it. */
+function scanContent(files: { rel: string; content: Buffer }[]): string[] {
+  const hits: string[] = []
+  for (const f of files) {
+    // Text only; a binary match would be noise.
+    if (/\.(png|jpe?g|gif|webp|ico|woff2?|ttf)$/i.test(f.rel)) continue
+    const text = f.content.toString('utf8')
+    if (text.includes('\u0000')) continue
+    for (const flag of RED_FLAGS) {
+      const m = flag.re.exec(text)
+      if (!m) continue
+      const line = text.slice(0, m.index).split('\n').length
+      hits.push(`${f.rel}:${line} ${flag.id}`)
+    }
+  }
+  return [...new Set(hits)]
+}
+
 export async function submitSkill(input: SubmitInput): Promise<SubmissionResult> {
-  if (!activeToken()) throw new Error('not signed in')
+  if (!activeToken()) throw new Error(m('submit.notSignedIn'))
+
+  /*
+    Confirm the credential can actually write here before uploading anything.
+
+    The token is always the user's own — nothing is embedded in the app — so
+    someone who is not a collaborator on this repository simply cannot write to
+    it. That is the intended behaviour, and it deserves a clear message: an
+    unexplained 403 partway through a file-by-file upload looks like a bug.
+  */
+  try {
+    const repo = await ghFetch<{ permissions?: { push?: boolean } }>(`/repos/${OWNER}/${REPO}`)
+    if (!repo.permissions?.push) {
+      return { ok: false, uploaded: 0, message: m('submit.noWriteAccess', { repo: `${OWNER}/${REPO}` }) }
+    }
+  } catch (err: any) {
+    return { ok: false, uploaded: 0, message: m('submit.repoUnreadable', { msg: err?.message || err }) }
+  }
 
   let files: string[]
   try {
@@ -256,10 +324,18 @@ export async function submitSkill(input: SubmitInput): Promise<SubmissionResult>
     `submission: register ${input.name}`
   )
 
+  const flags = scanContent(payload)
+  if (flags.length) {
+    console.warn(`[submit] 内容检查发现 ${flags.length} 处可疑写法：\n  ${flags.join('\n  ')}`)
+  }
+
   return {
     ok: true,
     uploaded,
     slug,
+    // Reported, not hidden: the reviewer needs to see this while looking at the
+    // submission, not discover it later.
+    flags,
     message: skipped
       ? m('submit.doneSkipped', { n: uploaded, slug, skipped })
       : m('submit.done', { n: uploaded, slug })
