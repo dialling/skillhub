@@ -85,11 +85,18 @@ export function LibraryView(): React.JSX.Element {
    * Installing a repository installs what it has that is not installed yet.
    *
    * Offering all of them again would mean a wall of "already exists" for anyone
-   * who came back for the two skills they skipped the first time.
+   * who came back for the two skills they skipped the first time — and when
+   * nothing is missing there is nothing to offer at all. The button says so
+   * instead of opening a dialog that would re-fetch every skill to replace it
+   * with the same files.
    */
+  const missingOf = (skills: SkillEntry[]): SkillEntry[] =>
+    skills.filter((s) => !(installMap[s.id] || []).length)
+
   const installMany = (skills: SkillEntry[]): void => {
-    const missing = skills.filter((s) => !(installMap[s.id] || []).length)
-    openInstall(missing.length ? missing : skills)
+    const missing = missingOf(skills)
+    if (!missing.length) return
+    openInstall(missing)
   }
 
   /** A skill found on this machine: its own folder is the source. */
@@ -160,6 +167,7 @@ export function LibraryView(): React.JSX.Element {
           installedSkills={installedSkillsOf(selected)}
           agentCount={activeAgents.length}
           onInstall={() => installMany(selected.skills)}
+          installable={missingOf(selected.skills).length}
           onDetail={() => void openDetail(selected.fullName)}
           onSync={() => void syncItem(selected.id)}
           onReveal={() => void window.skillhub.system.openPath(selected.sourcePath)}
@@ -292,15 +300,20 @@ export function LibraryView(): React.JSX.Element {
                 <span className="stat">{fmtStars(item.meta.stars)}</span>
                 <span className="stat">{item.lastSyncAt ? fmtRelative(item.lastSyncAt, lang) : '—'}</span>
               </div>
-              <button
-                className="btn primary sm"
-                disabled={!item.skills.length}
-                title={t('library.installRepoHint', { n: item.skills.length })}
-                onClick={() => installMany(item.skills)}
-              >
-                <Download size={11} />
-                {t('library.installRepo')}
-              </button>
+              {(() => {
+                const left = missingOf(item.skills).length
+                return (
+                  <button
+                    className="btn primary sm"
+                    disabled={!left}
+                    title={left ? t('library.installRepoHint', { n: left }) : t('library.allInstalled')}
+                    onClick={() => installMany(item.skills)}
+                  >
+                    {left ? <Download size={11} /> : <Check size={11} />}
+                    {left ? t('library.installRepo') : t('library.allInstalledShort')}
+                  </button>
+                )
+              })()}
             </div>
           ))}
         </div>
@@ -317,6 +330,7 @@ function LibraryHero({
   installedSkills,
   agentCount,
   onInstall,
+  installable,
   onDetail,
   onSync,
   onReveal,
@@ -326,6 +340,8 @@ function LibraryHero({
   installedSkills: number
   agentCount: number
   onInstall: () => void
+  /** how many of this item's skills are not installed anywhere yet */
+  installable: number
   onDetail: () => void
   onSync: () => void
   onReveal: () => void
@@ -376,12 +392,16 @@ function LibraryHero({
         <div className="lh-actions">
           <button
             className="btn-play"
-            disabled={!item.skills.length}
+            disabled={!installable}
             onClick={onInstall}
-            title={t('library.installRepoHint', { n: item.skills.length })}
+            title={
+              installable
+                ? t('library.installRepoHint', { n: installable })
+                : t('library.allInstalled')
+            }
           >
-            <Download size={17} />
-            {item.skills.length ? t('library.installRepo') : t('library.noSkills')}
+            {installable ? <Download size={17} /> : <Check size={17} />}
+            {installable ? t('library.installRepo') : t('library.allInstalledShort')}
           </button>
           <div className="lh-sub">
             <button className="btn ghost sm" onClick={onDetail}>

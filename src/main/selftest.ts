@@ -27,7 +27,7 @@ import {
 import { applyFetchedCatalog, curatedCatalog, localCatalogVersion } from './core/catalog'
 import { CATEGORY_LABELS, FN_LABELS, REPO_KIND_LABELS } from '../shared/types'
 import { addRepo, libraryItems, removeItem } from './core/library'
-import { entryOwner, installFromGithub, installedSkills, uninstall, uninstallFrom } from './core/installer'
+import { entryOwner, installFromGithub, installMap, installedSkills, reconcileInstalls, uninstall, uninstallFrom } from './core/installer'
 import { loadRegistry, resolveAgentDirs } from './core/agents'
 import { curatedCatalogPath, fetchedCatalogPath } from './core/paths'
 import { agentsWithoutDestination, installDestinations, recommendInstallTarget } from './core/discover'
@@ -278,6 +278,14 @@ async function main(): Promise<number> {
   )
 
   section('An agent can read more than one directory')
+  /*
+    Both directories are created inside the sandbox home first.
+
+    HOME is redirected for the whole suite, so `~/.dsh/skills` and the desktop
+    harness root do not exist unless a test makes them — which is the point:
+    before this, the suite scanned the real ones.
+  */
+  for (const dir of resolveAgentDirs('dsh')) mkdirSync(dir, { recursive: true })
   const dshDirs = resolveAgentDirs('dsh')
   check('dsh lists every directory it reads', dshDirs.length >= 2, dshDirs.map((d) => d.replace(homedir(), '~')).join(', '))
   check(
@@ -293,9 +301,135 @@ async function main(): Promise<number> {
         d.installAgents = ['dsh']
       })
       const got = installDestinations().filter((d) => d.agentId === 'dsh')
+      settings.update((d) => {
+        d.enabledAgents = []
+        d.installAgents = undefined
+      })
       return got.length >= 2 && got.every((g) => g.agentName === 'DeepSeek Harness')
     })(),
     'one agent id, every directory'
+  )
+
+  /*
+    One agent, two directories: a record names an artifact, not an agent.
+
+    `(skill, agent)` stopped being a unique key the moment an agent could read
+    two directories. The second placement replaced the first record, so that copy
+    sat on disk with nothing tracking it — uninstall removed one and orphaned the
+    other, which is a skill the user can see in their agent's directory and
+    cannot remove from the app.
+
+    Seeded directly rather than driven through the registry: only a shipped
+    registry entry can own two directories, and the registry is cached and read
+    from the repository. Two records for one agent at two paths is the state that
+    matters, and it is reachable without pretending to be that agent.
+  */
+  section('Two directories, one agent, two artifacts')
+  const twoDir = mkdtempSync(join(tmpdir(), 'skillhub-two-'))
+  const pairSkill = 'a/b::two-dir'
+  const pairAgent = 'custom:selftest-two'
+  const paths = [join(twoDir, 'one', 'two-dir'), join(twoDir, 'two', 'two-dir')]
+  for (const dir of paths) {
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, 'SKILL.md'), '---\nname: two-dir\ndescription: seeded\n---\n\n# Body\n')
+  }
+  installs.update((d) => {
+    d.records = d.records.filter((r) => r.skillId !== pairSkill)
+    for (const dir of paths) {
+      d.records.push({
+        id: `${pairSkill}@${dir}`,
+        skillId: pairSkill,
+        skillName: 'two-dir',
+        repoFullName: 'a/b',
+        agentId: pairAgent,
+        agentName: 'Two-dir Agent',
+        targetDir: join(twoDir, 'one'),
+        linkPath: dir,
+        mode: 'copy',
+        installedAt: Date.now(),
+        sourcePath: dir
+      })
+    }
+  })
+  check('two artifacts, two records', installs.get().records.filter((r) => r.skillId === pairSkill).length === 2)
+  check(
+    'the map reports one agent, not two directories',
+    (installMap()[pairSkill] || []).length === 1,
+    JSON.stringify(installMap()[pairSkill])
+  )
+
+  const pairRemoval = uninstallFrom(pairSkill, pairAgent)
+  check('uninstall succeeds', pairRemoval.ok, JSON.stringify(pairRemoval))
+  check('and reports the agent once', pairRemoval.agents.length === 1, pairRemoval.agents.join(', '))
+  check(
+    'every copy is gone from disk',
+    paths.every((dir) => !existsSync(dir)),
+    paths.map((dir) => `${existsSync(dir) ? 'left' : 'gone'}`).join(', ')
+  )
+  check(
+    'and no record is left pointing at either',
+    installs.get().records.filter((r) => r.skillId === pairSkill).length === 0,
+    `${installs.get().records.filter((r) => r.skillId === pairSkill).length} left`
+  )
+  rmSync(twoDir, { recursive: true, force: true })
+
+  /*
+    A record whose artifact is gone is not an install.
+
+    Reconciliation only ever added. A folder deleted by hand left a record that
+    every reader had to filter out on its own, and `uninstall` would report
+    removing something that was never there.
+  */
+  section('Reconcile prunes records for missing artifacts')
+  const ghostDir = mkdtempSync(join(tmpdir(), 'skillhub-ghost-'))
+  writeFileSync(join(ghostDir, 'SKILL.md'), '---\nname: ghost\ndescription: seeded\n---\n')
+  installs.update((d) => {
+    d.records = d.records.filter((r) => r.skillId !== 'a/b::ghost')
+    d.records.push({
+      id: `a/b::ghost@${ghostDir}`,
+      skillId: 'a/b::ghost',
+      skillName: 'ghost',
+      repoFullName: 'a/b',
+      agentId: 'custom:selftest-two',
+      agentName: 'Two-dir Agent',
+      targetDir: ghostDir,
+      linkPath: ghostDir,
+      mode: 'copy',
+      installedAt: Date.now(),
+      sourcePath: ghostDir
+    })
+  })
+  check('the record is there while its artifact is', installs.get().records.some((r) => r.skillId === 'a/b::ghost'))
+  rmSync(ghostDir, { recursive: true, force: true })
+  reconcileInstalls()
+  check(
+    'and is pruned once the artifact is deleted by hand',
+    !installs.get().records.some((r) => r.skillId === 'a/b::ghost'),
+    `${installs.get().records.filter((r) => r.skillId === 'a/b::ghost').length} left`
+  )
+
+  /*
+    Nothing the suite records may point outside its own sandbox.
+
+    This is the guard for a real accident: `reconcileInstalls()` writes records
+    for whatever it finds in the agent directories, and with HOME left alone that
+    meant the *real* `~/.dsh/skills`, `~/.cursor/skills` and so on. The suite's
+    cleanup then called `removeItem` for its target repository and deleted the
+    real files it had just discovered — a routine `npm run verify` removing a
+    skill from a real agent directory. One run was enough.
+
+    `scripts/selftest.mjs` now redirects HOME, and this states the invariant that
+    makes the redirection load-bearing rather than incidental.
+  */
+  const sandbox = process.env.SKILLHUB_HOME || ''
+  const strays = installs
+    .get()
+    .records.filter((r) => sandbox && !r.linkPath.startsWith(sandbox) && !r.linkPath.startsWith(tmpdir()))
+    .map((r) => r.linkPath)
+  check(
+    'no record points outside the sandbox',
+    strays.length === 0,
+    strays.slice(0, 3).join(', ')
   )
 
   settings.update((d) => {

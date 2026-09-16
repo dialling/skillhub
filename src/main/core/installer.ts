@@ -60,6 +60,11 @@ function writeMarker(
   }
 }
 
+/** Identity of one installed artifact: this skill, at this path. */
+function recordId(skillId: string, linkPath: string): string {
+  return `${skillId}@${linkPath}`
+}
+
 export interface InstallOutcome {
   ok: InstallRecord[]
   skipped: { skillId: string; agentId: string; reason: string }[]
@@ -113,7 +118,10 @@ export function installMap(): Record<string, string[]> {
   const map: Record<string, string[]> = {}
   for (const r of installs.get().records) {
     if (!existsSync(r.linkPath)) continue
-    ;(map[r.skillId] ||= []).push(r.agentId)
+    // Deduped: an agent with two skills directories gets two records for one
+    // install, and the UI asks this question about agents, not about paths.
+    const list = (map[r.skillId] ||= [])
+    if (!list.includes(r.agentId)) list.push(r.agentId)
   }
   return map
 }
@@ -144,24 +152,40 @@ export interface UninstallResult {
  * so instead of reporting a single-agent removal.
  */
 export function uninstallFrom(skillId: string, agentId: string): UninstallResult {
-  const rec = installs.get().records.find((r) => r.skillId === skillId && r.agentId === agentId)
-  if (!rec) return { ok: false, agents: [] }
-  const shared = installs.get().records.filter((r) => r.linkPath === rec.linkPath)
-  try {
-    if (existsSync(rec.linkPath) || isSymlink(rec.linkPath)) {
-      if (isSymlink(rec.linkPath)) unlinkSync(rec.linkPath)
-      else rmSync(rec.linkPath, { recursive: true, force: true })
+  const all = installs.get().records
+  const own = all.filter((r) => r.skillId === skillId && r.agentId === agentId)
+  if (!own.length) return { ok: false, agents: [] }
+
+  /*
+    Every artifact belonging to this (skill, agent), not just the first.
+
+    This used to `find` one record and delete its path, which was right while a
+    record and an install were the same thing. An agent with two skills
+    directories broke that: uninstalling removed one copy and left the other on
+    disk, untracked and unreachable from the UI.
+  */
+  const paths = [...new Set(own.map((r) => r.linkPath))]
+  for (const path of paths) {
+    try {
+      if (existsSync(path) || isSymlink(path)) {
+        if (isSymlink(path)) unlinkSync(path)
+        else rmSync(path, { recursive: true, force: true })
+      }
+    } catch (err) {
+      console.error('[installer] uninstall failed', err)
+      return { ok: false, agents: [] }
     }
-  } catch (err) {
-    console.error('[installer] uninstall failed', err)
-    return { ok: false, agents: [] }
   }
-  const gone = new Set(shared.map((r) => r.id))
+
+  // Sibling records are whatever shares a removed path: several agents can read
+  // one directory, and their records have to go with the artifact.
+  const affected = all.filter((r) => paths.includes(r.linkPath))
+  const gone = new Set(affected.map((r) => r.id))
   installs.update((d) => {
     d.records = d.records.filter((r) => !gone.has(r.id))
   })
-  const agents = [...new Set(shared.map((r) => r.agentName))]
-  logActivity('uninstall', 'activity.uninstalled', { skill: rec.skillName, agent: agents.join(', ') })
+  const agents = [...new Set(affected.map((r) => r.agentName))]
+  logActivity('uninstall', 'activity.uninstalled', { skill: own[0].skillName, agent: agents.join(', ') })
   return { ok: true, agents }
 }
 
@@ -170,15 +194,14 @@ export function uninstall(skillId: string, agentId: string): boolean {
 }
 
 export function uninstallAll(skillId: string): number {
-  const recs = installs.get().records.filter((r) => r.skillId === skillId)
-  // One entry can back several agents; count the removals, not the records.
-  const seen = new Set<string>()
+  const agents = [...new Set(installs.get().records.filter((r) => r.skillId === skillId).map((r) => r.agentId))]
+  // Count what was actually removed: an agent with two directories is one
+  // removal of two artifacts, and reporting it as two agents would be a lie.
   let n = 0
-  for (const r of recs) {
-    if (seen.has(r.linkPath)) continue
-    seen.add(r.linkPath)
-    const res = uninstallFrom(skillId, r.agentId)
-    if (res.ok) n += res.agents.length
+  for (const agentId of agents) {
+    const before = installs.get().records.filter((r) => r.skillId === skillId).length
+    const res = uninstallFrom(skillId, agentId)
+    if (res.ok) n += Math.max(1, before - installs.get().records.filter((r) => r.skillId === skillId).length)
   }
   return n
 }
@@ -293,6 +316,23 @@ function libraryOwnerOf(target: string): { skill: SkillEntry; fullName: string }
 
 export function reconcileInstalls(): number {
   const libRoot = libraryRoot()
+
+  /*
+    Drop records whose artifact is gone.
+
+    Reconciliation used to only ever add. A folder deleted by hand — in Finder,
+    by another tool, or by the user cleaning up after a test — left a record
+    behind that every reader then had to filter out individually, and `uninstall`
+    would happily report removing something that was not there. Reading the
+    filesystem and believing it is the whole point of this pass.
+  */
+  const live = installs.get().records.filter((r) => existsSync(r.linkPath) || isSymlink(r.linkPath))
+  if (live.length !== installs.get().records.length) {
+    installs.update((d) => {
+      d.records = d.records.filter((r) => existsSync(r.linkPath) || isSymlink(r.linkPath))
+    })
+  }
+
   const known = new Set(installs.get().records.map((r) => `${r.linkPath}`))
   const found: InstallRecord[] = []
 
@@ -352,7 +392,7 @@ export function reconcileInstalls(): number {
       const repoFullName =
         owner?.fullName || fromMarker?.repoFullName || (repoPart ? repoPart.replace('__', '/') : '')
       found.push({
-        id: `${owner?.skill.id || fromMarker?.skillId || `${repoFullName}::${name}`}@${agent.id}`,
+        id: recordId(owner?.skill.id || fromMarker?.skillId || `${repoFullName}::${name}`, link),
         skillId: owner?.skill.id || fromMarker?.skillId || `${repoFullName}::${name}`,
         skillName: owner?.skill.name || name,
         repoFullName,
@@ -368,15 +408,12 @@ export function reconcileInstalls(): number {
   }
 
   /*
-    One record per (skill, agent) pair, which is what the record id means.
+    One record per artifact — this skill, at this path.
 
-    This pass used to key its guard on the path alone and then append, so a pair
-    whose entry had moved (an install under the owner-qualified name, then the
-    conflicting folder removed, then a plain install) ended up with two records
-    sharing one id. `uninstall` selects by pair and then removes by id, so it
-    dropped both records while deleting only one entry — a removal that reported
-    success and changed nothing. Recovered entries replace the pair's record
-    instead of joining it.
+    This pass used to key its guard on `(skill, agent)` and then append, so a
+    pair whose entry had moved ended up with two records sharing one id, and a
+    pair with two directories could only ever be described by one record. Both
+    ended the same way: a removal that reported success and left files behind.
   */
   if (found.length) {
     // One entry per pair: two folders in one agent directory can both look like
@@ -635,8 +672,17 @@ export async function installFromGithub(input: InstallFromGithubInput): Promise<
         })
       }
       writeMarker(folder, { skillId: s.skillId, repoFullName: s.fullName }, origin)
+      /*
+        The id names the artifact, not the agent.
+
+        One agent can read several directories — DeepSeek Harness reads both the
+        CLI's and the desktop app's — so `${skillId}@${agentId}` was not unique:
+        the second placement silently replaced the first record, and the copy
+        that lost was left on disk with nothing tracking it. Uninstalling then
+        removed one of the two and the other stayed forever.
+      */
       const record: InstallRecord = {
-        id: `${s.skillId}@${agent.id}`,
+        id: recordId(s.skillId, folder),
         skillId: s.skillId,
         skillName: s.name,
         repoFullName: s.fullName,
@@ -649,7 +695,7 @@ export async function installFromGithub(input: InstallFromGithubInput): Promise<
         sourcePath: origin
       }
       installs.update((d) => {
-        d.records = d.records.filter((r) => !(r.skillId === s.skillId && r.agentId === agent.id))
+        d.records = d.records.filter((r) => !(r.skillId === s.skillId && r.linkPath === folder))
         d.records.push(record)
       })
       outcome.ok.push(record)
