@@ -33,7 +33,9 @@ const RULES = [
     test: (line) => /['"]\/(opt\/homebrew|usr\/local\/bin|usr\/bin)\//.test(line),
     waived: {
       'src/main/core/platform.ts': 'loginShellDirs() 就是各平台 PATH 补充目录的定义处',
-      'src/main/core/github.ts': 'findGh() 的 macOS 分支，Windows 分支在同一个 isWindows 三元里'
+      'src/main/core/github.ts': 'findGh() 的 macOS 分支，Windows 分支在同一个 isWindows 三元里',
+      'scripts/install-app.mjs':
+        '这个脚本只做 macOS 安装（ditto 拷贝 .app 到 /Applications、重登记 LaunchServices、读 Info.plist），本身没有跨平台形态。那几行是查找一个纯 Node 运行时的候选目录，不是平台分支逻辑 —— 找不到就回退到 process.execPath，不会因为路径不存在而失败。'
     }
   },
   {

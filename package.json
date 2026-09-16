@@ -25,7 +25,8 @@
     "dist:linux": "npm run build && electron-builder --linux",
     "dist:dir": "npm run build && electron-builder --dir",
     "catalog": "node scripts/fill-missing-blurbs.mjs --check && node scripts/classify-catalog.mjs --check",
-    "launch": "node scripts/launch-audit.mjs"
+    "launch": "node scripts/launch-audit.mjs",
+    "install:app": "node scripts/install-app.mjs"
   },
   "keywords": [
     "agent-skills",
