@@ -218,7 +218,6 @@ const DICT: Dict = {
   'launch.needsApp': ['这个技能属于应用 {app}（{repo}），它需要 {app} 自身的运行环境（守护进程、凭据、依赖）。本机若没有安装并运行它，技能里的步骤会失败 —— 启动仍然可用，但 agent 可能会用替代方案。', 'This skill belongs to the application {app} ({repo}) and needs its runtime (daemon, credentials, dependencies). Without it the skill\'s steps will fail — launching still works, but the agent may substitute something else.'],
   'launch.sandbox': ['沙箱', 'Sandbox'],
   'launch.openSandbox': ['在访达中打开沙箱目录', 'Open the sandbox folder'],
-  'launch.notSandbox': ['{path} 不是你自己的目录 —— 启动会在里面写入 AGENTS.md 和一个技能文件夹。沙箱目录（~/.skillhub/sandbox）是专为此准备的。', '{path} is one of your own folders — launching writes an AGENTS.md and a skill folder into it. The sandbox (~/.skillhub/sandbox) exists for exactly this.'],
   'launch.installedHere': ['这个技能已经装在 {agent} 上', 'This skill is already installed in {agent}'],
   'launch.notInstalledHere': ['这个技能还没全局装到 {agent} —— 启动时会给工作区做项目级安装，所以照样能用；想让它全局可用可以先去安装', 'This skill is not installed globally in {agent}. Launching installs it into the workspace at project level, so it still works; install it first if you want it available everywhere.'],
   'launch.agentCount': ['{ready} 个可用 / 共 {total} 个', '{ready} available of {total}'],

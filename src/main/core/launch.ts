@@ -203,12 +203,30 @@ export async function prepareLaunch(input: {
   const meta = launchMeta(input.agentId)
   if (!meta) throw new Error(m('launch.agentNotLaunchable'))
 
-  const workspace = expandPath(input.workspace)
-  mkdirSync(workspace, { recursive: true })
+  /*
+    Everything for one skill lives in one folder named after it.
+
+    Writing AGENTS.md and skill directories straight into whatever folder the
+    user picked put files into a place that was already theirs — a projects
+    folder, a repository — and the app had to warn about it every time. The
+    warning was the wrong answer: the folder is legitimately theirs, and wanting
+    to launch from it is reasonable.
+
+    So the launch scopes itself. Whatever folder is chosen, the skill gets a
+    subfolder named after itself and nothing is written outside it. Choosing
+    ~/Projects means ~/Projects/<skill>/, and the rest of ~/Projects is untouched,
+    which is why the warning is gone.
+  */
+  const chosen = expandPath(input.workspace)
+  mkdirSync(chosen, { recursive: true })
 
   const folderName = safeSegment(skillName)
-  const workFolder = join(workspace, folderName)
-  mkdirSync(workFolder, { recursive: true })
+  // Already scoped — the sandbox default, or the user pointing at the skill's
+  // own folder — so do not nest a second copy of the same name.
+  const workspace = chosen.split(/[\\/]/).filter(Boolean).pop() === folderName ? chosen : join(chosen, folderName)
+  mkdirSync(workspace, { recursive: true })
+
+  const workFolder = workspace
 
   // 1. project-level install, so the agent finds the skill with cwd=workspace
   const entry = loadRegistry().find((e) => e.id === input.agentId)

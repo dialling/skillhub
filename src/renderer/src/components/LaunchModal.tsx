@@ -186,20 +186,17 @@ export function LaunchModal(): React.JSX.Element | null {
               {t('agents.pickDir')}
             </button>
             {sandboxRoot && (
-              <button className="btn" title={t('launch.openSandbox')} onClick={() => void api.system.openExternal(sandboxRoot)}>
+              /*
+                openPath, not openExternal. That handler only forwards http(s)
+                URLs and returns true for everything else, so handing it a folder
+                did nothing and reported success — a button that silently does
+                nothing is worse than one that fails.
+              */
+              <button className="btn" title={t('launch.openSandbox')} onClick={() => void api.system.openPath(sandboxRoot)}>
                 {t('launch.sandbox')}
               </button>
             )}
           </div>
-          {/* Writing into a folder that is not the sandbox is the case worth
-              flagging: that is the user's own directory, and a launch adds
-              AGENTS.md plus a skill folder to it. */}
-          {workspace.trim() && sandboxRoot && !workspace.trim().startsWith(sandboxRoot) && (
-            <div className="notice" style={{ marginBottom: 14 }}>
-              <TriangleAlert size={14} />
-              <span>{t('launch.notSandbox', { path: workspace.trim() })}</span>
-            </div>
-          )}
           {recent.length > 0 && (
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
               {recent.slice(0, 4).map((w) => (

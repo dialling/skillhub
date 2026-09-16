@@ -84,9 +84,11 @@ const M: Record<string, [zh: string, en: string]> = {
   'launch.skillNotInLibrary': ['该技能不在库中，请先入库', 'That skill is not in your library yet'],
   'launch.skillFilesMissing': ['本地技能文件缺失，请重新同步', 'The local skill files are missing — sync the library item'],
   'launch.agentNotLaunchable': ['该智能体没有可用的启动方式', 'This agent cannot be started automatically'],
+  // The workspace is already scoped to this skill, so it is the working
+  // directory — there is no second folder to name.
   'launch.prompt': [
-    '请使用 {skill} 技能。先阅读它的 SKILL.md，然后按我的要求执行；素材和产出都放在 ./{folder}/ 目录下。',
-    'Use the {skill} skill. Read its SKILL.md first, then do what I ask; keep inputs and outputs in ./{folder}/.'
+    '请使用 {skill} 技能。先阅读它的 SKILL.md，然后按我的要求执行；素材和产出都放在当前工作目录下。',
+    'Use the {skill} skill. Read its SKILL.md first, then do what I ask; keep inputs and outputs in the current working directory.'
   ],
   // The hosted chat gets the skill's own text, because it has no access to the
   // folder the skill lives in.
