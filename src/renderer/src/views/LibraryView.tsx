@@ -131,7 +131,6 @@ export function LibraryView(): React.JSX.Element {
     <div className="view view-flush">
       <MySkillsPanel onInstallOne={installOne} />
 
-      <SubmissionsPanel />
 
       <BulkInstallModal
         open={bulkOpen}
@@ -481,61 +480,6 @@ function Capsule({
  * because it answers a different question: "what can I run right now" versus
  * "what have I collected".
  */
-/**
- * Skills uploaded to the repository's review area.
- *
- * Kept out of the store on purpose: an entry there needs a hand-written
- * bilingual tagline, use-case and long description, and an uploaded skill has
- * none of those yet. This panel exists so the queue stays visible rather than
- * disappearing into a folder nobody looks at.
- */
-function SubmissionsPanel(): React.JSX.Element | null {
-  const t = useStore((s) => s.t)
-  const submissions = useStore((s) => s.submissions)
-  const [open, setOpen] = useState(false)
-
-  if (!submissions.length) return null
-  const pending = submissions.filter((s) => s.status === 'pending')
-
-  return (
-    <div className="panel" style={{ marginBottom: 16 }}>
-      <div className="panel-head" style={{ cursor: 'pointer' }} onClick={() => setOpen((v) => !v)}>
-        {open ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
-        <Upload size={13} />
-        {t('submit.pending')}
-        <div className="right">
-          <span className="chip mono">{pending.length}</span>
-        </div>
-      </div>
-      {open && (
-        <div className="panel-body">
-          <div className="dim" style={{ fontSize: 12, marginBottom: 10, lineHeight: 1.6 }}>
-            {t('submit.panelHint')}
-          </div>
-          <div className="myskills">
-            {submissions.map((s) => (
-              <div className="myskill-row" key={s.slug}>
-                <span className="ms-state" style={{ background: 'var(--warn)' }} />
-                <div className="ms-main">
-                  <div className="ms-name">{s.name}</div>
-                  <div className="ms-meta" title={s.description}>
-                    {t('submit.metaLine', {
-                      n: s.files,
-                      kb: Math.max(1, Math.round(s.bytes / 1024)),
-                      date: s.at.slice(0, 10)
-                    })}
-                  </div>
-                </div>
-                <span className="chip mono">{t('submit.pending')}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
 function MySkillsPanel({ onInstallOne }: { onInstallOne: (skillId: string) => void }): React.JSX.Element | null {
   const t = useStore((s) => s.t)
   const discovered = useStore((s) => s.discovered)
@@ -690,19 +634,15 @@ function MySkillsPanel({ onInstallOne }: { onInstallOne: (skillId: string) => vo
                       {t('library.installOneShort')}
                     </button>
                   )}
-                  {!r.matchedRepo && (
-                    <button
-                      className="btn sm"
-                      title={t('submit.hint')}
-                      disabled={submitting === r.name}
-                      onClick={() =>
-                        void submitSkill({ localPath: r.realPath, name: r.name, origin: r.agents.join(', ') })
-                      }
-                    >
-                      {submitting === r.name ? <span className="spinner" /> : <Upload size={12} />}
-                      {t('submit.action')}
-                    </button>
-                  )}
+                  {/*
+                    No submit button here on purpose.
+
+                    Uploading a local skill to the repository's `submissions/`
+                    folder is how *this* project adds entries to its catalog — a
+                    development step, not something a user of the app needs. The
+                    backend stays (core/submit.ts, `submissions/` in the repo);
+                    only the button is gone.
+                  */}
                   <button
                     className="btn primary sm"
                     onClick={() =>

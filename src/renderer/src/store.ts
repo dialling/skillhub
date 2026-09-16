@@ -517,7 +517,8 @@ export const useStore = create<State>((set, get) => ({
     ])
     void get().scanLocal()
     void get().loadStarred()
-    void get().loadSubmissions()
+    // Submissions are a development workflow with no UI; nothing fetches them on
+    // boot. `submitSkill` stays available for when an entry needs uploading.
     // Record what already exists so nothing pre-existing badges as "new" —
     // only what shows up after this point does.
     const seen = await api.settings.get()
