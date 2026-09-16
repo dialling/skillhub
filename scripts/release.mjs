@@ -49,8 +49,17 @@ if (git('status', '--porcelain')) {
   console.error('工作区有未提交的改动，先提交或撤销再发布。')
   process.exit(1)
 }
-// --verify --quiet so a missing tag is an ordinary answer, not printed noise.
-if (execFileSync('git', ['rev-parse', '--verify', '--quiet', tag], { cwd: root, encoding: 'utf8', stdio: ['ignore','pipe','ignore'] }).trim()) {
+/*
+  A missing tag makes `git rev-parse --verify` exit non-zero, so "the tag is
+  free" arrives as an exception. Catching it is the check.
+*/
+let tagExists = true
+try {
+  execFileSync('git', ['rev-parse', '--verify', '--quiet', tag], { cwd: root, stdio: 'ignore' })
+} catch {
+  tagExists = false
+}
+if (tagExists) {
   console.error(`标签 ${tag} 已存在。`)
   process.exit(1)
 }
