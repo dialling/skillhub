@@ -431,6 +431,19 @@ export interface InstallFromGithubInput {
 }
 
 /**
+ * A skill's folder name when its own name is already taken.
+ *
+ * Owner-qualified because the owner is what actually distinguishes two skills
+ * that share a name, and because it is stable: the same skill lands on the same
+ * folder name on every machine, so uninstalling and reinstalling does not
+ * accumulate `name-owner-2`, `name-owner-3`.
+ */
+function ownerQualified(base: string, fullName: string): string {
+  const owner = sanitizeName((fullName || '').split('/')[0] || 'other')
+  return `${base.slice(0, 100)}-${owner}`
+}
+
+/**
  * The agent whose skills directory this is, if any.
  *
  * The user may pick any folder, so this is a match rather than an assumption —
@@ -465,39 +478,60 @@ export async function installFromGithub(input: InstallFromGithubInput): Promise<
    */
   const take = (s: UpstreamSkill, source: string, origin: string): void => {
     current++
-    const folder = join(target, sanitizeName(s.name) || s.name)
+    const base = sanitizeName(s.name) || s.name
     try {
       /*
-        Decide who owns the folder before writing into it.
+        Decide where this skill goes before writing anything.
 
-        A bare `existsSync` was wrong in both directions: it refused to update
-        our own entry, and it would happily have written next to the user's own
-        folder. `entryOwner` answers the question that matters — free, ours,
-        another skill's, or someone else's entirely.
+        The base name is only correct when the slot is free or already holds
+        this very skill. Anything else — another published skill with the same
+        name, or the user's own folder — must not be written into: replacing it
+        would delete work that is not ours, and refusing would make a skill
+        impossible to install at all. So the fallback is to land beside it under
+        an owner-qualified name, which is what the length cap in `sanitizeName`
+        keeps room for.
 
-        Without the marker this writes afterwards, the copy is invisible to
-        `isManagedPath`, so re-installing reports "目标已存在且不是 SkillHub
-        管理的技能" and reconcile can never recover the record.
+        12 skill names exist in more than one repository in the catalog
+        (`canvas-design`, `brand-guidelines`, …), so this is the common case, not
+        a corner case.
       */
-      const owner = entryOwner(folder, { skillId: s.skillId, sourcePath: origin })
-      if (owner === 'other' || owner === 'foreign') {
-        /*
-          Two different refusals, and the user needs to know which one they got.
+      const owner = entryOwner(join(target, base), { skillId: s.skillId, sourcePath: origin })
+      let folder = join(target, base)
+      let beside = false
 
-          "That folder is ours but belongs to a different skill" is a naming
-          collision between two published skills — 12 names exist in more than
-          one repository — and the fix is to rename or install elsewhere.
-          "That folder is not ours at all" means we would have been writing into
-          the user's own work, and the fix is to pick another destination. One
-          message for both made the first case look like the second.
-        */
-        const key = owner === 'other' ? 'install.conflictOurs' : 'install.conflict'
-        outcome.skipped.push({ skillId: s.skillId, agentId: agent.id, reason: m(key, { path: folder }) })
-        report({})
-        return
+      if (owner === 'ours') {
+        // Re-installing over our own entry is what an update is.
+        rmSync(folder, { recursive: true, force: true })
+      } else if (owner !== 'free') {
+        folder = join(target, ownerQualified(base, s.fullName))
+        const inner = entryOwner(folder, { skillId: s.skillId, sourcePath: origin })
+        if (inner === 'ours') {
+          rmSync(folder, { recursive: true, force: true })
+        } else if (inner !== 'free') {
+          // Both names are taken by something that is not this skill. Refusing
+          // is the only remaining option, and it must be loud.
+          outcome.skipped.push({
+            skillId: s.skillId,
+            agentId: agent.id,
+            reason: m(owner === 'other' ? 'install.conflictOurs' : 'install.conflict', { path: folder })
+          })
+          report({})
+          return
+        }
+        beside = true
       }
-      if (owner === 'ours') rmSync(folder, { recursive: true, force: true })
+
       const placed = placeFetched(source, folder)
+      if (beside) {
+        // Say where it went: the folder name is not the skill's name any more.
+        report({
+          skillId: s.skillId,
+          skillName: s.name,
+          message: m(owner === 'foreign' ? 'install.placedBesideUser' : 'install.placedBeside', {
+            name: folder.slice(target.length + 1)
+          })
+        })
+      }
       writeMarker(folder, { skillId: s.skillId, repoFullName: s.fullName }, origin)
       const record: InstallRecord = {
         id: `${s.skillId}@${agent.id}`,
@@ -517,7 +551,9 @@ export async function installFromGithub(input: InstallFromGithubInput): Promise<
         d.records.push(record)
       })
       outcome.ok.push(record)
-      report({ skillId: s.skillId, skillName: s.name, message: m('install.fetched', { files: placed.files }) })
+      if (!beside) {
+        report({ skillId: s.skillId, skillName: s.name, message: m('install.fetched', { files: placed.files }) })
+      }
     } catch (err: any) {
       outcome.errors.push({ skillId: s.skillId, agentId: agent.id, reason: err?.message || String(err) })
     }

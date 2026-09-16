@@ -32,6 +32,14 @@ const M: Record<string, [zh: string, en: string]> = {
     '目标已存在且不是 SkillHub 管理的技能：{path}',
     'Target exists and is not managed by SkillHub: {path}'
   ],
+  'install.placedBeside': [
+    '同名技能已存在，装到了 {name}/',
+    'A skill of that name is already there — installed as {name}/'
+  ],
+  'install.placedBesideUser': [
+    '{name}/ —— 你自己已有一个同名文件夹，这个没有动它',
+    '{name}/ — you already had a folder of that name, and it was left alone'
+  ],
   'install.conflictOurs': [
     '{path} 已被同名的另一个技能占用，两个技能不能共用一个文件夹',
     '{path} is already taken by a different skill of the same name — two skills cannot share one folder'

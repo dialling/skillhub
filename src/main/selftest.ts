@@ -298,11 +298,42 @@ async function main(): Promise<number> {
     destination: fakeAgentDir
   })
   check(
-    'the second skill is refused rather than written over the first',
-    collide.ok.length === 0 && collide.skipped.length === 1,
-    collide.skipped[0]?.reason || JSON.stringify(collide.errors[0] || {})
+    'the second skill is installed beside the first, not over it',
+    collide.ok.length === 1 && collide.ok[0].linkPath.endsWith('alpha-ownerB'),
+    collide.ok[0]?.linkPath.split('/').pop() || collide.skipped[0]?.reason || ''
   )
-  check('the first skill is still there and unchanged', readFileSync(join(fakeAgentDir, 'alpha', 'SKILL.md'), 'utf8') === '# alpha\n')
+  check(
+    'and both are readable at once',
+    readFileSync(join(fakeAgentDir, 'alpha', 'SKILL.md'), 'utf8') === '# alpha\n' &&
+      readFileSync(join(fakeAgentDir, 'alpha-ownerB', 'SKILL.md'), 'utf8') === '# beta\n'
+  )
+  check(
+    'each carries its own record, so uninstalling one leaves the other',
+    installedSkills().filter((r) => r.agentId === agentId).length === 3,
+    `${installedSkills().filter((r) => r.agentId === agentId).length} records`
+  )
+  /*
+    The user's own folder is the other half of the same rule: land beside it,
+    never in it. Refusing outright would make a skill whose name the user has
+    already used impossible to install anywhere in that directory.
+  */
+  const mineDir = join(fakeAgentDir, 'mine')
+  mkdirSync(mineDir, { recursive: true })
+  writeFileSync(join(mineDir, 'SKILL.md'), '# mine, not yours\n')
+  const onTop = await installFromGithub({
+    skills: [upstream('mine', srcA, 'ownerC/three')],
+    destination: fakeAgentDir
+  })
+  check(
+    "a skill never lands in the user's own folder",
+    readFileSync(join(mineDir, 'SKILL.md'), 'utf8') === '# mine, not yours\n',
+    readFileSync(join(mineDir, 'SKILL.md'), 'utf8').trim()
+  )
+  check(
+    'it lands beside it instead',
+    onTop.ok.length === 1 && onTop.ok[0].linkPath.endsWith('mine-ownerC'),
+    onTop.ok[0]?.linkPath.split('/').pop() || onTop.skipped[0]?.reason || ''
+  )
   check(
     "another skill's entry is not claimable as ours",
     entryOwner(join(fakeAgentDir, 'alpha'), { skillId: 'ownerB/two::alpha', sourcePath: srcB }) === 'other'
@@ -357,13 +388,19 @@ async function main(): Promise<number> {
     delete something it did not create.
   */
   let removed = 0
-  const ownRecords = new Set(outcome.ok.map((r) => `${r.skillId}@${r.agentId}`))
+  const ownRecords = new Set(
+    [...outcome.ok, ...collide.ok, ...onTop.ok].map((r) => `${r.skillId}@${r.agentId}`)
+  )
   for (const rec of installedSkills()) {
     if (!ownRecords.has(`${rec.skillId}@${rec.agentId}`)) continue
     if (uninstall(rec.skillId, rec.agentId)) removed++
   }
   check('uninstalls completed', removed > 0, `${removed} removed`)
-  check('agent dir emptied', readdirSync(fakeAgentDir).filter((n) => !n.startsWith('.')).length === 0)
+  // Every entry this run created is gone; the folder the test invented for the
+  // user stays, because nothing we do should remove it.
+  const leftBehind = readdirSync(fakeAgentDir).filter((n) => !n.startsWith('.') && n !== 'mine')
+  check('agent dir emptied', leftBehind.length === 0, leftBehind.join(', '))
+  check('the user’s own folder is still there', existsSync(join(fakeAgentDir, 'mine', 'SKILL.md')))
   removeItem(target.fullName, true)
   check('library item removed', !libraryItems().some((i) => i.id === target.fullName))
   check('nothing was ever written under the library', !existsSync(join(userDataDir(), 'library')))
