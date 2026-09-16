@@ -87,6 +87,14 @@ interface State {
   /** what the last update check found; null until one has run */
   updateInfo: UpdateInfo | null
   updateOpen: boolean
+  /**
+   * Versions the user has closed this session.
+   *
+   * In memory only, and deliberately separate from the persisted "skip": closing
+   * a prompt means "not now", and having it reappear on the next refresh reads
+   * as a dialog that cannot be dismissed. A later version still gets through.
+   */
+  updateClosed: string[]
   submissions: SubmissionRecord[]
   submitting: string | null
   scenarios: Scenario[]
@@ -210,6 +218,7 @@ export const useStore = create<State>((set, get) => ({
   starring: null,
   updateInfo: null,
   updateOpen: false,
+  updateClosed: [],
   submissions: [],
   submitting: null,
   scenarios: [],
@@ -724,7 +733,10 @@ export const useStore = create<State>((set, get) => ({
         return
       }
       const latest = info.app?.latest || String(info.catalog?.latest || info.data?.latest || '')
-      if (latest && (await api.update.isDismissed(latest))) return
+      if (!latest) return
+      // Skipped for good, or already closed once this session.
+      if (get().updateClosed.includes(latest)) return
+      if (await api.update.isDismissed(latest)) return
       set({ updateOpen: true })
     } catch {
       /* an update check must never break the refresh */
@@ -751,7 +763,10 @@ export const useStore = create<State>((set, get) => ({
       error, a missing handler or a rejected promise left the prompt on screen
       with no way out. A close button that can fail is not a close button.
     */
-    set({ updateOpen: false })
+    set({
+      updateOpen: false,
+      updateClosed: latest && !get().updateClosed.includes(latest) ? [...get().updateClosed, latest] : get().updateClosed
+    })
     if (!remember || !latest) return
     try {
       await api.update.dismiss(latest)

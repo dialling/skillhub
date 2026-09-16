@@ -204,4 +204,4 @@ if (noInstall) {
   run('npm', ['run', 'install:app'], { env: cleanEnv })
 }
 
-console.log(`\n  ✓ ${tag} 已发布并安装\n`)
+console.log(`\n  ✓ ${tag} 已发布${noInstall ? '（本机未安装）' : '并安装'}\n`)
