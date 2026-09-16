@@ -63,6 +63,7 @@ import { cleanSkillDirs } from './core/skilldirs'
 import {
   auditAgentDirs,
   detectLocalSkills,
+  installDestinations,
   recommendInstallTarget,
   setInstallRoot
 } from './core/discover'
@@ -311,10 +312,26 @@ export function registerIpc(send: Broadcast): void {
   handle(
     'install:fromGithub',
     (input: {
-      skills: { skillId: string; fullName: string; path: string; name: string; localPath?: string }[]
-      destination: string
+      skills: {
+        skillId: string
+        fullName: string
+        path: string
+        name: string
+        localPath?: string
+        description?: string
+      }[]
+      destinations: string[]
     }) => installFromGithub({ ...input, onProgress: (p) => broadcast('install:progress', p) })
   )
+  /**
+   * Where a one-click install writes.
+   *
+   * Answered by the main process rather than assembled in the renderer: agent
+   * paths are display strings that may start with `~`, and the renderer has no
+   * way to expand them. That exact mismatch already shipped once — the picker
+   * opened with the right folder in the footer and no row selected.
+   */
+  handle('install:destinations', () => installDestinations())
   handle('install:uninstall', (skillId: string, agentId: string) => uninstallFrom(skillId, agentId))
   handle('install:uninstallAll', (skillId: string) => uninstallAll(skillId))
   handle('install:records', () => installRecords())

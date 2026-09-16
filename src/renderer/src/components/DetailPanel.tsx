@@ -36,7 +36,7 @@ export function DetailPanel(): React.JSX.Element | null {
   const addToLibrary = useStore((s) => s.addToLibrary)
   const removeFromLibrary = useStore((s) => s.removeFromLibrary)
   const syncItem = useStore((s) => s.syncLibraryItem)
-  const openInstall = useStore((s) => s.openInstall)
+  const installQuick = useStore((s) => s.installQuick)
   const uninstall = useStore((s) => s.uninstall)
   const toast = useStore((s) => s.toast)
   const [selected, setSelected] = useState<Set<string>>(new Set())
@@ -138,12 +138,15 @@ export function DetailPanel(): React.JSX.Element | null {
     setBusy(true)
     try {
       /*
-        Collecting the repository first keeps the library in step with what the
-        user just installed. It is a metadata write now — no clone — so it costs
-        one API call and means the item shows up in the library afterwards.
+        Install, do not ask.
+
+        The button says 一键安装 — one-click install — and it used to open a
+        destination dialog, which is two clicks and a decision the user has
+        already made by enabling an agent. `installQuick` writes into every
+        enabled agent's own skills directory, which is where those agents look,
+        so the skill is usable the moment this returns.
       */
-      if (!inLibrary && !(await doAdd())) return
-      openInstall(selectedSkills.length ? selectedSkills : skills)
+      await installQuick(selectedSkills.length ? selectedSkills : skills)
     } finally {
       setBusy(false)
     }

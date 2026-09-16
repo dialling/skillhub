@@ -344,7 +344,7 @@ async function main(): Promise<number> {
 
   const outcome = await installFromGithub({
     skills: [upstream('alpha', srcA), upstream('beta', srcB)],
-    destination: fakeAgentDir,
+    destinations: [fakeAgentDir],
     onProgress: (p) => {
       if (p.message && p.phase === 'link') console.log(`      ${p.message}`)
     }
@@ -373,17 +373,27 @@ async function main(): Promise<number> {
   section('Two skills, one folder name')
   const collide = await installFromGithub({
     skills: [upstream('alpha', srcB, 'ownerB/two')],
-    destination: fakeAgentDir
+    destinations: [fakeAgentDir]
   })
   check(
     'the second skill is installed beside the first, not over it',
     collide.ok.length === 1 && collide.ok[0].linkPath.endsWith('alpha-ownerB'),
     collide.ok[0]?.linkPath.split('/').pop() || collide.skipped[0]?.reason || ''
   )
+  /*
+    Both entries exist and each holds its own skill.
+
+    Compared on the body, not the whole file: these sources are bare `# alpha`
+    with no frontmatter, and the installer now adds one so the skill is actually
+    discoverable. Byte equality would be asserting the absence of that repair.
+  */
+  const alphaBody = readFileSync(join(fakeAgentDir, 'alpha', 'SKILL.md'), 'utf8')
+  const betaBody = readFileSync(join(fakeAgentDir, 'alpha-ownerB', 'SKILL.md'), 'utf8')
   check(
     'and both are readable at once',
-    readFileSync(join(fakeAgentDir, 'alpha', 'SKILL.md'), 'utf8') === '# alpha\n' &&
-      readFileSync(join(fakeAgentDir, 'alpha-ownerB', 'SKILL.md'), 'utf8') === '# beta\n'
+    alphaBody.includes('# alpha') && !alphaBody.includes('# beta') &&
+      betaBody.includes('# beta') && !betaBody.includes('# alpha'),
+    `${alphaBody.trim().split('\n').pop()} | ${betaBody.trim().split('\n').pop()}`
   )
   check(
     'each carries its own record, so uninstalling one leaves the other',
@@ -400,7 +410,7 @@ async function main(): Promise<number> {
   writeFileSync(join(mineDir, 'SKILL.md'), '# mine, not yours\n')
   const onTop = await installFromGithub({
     skills: [upstream('mine', srcA, 'ownerC/three')],
-    destination: fakeAgentDir
+    destinations: [fakeAgentDir]
   })
   check(
     "a skill never lands in the user's own folder",
@@ -420,6 +430,81 @@ async function main(): Promise<number> {
     'the same skill is recognised as ours',
     entryOwner(join(fakeAgentDir, 'alpha'), { skillId: 'owner/repo::alpha', sourcePath: srcA }) === 'ours'
   )
+
+  /*
+    Discovery, which is not the same thing as installation.
+
+    An agent finds a skill by scanning a skills directory for `<name>/SKILL.md`
+    with frontmatter carrying `name` and `description`. A file that fails that is
+    dropped **silently**: the folder sits there looking installed while the agent
+    never sees it. Measured on this machine, `~/.dsh/skills/browser-act/SKILL.md`
+    is CRLF and never appears in the harness catalog, while the LF
+    `code-review` beside it does.
+  */
+  section('Installed skills are discoverable, not just present')
+
+  const crlfDir = mkdtempSync(join(tmpdir(), 'skillhub-crlf-'))
+  writeFileSync(
+    join(crlfDir, 'SKILL.md'),
+    '---\r\nname: crlf-skill\r\ndescription: written on Windows\r\n---\r\n\r\n# Body\r\n'
+  )
+  const bareDir = mkdtempSync(join(tmpdir(), 'skillhub-bare-'))
+  writeFileSync(join(bareDir, 'SKILL.md'), '# No frontmatter at all\n\nInstructions.\n')
+  const nodescDir = mkdtempSync(join(tmpdir(), 'skillhub-nodesc-'))
+  writeFileSync(join(nodescDir, 'SKILL.md'), '---\nname: nodesc\n---\n\n# Body\n')
+
+  const discoverOne = join(tmpdir(), `skillhub-discover-${Date.now()}`)
+  const second = join(tmpdir(), `skillhub-discover2-${Date.now()}`)
+  const repaired = await installFromGithub({
+    skills: [
+      { skillId: 'a/b::crlf-skill', fullName: 'a/b', path: '', name: 'crlf-skill', localPath: crlfDir },
+      {
+        skillId: 'a/b::bare-skill',
+        fullName: 'a/b',
+        path: '',
+        name: 'bare-skill',
+        localPath: bareDir,
+        description: 'Index description'
+      },
+      { skillId: 'a/b::nodesc', fullName: 'a/b', path: '', name: 'nodesc', localPath: nodescDir, description: 'Fallback' }
+    ],
+    // Two destinations, one of which is the same directory written differently:
+    // deduping by resolved path is what stops a double placement.
+    destinations: [discoverOne, second]
+  })
+  check('installed into both destinations', repaired.ok.length === 6, `${repaired.ok.length} placements`)
+  check(
+    'a shared destination is placed once, not once per alias',
+    (await installFromGithub({
+      skills: [{ skillId: 'a/b::crlf-skill', fullName: 'a/b', path: '', name: 'crlf-skill', localPath: crlfDir }],
+      destinations: [join(tmpdir(), 'skillhub-alias'), join(tmpdir(), 'skillhub-alias')]
+    })).ok.length === 1,
+    'alias dedupe'
+  )
+
+  const read = (dir: string, name: string): string => readFileSync(join(dir, name, 'SKILL.md'), 'utf8')
+
+  const crlfOut = read(discoverOne, 'crlf-skill')
+  check('CRLF line endings are converted', !crlfOut.includes('\r'), JSON.stringify(crlfOut.slice(0, 24)))
+  check('the converted file keeps its frontmatter', /^---\nname: crlf-skill\ndescription: written on Windows\n---\n/.test(crlfOut), crlfOut.slice(0, 60))
+
+  const bareOut = read(discoverOne, 'bare-skill')
+  check(
+    'a file with no frontmatter gets one, with the name and description we know',
+    /^---\nname: "bare-skill"\ndescription: "Index description"\n---\n/.test(bareOut),
+    bareOut.slice(0, 70)
+  )
+  check('and keeps the body intact', bareOut.includes('# No frontmatter at all') && bareOut.includes('Instructions.'))
+
+  const nodescOut = read(discoverOne, 'nodesc')
+  check(
+    'a missing description is added without disturbing the existing name',
+    /name: nodesc\ndescription: "Fallback"/.test(nodescOut),
+    nodescOut.slice(0, 60)
+  )
+  check('every repaired file has both keys', [crlfOut, bareOut, nodescOut].every((t) => /^---\n[\s\S]*?\bname:/.test(t) && /\bdescription:/.test(t)))
+
+  for (const d of [crlfDir, bareDir, nodescDir, discoverOne, second]) rmSync(d, { recursive: true, force: true })
 
   /*
     Agents that share one physical directory.

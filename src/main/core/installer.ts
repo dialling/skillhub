@@ -421,13 +421,94 @@ export interface UpstreamSkill {
    * same request and lands through the same placement code.
    */
   localPath?: string
+  /**
+   * One-line description, used only to repair a SKILL.md whose frontmatter has
+   * none. Callers that have it (the skill index does) pass it; callers that do
+   * not lose nothing.
+   */
+  description?: string
 }
 
 export interface InstallFromGithubInput {
   skills: UpstreamSkill[]
-  /** the folder the user chose; each skill is placed as <destination>/<name> */
-  destination: string
+  /**
+   * Every folder to install into; each skill is placed as <destination>/<name>.
+   *
+   * A list rather than one path because "install where it will actually be
+   * picked up" means every enabled agent's own directory — and fetching the
+   * same repository once per destination would be absurd when the files are
+   * already in hand. One fetch, N placements.
+   */
+  destinations: string[]
   onProgress?: (p: InstallProgress) => void
+}
+
+/**
+ * Make a freshly placed skill readable by the agents that scan for it.
+ *
+ * Two defects stop a skill being discovered, and both are silent:
+ *
+ *   1. **CRLF line endings.** The frontmatter delimiter becomes `---\r`, which
+ *      a YAML reader does not recognise as the terminator, so the whole block
+ *      fails to parse. Measured: `~/.dsh/skills/browser-act/SKILL.md` is CRLF
+ *      and never appears in the harness catalog, while the LF `code-review`
+ *      beside it does.
+ *
+ *   2. **Missing `name` or `description`.** Published skills are not always
+ *      self-describing — some carry only prose, some put the name in the
+ *      heading. A scanner that requires the keys drops the skill.
+ *
+ * Only the frontmatter is touched, and only to add what is missing. The body is
+ * never rewritten: a skill's instructions are its author's, and mangling them
+ * would be a far worse failure than the one this fixes.
+ */
+function repairSkillFile(folder: string, s: UpstreamSkill): void {
+  const file = join(folder, 'SKILL.md')
+  try {
+    if (!existsSync(file)) return
+    const raw = readFileSync(file, 'utf8')
+    const text = raw.includes('\r\n') ? raw.replace(/\r\n/g, '\n') : raw
+    const repaired = ensureFrontmatter(text, s)
+    if (repaired !== raw) writeFileSync(file, repaired, 'utf8')
+  } catch (err) {
+    // A skill that installs but cannot be discovered is worth a line in the
+    // log, not a failed install: the files are in place and can be fixed by hand.
+    console.error('[installer] could not repair SKILL.md', file, err)
+  }
+}
+
+/** Add whichever of `name` / `description` the frontmatter is missing. */
+function ensureFrontmatter(text: string, s: UpstreamSkill): string {
+  const stripped = text.replace(/^\uFEFF/, '')
+  const block = /^---\n([\s\S]*?)\n---\n?/.exec(stripped)
+  if (!block) {
+    /*
+      No frontmatter at all. Synthesise a minimal one rather than refusing: the
+      body is still the skill, and a header made of facts we already hold is
+      strictly better than a folder no agent will read.
+    */
+    const description = (s.description || s.name).replace(/\s+/g, ' ').trim()
+    return `---\nname: ${yamlScalar(s.name)}\ndescription: ${yamlScalar(description)}\n---\n\n${stripped}`
+  }
+  const body = block[1]
+  const rest = stripped.slice(block[0].length)
+  const lines = body.length ? body.split('\n') : []
+  const has = (key: string): boolean => lines.some((l) => new RegExp(`^${key}\\s*:`).test(l))
+  const added: string[] = []
+  if (!has('name')) added.push(`name: ${yamlScalar(s.name)}`)
+  if (!has('description')) {
+    const description = (s.description || s.name).replace(/\s+/g, ' ').trim()
+    added.push(`description: ${yamlScalar(description)}`)
+  }
+  if (!added.length) return text
+  // Appended, not prepended: the author's own keys keep their order and the
+  // repaired file reads like one somebody wrote, not like a patch.
+  return `---\n${[...lines, ...added].join('\n')}\n---\n${rest}`
+}
+
+/** A YAML scalar that survives colons, quotes and newlines in the value. */
+function yamlScalar(value: string): string {
+  return JSON.stringify(String(value).replace(/\s+/g, ' ').trim())
 }
 
 /**
@@ -459,11 +540,16 @@ function agentForDestination(destination: string): { id: string; name: string } 
 }
 
 export async function installFromGithub(input: InstallFromGithubInput): Promise<InstallOutcome> {
-  const { skills, destination, onProgress } = input
+  const { skills, destinations, onProgress } = input
   const outcome: InstallOutcome = { ok: [], skipped: [], errors: [] }
-  const target = expandPath(destination)
-  const agent = agentForDestination(target)
-  const total = skills.length
+  /*
+    Deduped by resolved path: several registry entries read the same directory
+    (`~/.agents/skills` backs about fifty of them), and installing into it once
+    per alias would place the same skill repeatedly — the second attempt landing
+    beside the first under an `-owner` name.
+  */
+  const targets = [...new Set(destinations.map((d) => expandPath(d)).filter(Boolean))]
+  const total = skills.length * targets.length
   let current = 0
 
   const report = (p: Partial<InstallProgress>): void => {
@@ -476,8 +562,8 @@ export async function installFromGithub(input: InstallFromGithubInput): Promise<
    * `source` is read at the moment of installation — a freshly fetched checkout
    * for a published skill, the skill's own folder for one found on disk.
    */
-  const take = (s: UpstreamSkill, source: string, origin: string): void => {
-    current++
+  const place = (s: UpstreamSkill, source: string, origin: string, target: string): void => {
+    const agent = agentForDestination(target)
     const base = sanitizeName(s.name) || s.name
     try {
       /*
@@ -522,6 +608,22 @@ export async function installFromGithub(input: InstallFromGithubInput): Promise<
       }
 
       const placed = placeFetched(source, folder)
+      /*
+        Make the copy discoverable, not merely present.
+
+        A skill is picked up by scanning an agent's skills directory for
+        `<name>/SKILL.md` with YAML frontmatter carrying `name` and
+        `description`. Files that fail that are dropped **silently** — the folder
+        sits there looking installed while the agent never sees it, which is the
+        worst possible outcome for the one action whose whole purpose is "now I
+        can use it".
+
+        Measured on this machine: `browser-act` carries CRLF line endings and
+        never appears in DeepSeek Harness's catalog, while the LF `code-review`
+        beside it does. Repairing the two things that actually break discovery is
+        cheap; guessing at the rest is not.
+      */
+      repairSkillFile(folder, s)
       if (beside) {
         // Say where it went: the folder name is not the skill's name any more.
         report({
@@ -559,6 +661,14 @@ export async function installFromGithub(input: InstallFromGithubInput): Promise<
     }
   }
 
+  /** One skill, fetched once, placed into every destination that asked for it. */
+  const take = (s: UpstreamSkill, source: string, origin: string): void => {
+    for (const target of targets) {
+      current++
+      place(s, source, origin, target)
+    }
+  }
+
   // A skill that already lives on this machine needs no network at all.
   const local = skills.filter((s) => s.localPath)
   const remote = skills.filter((s) => !s.localPath)
@@ -581,9 +691,18 @@ export async function installFromGithub(input: InstallFromGithubInput): Promise<
         onProgress: (message) => report({ message })
       })
     } catch (err: any) {
+      // One failed fetch is one failure per destination, not per skill: the
+      // progress total counts pairs, and a user told "3 errors" for one
+      // unreachable repository across one agent would go looking for three.
       for (const s of list) {
-        current++
-        outcome.errors.push({ skillId: s.skillId, agentId: agent.id, reason: err?.message || String(err) })
+        for (const target of targets) {
+          current++
+          outcome.errors.push({
+            skillId: s.skillId,
+            agentId: agentForDestination(target).id,
+            reason: err?.message || String(err)
+          })
+        }
       }
       report({ message: '' })
       continue
@@ -599,7 +718,9 @@ export async function installFromGithub(input: InstallFromGithubInput): Promise<
   if (outcome.ok.length) {
     logActivity('install', 'activity.installed', {
       count: outcome.ok.length,
-      agents: agent.name
+      // Distinct names: one install into three directories that two agents share
+      // is two agents, and the log should read that way.
+      agents: [...new Set(outcome.ok.map((r) => r.agentName))].join(', ')
     })
   }
   report({ phase: 'done' } as Partial<InstallProgress>)

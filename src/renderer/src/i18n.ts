@@ -104,6 +104,9 @@ const DICT: Dict = {
   'store.resultCount': ['共 {n} 个结果', '{n} results'],
   'store.liveSearch': ['GitHub 实时搜索', 'Live GitHub search'],
 
+  'skills.installOne': ['安装', 'Install'],
+  'skills.installed': ['已安装', 'Installed'],
+  'skills.installOneHint': ['装进每个已启用智能体的技能目录，装完就能用', 'Install into every enabled agent’s skills directory — usable as soon as it lands'],
   'card.add': ['入库', 'Add'],
   'card.needsApp': ['需先装 {app}', 'needs {app} first'],
   'card.appAgentHint': ['这个仓库是给该智能体写的插件，里面的技能只在它里面生效', 'This repository is a plugin for that agent; its skills only work inside it'],
@@ -201,6 +204,15 @@ const DICT: Dict = {
   'library.installRepo': ['安装仓库', 'Install repo'],
   'library.installRepoHint': ['把这个仓库里还没装的 {n} 个技能装到你选的目录', 'Install this repo\u2019s {n} not-yet-installed skills into a folder you choose'],
   'library.noSkills': ['没有技能', 'No skills'],
+  'common.listSep': ['、', ', '],
+  'toast.installedReady': [
+    '已装到 {agents} —— 可以直接用了（{n} 个技能）',
+    'Installed into {agents} — ready to use now ({n} skills)'
+  ],
+  'toast.noEnabledAgents': [
+    '还没有启用任何智能体，先选一个目录',
+    'No agent is enabled yet — pick a folder instead'
+  ],
   'toast.installedTo': ['已安装 {n} 个技能 → {path}', 'Installed {n} skills → {path}'],
   'library.installLocal': ['把这个本机技能装到其他智能体', 'Install this local skill into other agents'],
   'library.installOne': ['只安装这一个技能', 'Install just this skill'],

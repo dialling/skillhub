@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Search, Layers, Star, ExternalLink, Plus, Check, X } from 'lucide-react'
+import { Search, Layers, Star, ExternalLink, Download, Check, X } from 'lucide-react'
 import type { SkillIndexEntry } from '@shared/types'
 import { AGENT_SKILL_LABELS, FN_LABELS, type FnCategory } from '@shared/types'
 import { fmtStars } from '../api'
@@ -67,6 +67,9 @@ export function SkillBrowser(): React.JSX.Element {
   const hits = useStore((s) => s.skillHits)
   const openDetail = useStore((s) => s.openDetail)
   const addToLibrary = useStore((s) => s.addToLibrary)
+  const installQuick = useStore((s) => s.installQuick)
+  const installing = useStore((s) => s.installing)
+  const installMap = useStore((s) => s.installMap)
   const library = useStore((s) => s.library)
 
   const [fn, setFn] = useState<FnCategory | 'all'>('all')
@@ -226,17 +229,55 @@ export function SkillBrowser(): React.JSX.Element {
                   >
                     <ExternalLink size={11} />
                   </button>
-                  {inLibrary(s.r) ? (
-                    <button className="btn sm" onClick={() => void openDetail(s.r)}>
-                      <Check size={11} />
-                      {t('card.inLibrary')}
-                    </button>
-                  ) : (
-                    <button className="btn primary sm" onClick={() => void addToLibrary(s.r)}>
-                      <Plus size={11} />
-                      {t('card.add')}
-                    </button>
-                  )}
+                  {/*
+                    Install, not file away.
+
+                    This button used to add the *repository* to the library, which
+                    is a filing action: the skill did not become usable, and the
+                    library grew a repository the user had not asked to collect.
+                    The whole promise of the app is "pick a skill, and you can use
+                    it" — so the primary action installs this one skill into every
+                    enabled agent's own directory, where the agent will read it.
+
+                    "Add the repository to my library" still exists, on the detail
+                    page, for someone who wants to collect rather than use.
+                  */}
+                  {(() => {
+                    const id = `${s.r}::${s.p}`
+                    const installed = (installMap[id] || []).length > 0
+                    if (installed) {
+                      return (
+                        <button className="btn sm" onClick={() => void openDetail(s.r)}>
+                          <Check size={11} />
+                          {t('skills.installed')}
+                        </button>
+                      )
+                    }
+                    return (
+                      <button
+                        className="btn primary sm"
+                        disabled={installing}
+                        title={t('skills.installOneHint')}
+                        onClick={() =>
+                          void installQuick([
+                            {
+                              id,
+                              repoFullName: s.r,
+                              path: s.p,
+                              name: s.n,
+                              title: s.n,
+                              descriptionEn: s.d,
+                              tags: [],
+                              source: 'github'
+                            }
+                          ])
+                        }
+                      >
+                        <Download size={11} />
+                        {t('skills.installOne')}
+                      </button>
+                    )
+                  })()}
                 </div>
               </div>
             </div>

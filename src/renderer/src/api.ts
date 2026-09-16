@@ -83,9 +83,18 @@ export interface SkillHubApi {
     reveal(p: string): Promise<boolean>
   }
   install: {
+    /** where a one-click install writes: one entry per enabled agent directory */
+    destinations(): Promise<{ agentId: string; agentName: string; path: string }[]>
     fromGithub(input: {
-      skills: { skillId: string; fullName: string; path: string; name: string; localPath?: string }[]
-      destination: string
+      skills: {
+        skillId: string
+        fullName: string
+        path: string
+        name: string
+        localPath?: string
+        description?: string
+      }[]
+      destinations: string[]
     }): Promise<{
       ok: InstallRecord[]
       skipped: { skillId: string; agentId: string; reason: string }[]

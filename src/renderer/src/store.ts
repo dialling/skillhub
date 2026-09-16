@@ -120,6 +120,8 @@ interface State {
   openInstall: (skills: SkillEntry[]) => void
   closeInstall: () => void
   installFromGithub: (destination: string) => Promise<boolean>
+  installQuick: (skills: SkillEntry[]) => Promise<boolean>
+  runInstall: (destinations: string[]) => Promise<boolean>
   loadScenarios: () => Promise<void>
   openScenario: (id: string | null) => Promise<void>
   goToScenarios: () => void
@@ -316,9 +318,57 @@ export const useStore = create<State>((set, get) => ({
    * class of "the copy on disk is stale" problems.
    */
   async installFromGithub(destination) {
-    const skills = get().installPendingSkills
-    if (!skills.length || !destination.trim()) return false
     const dest = destination.trim()
+    if (!dest) return false
+    const done = await get().runInstall([dest])
+    if (done) set({ installOpen: false, installPendingSkills: [] })
+    return done
+  },
+
+  /**
+   * Install into every enabled agent's own skills directory. No dialog.
+   *
+   * This is the whole point of the app in one action: the agent reads that
+   * directory, so a skill placed there is usable the moment it lands — for
+   * DeepSeek Harness without even a restart, because the harness watches its
+   * skill roots and picks up new folders on the next model step.
+   *
+   * The picker still exists for a different answer ("put it somewhere of my
+   * own"), which is why this is a separate path rather than the picker with a
+   * hidden default.
+   */
+  async installQuick(skills) {
+    if (!skills.length) {
+      get().toast('info', get().t('detail.noneSelected'))
+      return false
+    }
+    /*
+      Collect the repositories first, silently.
+
+      It is one API call per repository now — the library is an index, nothing is
+      cloned — and it keeps the library view in step with what has actually been
+      installed. Without it a skill installed from the store's browser would work
+      but be missing from the one screen that claims to list what you have.
+    */
+    await Promise.all(
+      [...new Set(skills.map((s) => s.repoFullName))]
+        .filter((r) => r && r !== 'local' && !get().library.some((i) => i.fullName === r))
+        .map((r) => get().addToLibrary(r, true).catch(() => null))
+    )
+    const targets = await api.install.destinations()
+    if (!targets.length) {
+      // Nothing enabled is a real state, not an error: fall back to asking.
+      get().openInstall(skills)
+      return false
+    }
+    set({ installPendingSkills: skills })
+    return get().runInstall(targets.map((t) => t.path))
+  },
+
+  /** The shared body of both install paths: fetch once, place into each target. */
+  async runInstall(destinations) {
+    const skills = get().installPendingSkills
+    if (!skills.length || !destinations.length) return false
     set({
       installing: true,
       installProgress: { phase: 'start', message: '', current: 0, total: skills.length }
@@ -331,15 +381,37 @@ export const useStore = create<State>((set, get) => ({
           path: s.path,
           name: s.name,
           // A locally found skill travels as its own folder; there is no repo.
-          ...(s.localPath ? { localPath: s.localPath } : {})
+          ...(s.localPath ? { localPath: s.localPath } : {}),
+          // Used only to repair a SKILL.md whose frontmatter carries no
+          // description — without one the skill is silently not discovered.
+          ...(s.descriptionEn || s.descriptionZh
+            ? { description: s.descriptionEn || s.descriptionZh }
+            : {})
         })),
-        destination: dest
+        destinations
       })
       await Promise.all([get().refreshInstalls(), get().refreshAgents()])
-      if (res.ok.length) get().toast('success', get().t('toast.installedTo', { n: res.ok.length, path: dest }))
+      if (res.ok.length) {
+        /*
+          Name the agents, not the path.
+
+          "已安装到 3 个位置" tells the user nothing they can act on; the thing
+          they need to know is whether the client in front of them now has it.
+          Several agents share one directory, so the names are deduped — and the
+          count is deliberately the record count, because that is how many
+          agents can now read it.
+        */
+        const agents = [...new Set(res.ok.map((r) => r.agentName))]
+        // The separator is dictionary copy too: `、` is correct in Chinese and
+        // wrong in English, and a hardcoded one is Chinese showing in English
+        // mode — the exact failure the audit exists to catch.
+        get().toast(
+          'success',
+          get().t('toast.installedReady', { n: res.ok.length, agents: agents.join(get().t('common.listSep')) })
+        )
+      }
       if (res.errors.length) get().toast('error', res.errors[0].reason, get().t('toast.nFailed', { n: res.errors.length }))
       if (res.skipped.length && !res.errors.length) get().toast('info', res.skipped[0].reason)
-      if (res.ok.length) set({ installOpen: false, installPendingSkills: [] })
       return res.ok.length > 0
     } catch (err: any) {
       get().toast('error', get().t('toast.failed', { msg: err?.message || err }))

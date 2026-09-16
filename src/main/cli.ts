@@ -250,7 +250,7 @@ async function main(): Promise<number> {
 
       const res = await installFromGithub({
         skills: wanted,
-        destination,
+        destinations: [destination],
         onProgress: (p) => {
           if (p.message && p.phase === 'link') console.log(`   ${p.message}`)
         }

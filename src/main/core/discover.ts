@@ -93,6 +93,33 @@ export async function detectLocalSkills(): Promise<LocalSkill[]> {
  * 4. nothing exists yet: create `~/.agents/skills` rather than guessing at a
  *    vendor directory the user may never install
  */
+/**
+ * Every directory a skill has to land in to be picked up, for a one-click install.
+ *
+ * The unit is the *enabled* agent, because that is the user's statement about
+ * what they use: an agent they have switched off should not receive files, and
+ * an agent they have switched on should not need a dialog before it works.
+ *
+ * Deduped by resolved path. About fifty registry entries read
+ * `~/.agents/skills`, so the honest answer to "where do these go" is a handful
+ * of directories, not a list of agents.
+ */
+export function installDestinations(): { agentId: string; agentName: string; path: string }[] {
+  const byPath = new Map<string, { agentId: string; agentName: string; path: string }>()
+  for (const agent of listAgents()) {
+    if (!agent.enabled || agent.projectOnly) continue
+    const dir = resolveAgentDir(agent.id)
+    if (!dir) continue
+    const abs = expandPath(dir)
+    // The most widely-read directory gives the best name for a shared path: the
+    // first agent in registry order is arbitrary, the universal one is not.
+    const previous = byPath.get(abs)
+    if (previous && !agent.readsUniversalDir) continue
+    byPath.set(abs, { agentId: agent.id, agentName: agent.name, path: abs })
+  }
+  return [...byPath.values()].sort((a, b) => a.agentName.localeCompare(b.agentName))
+}
+
 export async function recommendInstallTarget(): Promise<InstallTargetAdvice> {
   const configured = settings.get().installRoot
   const candidates: InstallTargetCandidate[] = []

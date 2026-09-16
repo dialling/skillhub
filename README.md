@@ -182,7 +182,27 @@ npm run dev
 - 私有仓库用已登录凭据读 API 清单（不再有「克隆失败后重试、再把 token 从 `.git/config` 里抹掉」这一步）。
 
 ### 安装（Install）
-技能从 GitHub **按需取**，落到**你选的目录**里。
+
+**挑选技能 → 点一下就装好，装完立刻能用。** 技能从 GitHub 按需取，写进每个**已启用**智能体自己的技能目录
+（一键安装，不弹窗）；也可以指定任意目录（弹窗里选「选择其他文件夹…」）。
+
+#### 「装上了」和「能用了」不是一回事
+
+技能能被智能体发现，靠的是**扫描技能目录**：根目录下的 `<名字>/SKILL.md`，frontmatter 里有 `name` 和
+`description`。不满足的文件会被**静默丢弃** —— 文件夹摆在那里看着像装好了，智能体却根本看不到它。
+对于一个唯一目的就是「现在我能用了」的动作，这是最糟的结果。所以安装时顺手修掉两件真正会导致发现失败的事
+（`installer.ts` 的 `repairSkillFile()`）：
+
+| 问题 | 后果 | 处理 |
+|---|---|---|
+| **CRLF 换行** | frontmatter 的定界符变成 `---\r`，YAML 读不出结束位置，整块解析失败 | 转成 LF |
+| **缺 `name` / `description`** | 扫描器要求这两个键，缺了就丢掉整个技能 | 补上；描述取索引里已有的那条 |
+
+本机实测：`~/.dsh/skills/browser-act/SKILL.md` 是 CRLF，从未出现在 DeepSeek Harness 的技能目录里，
+而旁边同为 LF 的 `code-review` 正常出现。**只动 frontmatter，从不改写正文** —— 正文是作者写的。
+
+自检里有一节专门守这件事：CRLF 会被转成 LF、没有 frontmatter 的会补一个、缺 description 的会补上且不动已有的 name、
+正文原样保留、同一个目录被写成两种路径时只落一次。
 
 - **只取需要的文件**（`src/main/core/fetch.ts`）：每个仓库跑一次
   `git clone --depth 1 --filter=blob:none --sparse`，再用**一条** `git sparse-checkout set --no-cone '<path>/*'`
