@@ -211,26 +211,48 @@ export async function prepareLaunch(input: {
 
   // 1. project-level install, so the agent finds the skill with cwd=workspace
   const entry = loadRegistry().find((e) => e.id === input.agentId)
-  const projectRel = entry?.projectSkillsDir || '.agents/skills'
-  const projectDir = join(workspace, projectRel)
-  mkdirSync(projectDir, { recursive: true })
-  const projectSkillPath = join(projectDir, folderName)
-  try {
-    if (existsSync(projectSkillPath) || isSymlink(projectSkillPath)) {
-      if (isSymlink(projectSkillPath)) rmSync(projectSkillPath)
-      else rmSync(projectSkillPath, { recursive: true, force: true })
-    }
-    if (isWindows) {
-      try {
-        symlinkSync(sourcePath, projectSkillPath, 'junction')
-      } catch {
-        cpSync(sourcePath, projectSkillPath, { recursive: true, dereference: true })
+
+  /*
+    Place it twice: in the agent's own project directory and in the universal one.
+
+    `AGENTS.md` is a *universal* instruction file — any agent that opens this
+    workspace reads it and is told to use this skill. Installing the skill only
+    into the launching agent's own directory makes that instruction false for
+    every other agent: the workspace says "use code-review", and the agent that
+    opened it finds nothing, because the files are under `.cursor/skills/` while
+    it looks in `.dsh/skills/`.
+
+    That is exactly what happened. Fifty of the registered agents read
+    `.agents/skills`, so putting a copy there makes the instruction true whichever
+    agent arrives.
+  */
+  const place = (rel: string): string => {
+    const dir = join(workspace, rel)
+    mkdirSync(dir, { recursive: true })
+    const target = join(dir, folderName)
+    try {
+      if (existsSync(target) || isSymlink(target)) {
+        if (isSymlink(target)) rmSync(target)
+        else rmSync(target, { recursive: true, force: true })
       }
-    } else {
-      symlinkSync(sourcePath, projectSkillPath, 'dir')
+      if (isWindows) {
+        try {
+          symlinkSync(sourcePath, target, 'junction')
+        } catch {
+          cpSync(sourcePath, target, { recursive: true, dereference: true })
+        }
+      } else {
+        symlinkSync(sourcePath, target, 'dir')
+      }
+    } catch {
+      cpSync(sourcePath, target, { recursive: true, dereference: true })
     }
-  } catch {
-    cpSync(sourcePath, projectSkillPath, { recursive: true, dereference: true })
+    return target
+  }
+
+  const projectSkillPath = place(entry?.projectSkillsDir || '.agents/skills')
+  if (entry?.projectSkillsDir && entry.projectSkillsDir !== '.agents/skills') {
+    place('.agents/skills')
   }
 
   /*

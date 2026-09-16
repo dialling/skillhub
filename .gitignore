@@ -5,3 +5,13 @@ release/
 .DS_Store
 *.log
 .vite/
+
+# Project-level skill directories a launch lays down. They are machine-local
+# copies (usually symlinks) and must never be committed.
+.agents/
+.cursor/
+.dsh/
+.codex/
+.claude/
+.gemini/
+.kimi-code/
