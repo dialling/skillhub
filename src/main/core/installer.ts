@@ -138,6 +138,17 @@ export interface UninstallResult {
   ok: boolean
   /** display names of every agent whose install this removed (shared dirs) */
   agents: string[]
+  /**
+   * Why nothing was removed, when nothing was.
+   *
+   * `refused` is the one that matters: the folder is not ours any more, so
+   * deleting it would destroy something the user made. It has to reach the
+   * screen — reporting it as "nothing installed" would be a different and wrong
+   * explanation for a deliberate refusal.
+   */
+  reason?: 'no-record' | 'refused' | 'failed'
+  /** the path we would not delete, for the refusal message */
+  path?: string
 }
 
 /**
@@ -154,7 +165,7 @@ export interface UninstallResult {
 export function uninstallFrom(skillId: string, agentId: string): UninstallResult {
   const all = installs.get().records
   const own = all.filter((r) => r.skillId === skillId && r.agentId === agentId)
-  if (!own.length) return { ok: false, agents: [] }
+  if (!own.length) return { ok: false, agents: [], reason: 'no-record' }
 
   /*
     Every artifact belonging to this (skill, agent), not just the first.
@@ -165,10 +176,10 @@ export function uninstallFrom(skillId: string, agentId: string): UninstallResult
     disk, untracked and unreachable from the UI.
   */
   const paths = [...new Set(own.map((r) => r.linkPath))]
-  for (const path of paths) {
-    if (!deletableSkillFolder(path)) {
-      console.error('[installer] refusing to uninstall a path that is not a skill folder', path)
-      return { ok: false, agents: [] }
+  for (const rec of own) {
+    if (!deletableSkillFolder(rec)) {
+      console.error('[installer] refusing to uninstall: the folder is not ours', rec.linkPath)
+      return { ok: false, agents: [], reason: 'refused', path: rec.linkPath }
     }
   }
   for (const path of paths) {
@@ -179,7 +190,7 @@ export function uninstallFrom(skillId: string, agentId: string): UninstallResult
       }
     } catch (err) {
       console.error('[installer] uninstall failed', err)
-      return { ok: false, agents: [] }
+      return { ok: false, agents: [], reason: 'failed' }
     }
   }
 
@@ -199,17 +210,22 @@ export function uninstall(skillId: string, agentId: string): boolean {
   return uninstallFrom(skillId, agentId).ok
 }
 
-export function uninstallAll(skillId: string): number {
+export function uninstallAll(skillId: string): { removed: number; refused: string[] } {
   const agents = [...new Set(installs.get().records.filter((r) => r.skillId === skillId).map((r) => r.agentId))]
   // Count what was actually removed: an agent with two directories is one
   // removal of two artifacts, and reporting it as two agents would be a lie.
-  let n = 0
+  let removed = 0
+  const refused: string[] = []
   for (const agentId of agents) {
     const before = installs.get().records.filter((r) => r.skillId === skillId).length
     const res = uninstallFrom(skillId, agentId)
-    if (res.ok) n += Math.max(1, before - installs.get().records.filter((r) => r.skillId === skillId).length)
+    if (res.ok) {
+      removed += Math.max(1, before - installs.get().records.filter((r) => r.skillId === skillId).length)
+    } else if (res.reason === 'refused' && res.path) {
+      refused.push(res.path)
+    }
   }
-  return n
+  return { removed, refused }
 }
 
 /** Remove a raw path from an agent directory (for skills not installed by us). */
@@ -265,31 +281,34 @@ function isKnownAgentDir(dir: string): boolean {
  * So the check is stated rather than inherited. A path that *is* an agent's
  * skills directory, or that contains one, is never a skill folder.
  */
-function deletableSkillFolder(path: string): boolean {
-  const real = expandPath(path)
+function deletableSkillFolder(rec: InstallRecord): boolean {
+  const real = expandPath(rec.linkPath)
   if (isKnownAgentDir(real)) return false
   for (const agent of listAgents()) {
     for (const dir of resolveAgentDirs(agent.id)) {
       if (isInside(expandPath(dir), real)) return false
     }
   }
-  /*
-    And it has to look like a skill.
 
-    The two checks above only recognise directories the registry knows about, so
-    a destination the user picked themselves — any folder at all — was still
-    deletable wholesale if a record named it. A skill folder has a SKILL.md at
-    its top level; a directory full of other skills does not, which is exactly
-    the shape of the mistake worth refusing.
+  /*
+    And the folder has to still be **ours**.
+
+    The checks above only recognise directories the registry knows about, so a
+    destination the user chose themselves was governed by nothing. A first
+    attempt asked "does it look like a skill" — a top-level SKILL.md — which is
+    the wrong question: it passes for a folder the user has since replaced with
+    their own work, and that is precisely when deleting it does real damage.
+
+    The question that can actually be answered is ownership, and the app already
+    has one answer to it. `entryOwner` reads the marker we wrote at install time:
+    `ours` means this very skill is in there, `other` means a different SkillHub
+    skill, `foreign` means no marker at all — a folder somebody else made. Only
+    the first is ours to remove.
+
+    A legacy symlink install has no marker; `entryOwner` recognises it by its
+    target and still says `ours`, so those remain removable.
   */
-  try {
-    if (existsSync(join(real, 'SKILL.md'))) return true
-    // A symlinked install resolves through the link, so this covers it too; a
-    // broken link is still ours to remove.
-    return isSymlink(real)
-  } catch {
-    return false
-  }
+  return entryOwner(real, { skillId: rec.skillId, sourcePath: rec.sourcePath }) === 'ours'
 }
 
 export interface InstalledSkillView {

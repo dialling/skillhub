@@ -406,6 +406,10 @@ const DICT: Dict = {
   'toast.added': ['已入库 {name}', 'Added {name}'],
   'toast.installed': ['已安装 {n} 个技能', 'Installed {n} skills'],
   'toast.uninstalledFrom': ['已卸载，从 {n} 个位置删掉了文件', 'Uninstalled — files removed from {n} locations'],
+  'toast.uninstallRefused': [
+    '没有删除：那个文件夹已经不是本应用装的了（保持原样更安全）',
+    'Nothing was deleted: that folder is no longer one this app installed — leaving it alone is the safe answer'
+  ],
   'toast.nothingToUninstall': ['没有可卸载的安装记录', 'There was nothing installed to remove'],
   'toast.uninstalled': ['已卸载', 'Uninstalled'],
   'toast.uninstalledShared': [

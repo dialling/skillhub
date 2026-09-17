@@ -365,6 +365,18 @@ async function main(): Promise<number> {
   for (const dir of paths) {
     mkdirSync(dir, { recursive: true })
     writeFileSync(join(dir, 'SKILL.md'), '---\nname: two-dir\ndescription: seeded\n---\n\n# Body\n')
+    /*
+      The marker too, because that is what makes a folder ours.
+
+      A real install always writes one, and uninstall refuses to delete a folder
+      without it — that refusal is the point: it is what stops a folder the user
+      has since replaced with their own work from being removed. Seeding records
+      without their marker produced a state a real install cannot reach.
+    */
+    writeFileSync(
+      join(dir, '.skillhub-install.json'),
+      JSON.stringify({ skillId: pairSkill, repoFullName: 'a/b', mode: 'copy', sourcePath: dir })
+    )
   }
   installs.update((d) => {
     d.records = d.records.filter((r) => r.skillId !== pairSkill)
@@ -416,6 +428,10 @@ async function main(): Promise<number> {
   section('Reconcile prunes records for missing artifacts')
   const ghostDir = mkdtempSync(join(tmpdir(), 'skillhub-ghost-'))
   writeFileSync(join(ghostDir, 'SKILL.md'), '---\nname: ghost\ndescription: seeded\n---\n')
+  writeFileSync(
+    join(ghostDir, '.skillhub-install.json'),
+    JSON.stringify({ skillId: 'a/b::ghost', repoFullName: 'a/b', mode: 'copy', sourcePath: ghostDir })
+  )
   installs.update((d) => {
     d.records = d.records.filter((r) => r.skillId !== 'a/b::ghost')
     d.records.push({

@@ -103,8 +103,11 @@ export interface SkillHubApi {
       skipped: { skillId: string; agentId: string; reason: string }[]
       errors: { skillId: string; agentId: string; reason: string }[]
     }>
-    uninstall(skillId: string, agentId: string): Promise<{ ok: boolean; agents: string[] }>
-    uninstallAll(skillId: string): Promise<number>
+    uninstall(
+      skillId: string,
+      agentId: string
+    ): Promise<{ ok: boolean; agents: string[]; reason?: string; path?: string }>
+    uninstallAll(skillId: string): Promise<{ removed: number; refused: string[] }>
     records(): Promise<InstallRecord[]>
     map(): Promise<Record<string, string[]>>
     list(): Promise<

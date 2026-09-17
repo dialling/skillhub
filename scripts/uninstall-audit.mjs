@@ -58,7 +58,7 @@ const check = (name, ok, detail) => results.push({ name, ok: !!ok, detail: detai
 ;(async () => {
   // --- "not installed: nothing to delete" -----------------------------------
   const nothing = I.uninstallAll('a/b::probe')
-  check('卸载没装过的东西：返回 0，不报错', nothing === 0, 'returned ' + nothing)
+  check('卸载没装过的东西：返回 0，不报错', nothing.removed === 0 && nothing.refused.length === 0, JSON.stringify(nothing))
   check('而且没有删掉别的东西', !fs.existsSync(A))
 
   // --- the user's own folder of the same name must survive -------------------
@@ -93,7 +93,7 @@ const check = (name, ok, detail) => results.push({ name, ok: !!ok, detail: detai
   // --- uninstall everything -------------------------------------------------
   const all = I.uninstallAll('a/b::probe')
   // Two artifacts remained: agent-b's and other's. Agent-a's went a line ago.
-  check('全部卸载返回删掉的数量', all === 2, 'returned ' + all)
+  check('全部卸载返回删掉的数量', all.removed === 2, JSON.stringify(all))
   check('  所有副本都没了', probeDirs.every((d) => !fs.existsSync(d)))
   check('  一条记录都不剩', recordsFor('a/b::probe').length === 0, recordsFor('a/b::probe').length)
   check('  目的地目录本身还在（不是把目录删了）', existsSync(A) && existsSync(B) && existsSync(OTHER))
@@ -102,7 +102,7 @@ const check = (name, ok, detail) => results.push({ name, ok: !!ok, detail: detai
 
   // --- click it again -------------------------------------------------------
   const again = I.uninstallAll('a/b::probe')
-  check('再点一次：返回 0，不报错', again === 0, 'returned ' + again)
+  check('再点一次：返回 0，不报错', again.removed === 0 && again.refused.length === 0, JSON.stringify(again))
   check('  也没删掉别的东西', existsSync(join(A, 'other', 'SKILL.md')) && existsSync(join(MINE, 'SKILL.md')))
 
   // --- reinstall after uninstall --------------------------------------------
@@ -137,6 +137,40 @@ const check = (name, ok, detail) => results.push({ name, ok: !!ok, detail: detai
       existsSync(join(A, 'probe', 'SKILL.md'))
   )
 
+  // --- the user replaced the installed folder with their own work -----------
+  /*
+    The case a shape check misses.
+
+    The first guard asked "does this look like a skill" — a top-level SKILL.md —
+    which is exactly what the user's own folder also has. So: install, then
+    replace the folder's contents with something the user wrote, then uninstall.
+    Ownership is the question that can be answered, and the marker answers it.
+  */
+  await I.installFromGithub({ skills: [withSrc(skill, src)], destinations: [A] })
+  const swapped = join(A, 'probe')
+  fs.rmSync(swapped, { recursive: true, force: true })
+  fs.mkdirSync(swapped, { recursive: true })
+  fs.writeFileSync(join(swapped, 'SKILL.md'), '---\\nname: mine\\ndescription: my own work\\n---\\n\\n# mine\\n')
+  const swap = I.uninstallAll('a/b::probe')
+  check('用户用自己的内容顶掉了那个文件夹时：拒绝删除', swap.removed === 0 && swap.refused.length === 1, JSON.stringify(swap))
+  check('  而且理由带上了路径', swap.refused[0] === swapped, swap.refused[0])
+  check('  用户的东西一个字没动', fs.readFileSync(join(swapped, 'SKILL.md'), 'utf8').includes('# mine'))
+
+  // a folder carrying a *different* SkillHub skill's marker is not ours either
+  fs.rmSync(swapped, { recursive: true, force: true })
+  fs.mkdirSync(swapped, { recursive: true })
+  fs.writeFileSync(join(swapped, 'SKILL.md'), '---\\nname: someone-else\\ndescription: x\\n---\\n')
+  fs.writeFileSync(join(swapped, '.skillhub-install.json'), JSON.stringify({ skillId: 'z/z::someone-else', repoFullName: 'z/z' }))
+  const other2 = I.uninstallAll('a/b::probe')
+  check('文件夹上是别的技能的标记时：也拒绝', other2.removed === 0 && other2.refused.length === 1, JSON.stringify(other2))
+  check('  那个文件夹还在', existsSync(join(swapped, 'SKILL.md')))
+
+  // and ours is still removable, so the guard is not simply refusing everything
+  fs.rmSync(swapped, { recursive: true, force: true })
+  await I.installFromGithub({ skills: [withSrc(skill, src)], destinations: [A] })
+  const legit = I.uninstallAll('a/b::probe')
+  check('真正属于我们的副本仍然能删', legit.removed === 1 && legit.refused.length === 0 && !existsSync(join(A, 'probe')), JSON.stringify(legit))
+
   // --- the guard: a record must not be able to point at a directory ---------
   const A_ABS = A
   const malicious = I.installRecords().length
@@ -148,7 +182,9 @@ const check = (name, ok, detail) => results.push({ name, ok: !!ok, detail: detai
   })
   const guarded = I.uninstallFrom('a/b::evil', 'custom:evil')
   check('拒绝删除「智能体技能目录本身」', !guarded.ok, JSON.stringify(guarded))
-  check('  那个目录和里面的技能都还在', existsSync(join(A, 'probe', 'SKILL.md')) && existsSync(join(A, 'other', 'SKILL.md')))
+  // The probe skill was legitimately removed by the section above; what must
+  // survive is the destination itself and everything never targeted in it.
+  check('  那个目录和里面的别的技能都还在', existsSync(A) && existsSync(join(A, 'other', 'SKILL.md')))
 
   I.installs.update((d) => {
     d.records = d.records.filter((r) => r.skillId !== 'a/b::evil2')
@@ -158,7 +194,7 @@ const check = (name, ok, detail) => results.push({ name, ok: !!ok, detail: detai
   })
   const guarded2 = I.uninstallFrom('a/b::evil2', 'custom:evil2')
   check('拒绝删除「包含智能体目录的上级目录」', !guarded2.ok, JSON.stringify(guarded2))
-  check('  一切都还在', existsSync(join(A, 'probe', 'SKILL.md')) && existsSync(MINE))
+  check('  一切都还在', existsSync(join(A, 'other', 'SKILL.md')) && existsSync(MINE) && existsSync(join(MINE, 'SKILL.md')))
 
   console.log(JSON.stringify(results))
 })().catch((err) => { console.log(JSON.stringify({ crash: String(err && err.stack || err) })) })

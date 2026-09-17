@@ -1062,7 +1062,13 @@ export const useStore = create<State>((set, get) => ({
     if (!res.ok) {
       // The old code toasted success whatever the call returned, so a removal
       // that could not touch the filesystem looked like it had worked.
-      get().toast('error', get().t('toast.failed', { msg: get().t('toast.uninstalled') }))
+      if (res.reason === 'refused') {
+        get().toast('error', get().t('toast.uninstallRefused'), res.path || '')
+      } else if (res.reason === 'no-record') {
+        get().toast('info', get().t('toast.nothingToUninstall'))
+      } else {
+        get().toast('error', get().t('toast.failed', { msg: get().t('toast.uninstalled') }))
+      }
       return
     }
     if (res.agents.length > 1) {
@@ -1073,7 +1079,7 @@ export const useStore = create<State>((set, get) => ({
   },
 
   async uninstallAll(skillId) {
-    const n = await api.install.uninstallAll(skillId)
+    const { removed: n, refused } = await api.install.uninstallAll(skillId)
     await Promise.all([get().refreshInstalls(), get().refreshAgents()])
     /*
       Say how many places it came out of, and say nothing when it came out of
@@ -1084,8 +1090,19 @@ export const useStore = create<State>((set, get) => ({
       claimed success even when `n` was 0, which is exactly what a stale record
       or a hand-deleted folder produces.
     */
+    /*
+      A refusal is not "nothing was installed".
+
+      The installer declines to delete a folder that is no longer ours — the user
+      replaced it with their own work, or something else took the name. Saying
+      "there was nothing to uninstall" would be a different explanation, and the
+      wrong one: the record does exist, and the folder does too.
+    */
+    if (refused.length) {
+      get().toast('error', get().t('toast.uninstallRefused'), refused[0])
+    }
     if (n > 0) get().toast('success', get().t('toast.uninstalledFrom', { n }))
-    else get().toast('info', get().t('toast.nothingToUninstall'))
+    else if (!refused.length) get().toast('info', get().t('toast.nothingToUninstall'))
   },
 
   async toggleAgent(id, enabled) {
