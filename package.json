@@ -17,7 +17,7 @@
     "cli": "node out/main/cli.js",
     "typecheck": "tsc --noEmit",
     "i18n": "node scripts/i18n-audit.mjs",
-    "verify": "npm run typecheck && npm run i18n && npm run xplat && npm run catalog && npm run build && npm run selftest",
+    "verify": "npm run typecheck && npm run i18n && npm run xplat && npm run catalog && npm run build && npm run selftest && npm run uninstall-audit",
     "xplat": "node scripts/crossplatform-audit.mjs",
     "dist": "npm run build && electron-builder",
     "dist:mac": "npm run build && electron-builder --mac",
@@ -26,7 +26,8 @@
     "dist:dir": "npm run build && electron-builder --dir",
     "catalog": "node scripts/label-software-repos.mjs --check && node scripts/fill-missing-blurbs.mjs --check && node scripts/classify-catalog.mjs --check",
     "install:app": "node scripts/install-app.mjs",
-    "release": "node scripts/release.mjs"
+    "release": "node scripts/release.mjs",
+    "uninstall-audit": "node scripts/uninstall-audit.mjs"
   },
   "keywords": [
     "agent-skills",

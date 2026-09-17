@@ -166,6 +166,12 @@ export function uninstallFrom(skillId: string, agentId: string): UninstallResult
   */
   const paths = [...new Set(own.map((r) => r.linkPath))]
   for (const path of paths) {
+    if (!deletableSkillFolder(path)) {
+      console.error('[installer] refusing to uninstall a path that is not a skill folder', path)
+      return { ok: false, agents: [] }
+    }
+  }
+  for (const path of paths) {
     try {
       if (existsSync(path) || isSymlink(path)) {
         if (isSymlink(path)) unlinkSync(path)
@@ -239,10 +245,51 @@ export function removeRawPath(p: string): boolean {
 function isKnownAgentDir(dir: string): boolean {
   const wanted = expandPath(dir)
   for (const agent of listAgents()) {
-    const resolved = resolveAgentDir(agent.id)
-    if (resolved && expandPath(resolved) === wanted) return true
+    // Every directory, not just the preferred one: an agent with two skills
+    // directories has two places that are "a known agent dir".
+    if (resolveAgentDirs(agent.id).some((d) => expandPath(d) === wanted)) return true
   }
   return false
+}
+
+/**
+ * Refuse to delete something that is not a skill folder.
+ *
+ * The install path builds `join(destination, sanitizeName(name))`, so a record's
+ * `linkPath` is always a direct child of a destination — today. That is a
+ * property of `sanitizeName` never returning `.` or `..`, not of this function,
+ * and deletion here is `rmSync(..., { recursive: true })`: a record pointing one
+ * level up would take the whole skills directory with it, and two levels up
+ * would take everything the agent reads.
+ *
+ * So the check is stated rather than inherited. A path that *is* an agent's
+ * skills directory, or that contains one, is never a skill folder.
+ */
+function deletableSkillFolder(path: string): boolean {
+  const real = expandPath(path)
+  if (isKnownAgentDir(real)) return false
+  for (const agent of listAgents()) {
+    for (const dir of resolveAgentDirs(agent.id)) {
+      if (isInside(expandPath(dir), real)) return false
+    }
+  }
+  /*
+    And it has to look like a skill.
+
+    The two checks above only recognise directories the registry knows about, so
+    a destination the user picked themselves — any folder at all — was still
+    deletable wholesale if a record named it. A skill folder has a SKILL.md at
+    its top level; a directory full of other skills does not, which is exactly
+    the shape of the mistake worth refusing.
+  */
+  try {
+    if (existsSync(join(real, 'SKILL.md'))) return true
+    // A symlinked install resolves through the link, so this covers it too; a
+    // broken link is still ours to remove.
+    return isSymlink(real)
+  } catch {
+    return false
+  }
 }
 
 export interface InstalledSkillView {
