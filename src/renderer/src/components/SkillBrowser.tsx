@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Search, Layers, Star, ExternalLink, Download, Check, X, Bot } from 'lucide-react'
+import { Search, Layers, Star, ExternalLink, Download, Check, X, Bot, Trash2 } from 'lucide-react'
 import type { SkillIndexEntry } from '@shared/types'
 import { AGENT_SKILL_LABELS, FN_LABELS, type FnCategory } from '@shared/types'
 import { fmtStars } from '../api'
@@ -73,6 +73,7 @@ export function SkillBrowser(): React.JSX.Element {
   const agentTargets = useStore((s) => s.agents)
   const settings = useStore((s) => s.settings)
   const openAgentPicker = useStore((s) => s.openAgentPicker)
+  const uninstallAll = useStore((s) => s.uninstallAll)
   const library = useStore((s) => s.library)
 
   const [fn, setFn] = useState<FnCategory | 'all'>('all')
@@ -284,10 +285,33 @@ export function SkillBrowser(): React.JSX.Element {
                     const installed = (installMap[id] || []).length > 0
                     if (installed) {
                       return (
-                        <button className="btn sm" onClick={() => void openDetail(s.r)}>
-                          <Check size={11} />
-                          {t('skills.installed')}
-                        </button>
+                        <>
+                          <button className="btn sm" onClick={() => void openDetail(s.r)}>
+                            <Check size={11} />
+                            {t('skills.installed')}
+                          </button>
+                          {/*
+                            Its own button, and destructive.
+
+                            The green chip on the detail page removes one agent's
+                            copy; this removes the skill, which is what someone
+                            who is done with it wants. Removing files from disk is
+                            worth one confirmation — it is the only action here
+                            that cannot be undone by clicking again.
+                          */}
+                          <button
+                            className="btn sm danger"
+                            disabled={installing}
+                            title={t('skills.uninstallHint')}
+                            onClick={() => {
+                              if (!confirm(t('skills.uninstallConfirm', { name: s.n }))) return
+                              void uninstallAll(id)
+                            }}
+                          >
+                            <Trash2 size={11} />
+                            {t('skills.uninstall')}
+                          </button>
+                        </>
                       )
                     }
                     return (

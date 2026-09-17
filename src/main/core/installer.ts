@@ -15,7 +15,7 @@ import { dirname, join } from 'node:path'
 import type { InstallMode, InstallProgress, InstallRecord, SkillEntry } from '../../shared/types'
 import { expandPath } from './paths'
 import { installs, library, logActivity, settings } from './db'
-import { agentDisplayName, listAgents, loadRegistry, resolveAgentDir } from './agents'
+import { agentDisplayName, listAgents, loadRegistry, resolveAgentDir, resolveAgentDirs } from './agents'
 import { fetchPaths, placeFetched } from './fetch'
 import { m } from './msg'
 import { isInside, isWindows } from './platform'
@@ -569,9 +569,19 @@ function ownerQualified(base: string, fullName: string): string {
  */
 function agentForDestination(destination: string): { id: string; name: string } {
   const real = expandPath(destination)
+  /*
+    Every directory of every agent, not just the one `resolveAgentDir` prefers.
+
+    That function answers "where is this agent", singular, which is right for
+    display and wrong here: DeepSeek Harness reads two directories, so an install
+    into the second one matched nothing and was recorded under the pseudo-agent
+    `path:<dir>`. The copy was then invisible to the agent's own uninstall — it
+    removed the first directory and left the second on disk, tracked by nobody.
+  */
   for (const agent of listAgents()) {
-    const dir = resolveAgentDir(agent.id)
-    if (dir && expandPath(dir) === real) return { id: agent.id, name: agent.name }
+    if (resolveAgentDirs(agent.id).some((dir) => expandPath(dir) === real)) {
+      return { id: agent.id, name: agent.name }
+    }
   }
   return { id: `path:${real}`, name: real }
 }

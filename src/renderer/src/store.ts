@@ -1075,7 +1075,17 @@ export const useStore = create<State>((set, get) => ({
   async uninstallAll(skillId) {
     const n = await api.install.uninstallAll(skillId)
     await Promise.all([get().refreshInstalls(), get().refreshAgents()])
-    get().toast('success', get().t('toast.uninstalled'), `${n}`)
+    /*
+      Say how many places it came out of, and say nothing when it came out of
+      nowhere.
+
+      The old toast was the word 已卸载 with a bare number as its detail, which
+      reads as a footnote rather than as "this is how much was removed" — and it
+      claimed success even when `n` was 0, which is exactly what a stale record
+      or a hand-deleted folder produces.
+    */
+    if (n > 0) get().toast('success', get().t('toast.uninstalledFrom', { n }))
+    else get().toast('info', get().t('toast.nothingToUninstall'))
   },
 
   async toggleAgent(id, enabled) {

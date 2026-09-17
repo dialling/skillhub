@@ -105,6 +105,12 @@ const DICT: Dict = {
   'store.liveSearch': ['GitHub 实时搜索', 'Live GitHub search'],
 
   'skills.installOne': ['安装', 'Install'],
+  'skills.uninstall': ['卸载', 'Uninstall'],
+  'skills.uninstallHint': ['把这个技能从所有智能体目录里删掉', 'Delete this skill from every agent directory'],
+  'skills.uninstallConfirm': [
+    '卸载「{name}」？\n\n这会删掉它在每个智能体目录里的文件夹。',
+    'Uninstall "{name}"?\n\nThis deletes its folder from every agent directory.'
+  ],
   'skills.installed': ['已安装', 'Installed'],
   'skills.installOneHint': ['装进每个已启用智能体的技能目录，装完就能用', 'Install into every enabled agent’s skills directory — usable as soon as it lands'],
   'card.add': ['入库', 'Add'],
@@ -399,6 +405,8 @@ const DICT: Dict = {
 
   'toast.added': ['已入库 {name}', 'Added {name}'],
   'toast.installed': ['已安装 {n} 个技能', 'Installed {n} skills'],
+  'toast.uninstalledFrom': ['已卸载，从 {n} 个位置删掉了文件', 'Uninstalled — files removed from {n} locations'],
+  'toast.nothingToUninstall': ['没有可卸载的安装记录', 'There was nothing installed to remove'],
   'toast.uninstalled': ['已卸载', 'Uninstalled'],
   'toast.uninstalledShared': [
     '已卸载（这些智能体共用同一目录，同时移除：{agents}）',

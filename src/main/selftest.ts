@@ -293,6 +293,39 @@ async function main(): Promise<number> {
     dshDirs.some((d) => d.includes('dsh-desktop/harness/skills')),
     dshDirs.map((d) => d.replace(homedir(), '~')).join(', ')
   )
+  /*
+    An install into an agent's *second* directory must still be recorded as that
+    agent.
+
+    `agentForDestination` compared against `resolveAgentDir`, which answers
+    "where is this agent" and returns one path. So a skill written to DeepSeek
+    Harness's second directory matched nothing and was filed under the pseudo
+    agent `path:<dir>` — untracked by the agent's own uninstall, which removed
+    the first copy and left the second on disk. Verified on a real install before
+    the fix: `uninstallAll` reported 1 and one of two folders survived.
+  */
+  const secondDir = resolveAgentDirs('dsh')[1]
+  const viaSecond = await installFromGithub({
+    skills: [{ skillId: 'a/b::second-dir', fullName: 'a/b', path: '', name: 'second-dir', localPath: destSrc }],
+    destinations: [secondDir]
+  })
+  check(
+    'installing into an agent\'s second directory is attributed to that agent',
+    viaSecond.ok.length === 1 && viaSecond.ok[0].agentId === 'dsh',
+    viaSecond.ok[0]?.agentId || JSON.stringify(viaSecond.errors[0] || {})
+  )
+  check(
+    'and not to a pseudo-agent named after the path',
+    !String(viaSecond.ok[0]?.agentId || '').startsWith('path:'),
+    viaSecond.ok[0]?.agentId || ''
+  )
+  const secondRemoval = uninstallFrom('a/b::second-dir', 'dsh')
+  check(
+    'so uninstalling the agent reaches it',
+    secondRemoval.ok && !existsSync(join(secondDir, 'second-dir')),
+    JSON.stringify(secondRemoval)
+  )
+
   check(
     'picking dsh reaches all of its directories, not just the first',
     (() => {
