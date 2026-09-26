@@ -1,26 +1,26 @@
 {
-  "updatedAt": "2026-09-26T07:44:38.616Z",
-  "total": 11213,
+  "updatedAt": "2026-09-26T17:46:51.612Z",
+  "total": 11220,
   "shards": {
     "collections": {
-      "count": 4843,
-      "bytes": 1358433
+      "count": 4850,
+      "bytes": 1360948
     },
     "security": {
       "count": 1181,
       "bytes": 340140
     },
     "coding": {
-      "count": 1582,
-      "bytes": 431317
+      "count": 1583,
+      "bytes": 431532
     },
     "design": {
       "count": 685,
       "bytes": 191712
     },
     "cloud": {
-      "count": 1037,
-      "bytes": 277256
+      "count": 1036,
+      "bytes": 277039
     },
     "tooling": {
       "count": 508,
