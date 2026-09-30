@@ -1,34 +1,34 @@
 {
-  "updatedAt": "2026-09-29T19:28:31.185Z",
-  "total": 11180,
+  "updatedAt": "2026-09-30T08:37:02.432Z",
+  "total": 11297,
   "shards": {
     "collections": {
-      "count": 4876,
-      "bytes": 1369710
+      "count": 4980,
+      "bytes": 1403405
     },
     "security": {
       "count": 1181,
       "bytes": 340140
     },
     "coding": {
-      "count": 1586,
-      "bytes": 433154
+      "count": 1588,
+      "bytes": 433577
     },
     "design": {
       "count": 689,
       "bytes": 192793
     },
     "cloud": {
-      "count": 1036,
-      "bytes": 277194
+      "count": 1043,
+      "bytes": 278658
     },
     "tooling": {
-      "count": 508,
-      "bytes": 152141
+      "count": 510,
+      "bytes": 152854
     },
     "research": {
-      "count": 691,
-      "bytes": 200928
+      "count": 693,
+      "bytes": 201471
     },
     "content": {
       "count": 238,
