@@ -1,11 +1,11 @@
 {
-  "updatedAt": "2026-10-06T08:59:20.096Z",
+  "updatedAt": "2026-10-06T19:32:37.147Z",
   "date": "2026-10-06",
   "repos": 147,
-  "fetched": 147,
-  "failed": 0,
-  "appended": 147,
-  "corrected": 0,
+  "fetched": 146,
+  "failed": 1,
+  "appended": 0,
+  "corrected": 128,
   "tracked": 147,
   "maxDays": 22,
   "growthRows": {
