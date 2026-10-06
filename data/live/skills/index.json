@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-05T21:31:30.022Z",
+  "updatedAt": "2026-10-06T09:00:24.359Z",
   "total": 11401,
   "shards": {
     "collections": {
@@ -28,7 +28,7 @@
     },
     "research": {
       "count": 703,
-      "bytes": 204234
+      "bytes": 204231
     },
     "content": {
       "count": 238,
