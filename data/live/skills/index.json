@@ -1,10 +1,10 @@
 {
-  "updatedAt": "2026-11-22T20:44:22.794Z",
-  "total": 12509,
+  "updatedAt": "2026-11-23T10:48:43.634Z",
+  "total": 12511,
   "shards": {
     "collections": {
-      "count": 5603,
-      "bytes": 1589541
+      "count": 5604,
+      "bytes": 1592090
     },
     "security": {
       "count": 1202,
@@ -15,12 +15,12 @@
       "bytes": 470105
     },
     "design": {
-      "count": 779,
-      "bytes": 216705
+      "count": 780,
+      "bytes": 217075
     },
     "cloud": {
       "count": 1250,
-      "bytes": 338408
+      "bytes": 338417
     },
     "tooling": {
       "count": 553,
