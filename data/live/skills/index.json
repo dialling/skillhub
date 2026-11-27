@@ -1,6 +1,6 @@
 {
-  "updatedAt": "2026-11-27T10:54:20.350Z",
-  "total": 12572,
+  "updatedAt": "2026-11-27T22:44:21.656Z",
+  "total": 12573,
   "shards": {
     "collections": {
       "count": 5630,
@@ -19,8 +19,8 @@
       "bytes": 219578
     },
     "cloud": {
-      "count": 1265,
-      "bytes": 346525
+      "count": 1266,
+      "bytes": 346781
     },
     "tooling": {
       "count": 554,
